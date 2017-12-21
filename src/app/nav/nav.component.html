@@ -1,9 +1,9 @@
-<mat-toolbar class="mat-primary mat-elevation-z6">
+<mat-toolbar class="mat-primary mat-elevation-z6 toolbar">
   <span>Universal</span>
   <span class="example-spacer"></span>
-  <mat-icon class="example-icon">favorite</mat-icon>
+  <mat-icon class="example-icon">shopping cart</mat-icon>
 </mat-toolbar>
-<mat-sidenav-container [ngStyle]="{'height' : '100vh', 'z-index':'-1'}">
+<mat-sidenav-container [ngStyle]="{'height' : '100vh'}" class="sidebar-container">
   <mat-sidenav #sidebar mode="side" class="sidebar" [ngStyle]="{'width.em': sidenavWidth}" opened="true">
     <mat-nav-list>
       <mat-list-item routerLink="home" routerLinkActive="active">
@@ -27,7 +27,7 @@
           <h5>Contact Us</h5>
         </div>
       </mat-list-item>
-      <mat-list-item routerLink="search" routerLinkActive="active">
+      <mat-list-item routerLink="products" routerLinkActive="active">
         <mat-icon mat-list-icon>help</mat-icon>
         <div fxFlex="10"></div>
         <div *ngIf="sidenavWidth > 6" class="sidebar-item">
@@ -37,6 +37,10 @@
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
+    <mat-toolbar class="mat-primary">
+      <span>Productos</span>
+      <span class="example-spacer"></span>
+    </mat-toolbar>
     <router-outlet></router-outlet>
   </mat-sidenav-content>
 </mat-sidenav-container>

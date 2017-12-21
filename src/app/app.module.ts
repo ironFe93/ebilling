@@ -4,6 +4,7 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from "@angular/router";
 import {HttpModule} from '@angular/http';
+import {HttpClientModule} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
 
 import {MatSidenavModule, MatButtonModule, MatIconModule, MatListModule } from "@angular/material";
@@ -18,8 +19,11 @@ import { SearchComponent } from './search/search.component';
 import { SearchResultsComponent } from './search-results/search-results.component';
 
 import {ProductsService} from "./products.service";
+import { ShoppingCartComponent } from './shopping-cart/shopping-cart.component';
+import { ProductsComponent } from './products/products.component';
+import { ShoppingCartService } from './shopping-cart.service';
 
-const appRoutes = [{ path: 'search', component: SearchComponent }];
+const appRoutes = [{ path: 'products', component: ProductsComponent }];
 /*const appRoutes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'about', component: AboutComponent },
@@ -34,11 +38,14 @@ const appRoutes = [{ path: 'search', component: SearchComponent }];
     AppComponent,
     NavComponent,
     SearchComponent,
-    SearchResultsComponent
+    SearchResultsComponent,
+    ShoppingCartComponent,
+    ProductsComponent
   ],
   imports: [
     BrowserModule,
     HttpModule,
+    HttpClientModule,
     FormsModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
@@ -52,7 +59,7 @@ const appRoutes = [{ path: 'search', component: SearchComponent }];
     MatToolbarModule,
     RouterModule.forRoot( appRoutes )
   ],
-  providers: [ProductsService],
+  providers: [ProductsService, ShoppingCartService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

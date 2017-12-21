@@ -1,12 +1,10 @@
-<div class="container" fxLayoutWrap>
-    <mat-card class="full-width">
-      <mat-card-title>Búsqueda de Productos</mat-card-title>
-      <form class="product-search-form full-width">
-        <mat-form-field class="full-width">
-          <input type="search" #term matInput placeholder="Producto" (keyup.enter)="onEnter(term.value)">
-        </mat-form-field>
-      </form>
-    </mat-card>
-</div>
-<app-search-results [products]='products'></app-search-results>
+<mat-card>
+  <mat-card-title>Búsqueda de Productos</mat-card-title>
+  <form class="product-search-form full-width">
+    <mat-form-field class="full-width">
+      <input type="search" #term matInput placeholder="Producto" (keyup.enter)="onEnter(term.value)">
+    </mat-form-field>
+  </form>
+</mat-card>
 
+<app-search-results [products]='products'></app-search-results>

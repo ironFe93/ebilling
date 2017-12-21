@@ -5,6 +5,23 @@ body {
   margin: 0;
 }
 
+.full-width{
+  width:100%;
+}
+
+div.container
+{
+  display: flex;
+  margin: 10px;
+}
+
+div.container > div
+{
+  flex: 1 1 5em;
+  margin-left: 10px;
+  height:50px;
+}
+
 /**  Copyright 2017 Google Inc. All Rights Reserved.
     Use of this source code is governed by an MIT-style license that
     can be found in the LICENSE file at http://angular.io/license */

@@ -20,7 +20,7 @@ const app = express();
 
 // Parsers for POST data
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
