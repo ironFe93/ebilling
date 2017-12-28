@@ -4,5 +4,12 @@ import {Item} from './item'
         _id: number;
         last_modified: Date;
         status: string;
-        items: Item[];
+        grossTotal: number;
+        items: [{
+            sku: string;
+            qty: number;
+            title: string;
+            listPrice: number
+          }];
+       
     }

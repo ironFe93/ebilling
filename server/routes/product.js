@@ -16,7 +16,7 @@ routes.get('/findall', (req, res) => {
         if (err) throw err;
 
         // object of all the users
-        console.log(products);
+        //console.log(products);
         res.send(products);
     });
 });
@@ -30,7 +30,7 @@ routes.get('/findsku/:sku', (req, res) => {
         if (err) throw err;
 
         // object of all the users
-        console.log(products);
+        //console.log(products);
         res.send(products);
     });
 });

@@ -2,7 +2,8 @@
     <mat-card-title>Shopping Cart</mat-card-title>
      <mat-card-subtitle>
       Sub Total ({{itemCount}} items):
-      <!-- <span class="text--red text--bold js-cart-total">{{(cart | async).grossTotal | currency:'PEN':true}}</span> -->
+      <!--<span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal | currency:'PEN':true}}</span> -->
+      <span class="text--red text--bold js-cart-total">{{(observableCart | async)}}</span>
     </mat-card-subtitle>
     <form class="shopping-cart-form full-width">
     </form>

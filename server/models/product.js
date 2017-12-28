@@ -7,7 +7,13 @@ var productSchema = new Schema({
   sku: {type: String, required: true, unique:true},
   type: String,
   title: String,
-  description: String
+  description: String,
+  pricing: {
+    list: Number,
+    retail: Number,
+    savings: Number,
+    pct_savings: Number
+  }
 });
 
 // the schema is useless so far
