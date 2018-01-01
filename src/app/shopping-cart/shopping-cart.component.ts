@@ -23,8 +23,9 @@ export class ShoppingCartComponent implements OnInit {
   }
 
   ngOnInit() {
-    //We only get the Observable of a Cart because the async pipe will subscribe to it automagically.
-    this.observableCart = this.cartService.createCart();
+
+    this.observableCart = this.cartService.getObservableCart(); 
+    this.cartService.createCart().subscribe();
     this.itemCount = 0;
 
 

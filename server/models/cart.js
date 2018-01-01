@@ -6,7 +6,6 @@ var Schema = mongoose.Schema;
 var cartSchema = new Schema({
   last_modified: Date,
   status: String,
-  grossTotal: Number,
   items: [{
     sku: String,
     qty: Number,

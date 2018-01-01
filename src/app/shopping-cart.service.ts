@@ -5,7 +5,7 @@ import { Product } from './models/product';
 
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 import { catchError, map, tap } from 'rxjs/operators';
@@ -16,11 +16,17 @@ export class ShoppingCartService {
 
   private cartsUrl = "/api/cart";
   private cartId;
+  private cart: Cart = new Cart();
 
-  private observableCart: Observable<Cart>;
+  private subjectCart = new BehaviorSubject(this.cart);
+  //https://stackoverflow.com/questions/42798236/angular2-how-to-update-an-item-inside-an-observable-collection
 
   constructor(private http: HttpClient) {
 
+  }
+
+  public getObservableCart(){
+    return this.subjectCart.asObservable();
   }
 
   //add a new Cart to the server
@@ -32,27 +38,35 @@ export class ShoppingCartService {
 
     //post the new cart to the DB, then the resulting observable<Cart>,
     // put it into this.observableCart and return it
-    return this.observableCart = this.http.post<Cart>(this.cartsUrl + '/create', newCart)
-          .pipe(tap(cart => this.cartId = cart._id));
+    return this.http.post<Cart>(this.cartsUrl + '/create', newCart)
+          .pipe(tap(cart => {
+            this.cart = cart; // save your data
+            this.subjectCart.next(this.cart); // emit your data
+          }));
 
 
     //https://stackoverflow.com/questions/41554156/angular-2-cache-observable-http-result-data
   }
 
-  public get() {
-    return this.observableCart
-  }
-
   public addItem(product: Product, quantity: number) {
 
 
-    return this.observableCart = this.http.put<Cart>(this.cartsUrl + '/add',
+    this.http.put<Cart>(this.cartsUrl + '/add',
       {
         'sku': product.sku,
         'title': product.title,
         'quantity': quantity,
-        'cartId': this.cartId,
-      });
+        'cartId': this.cart._id,
+      })
+      .pipe(tap(cart => {
+        
+        //this.subjectCart.next(Object.assign({}, this.cart)); // emit completely new value
+        
+        cart.grossTotal = this.cart.grossTotal + 100;
+        
+        this.cart = cart; // save your data
+        this.subjectCart.next(this.cart); // emit your data
+      }));
 
   }
 
@@ -68,6 +82,5 @@ export class ShoppingCartService {
   public destroyCart(cartId) {
     return this.http.delete(this.cartsUrl + '/destroy' + '/' + cartId);
   }
-
 
 }
