@@ -1,10 +1,32 @@
-<mat-card >
-    <mat-card-title>Shopping Cart</mat-card-title>
-     <mat-card-subtitle>
-      Sub Total ({{itemCount}} items):
-      <!--<span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal | currency:'PEN':true}}</span> -->
-      <span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal}}</span>
-    </mat-card-subtitle>
-    <form class="shopping-cart-form full-width">
-    </form>
-  </mat-card>
+<mat-card>
+  <mat-card-title>Shopping Cart</mat-card-title>
+  <mat-card-subtitle>{{(observableCart | async)._id}}</mat-card-subtitle>
+  <mat-card-subtitle>
+    Sub Total ({{(observableCart | async).itemsTotal}} items):
+    <!--<span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal | currency:'PEN':true}}</span> -->
+    <span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal}}</span>
+  </mat-card-subtitle>
+
+  <mat-card-title>Detail</mat-card-title>
+  <mat-card-subtitle *ngFor="let item of (observableCart | async).items">
+    {{item.title}} : {{item.listPrice}} x {{item.qty}}
+    <span>
+      <button mat-icon-button (click)="addOne(item._id)">
+        <mat-icon aria-label="icon-button to add +1 item">add</mat-icon>
+      </button>
+    </span>
+    <span>
+      <button mat-icon-button (click)="removeOne(item._id)">
+        <mat-icon aria-label="icon-button to substract -1 item">remove</mat-icon>
+      </button>
+    </span>
+    <span>
+      <button mat-icon-button (click)="removeFromCart(item._id)">
+        <mat-icon aria-label="icon-button to clear the item">clear</mat-icon>
+      </button>
+    </span>
+  </mat-card-subtitle>
+
+  <form class="shopping-cart-form full-width">
+  </form>
+</mat-card>

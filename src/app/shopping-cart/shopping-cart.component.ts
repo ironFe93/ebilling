@@ -16,7 +16,6 @@ export class ShoppingCartComponent implements OnInit {
 
   observableCart: Observable<Cart>;
   cartSubscription: Subscription; //so we can unsub later.
-  public itemCount : number;
 
   constructor(private cartService: ShoppingCartService) { 
 
@@ -26,9 +25,19 @@ export class ShoppingCartComponent implements OnInit {
 
     this.observableCart = this.cartService.getObservableCart(); 
     this.cartService.createCart().subscribe();
-    this.itemCount = 0;
 
+  }
 
+  removeFromCart(productId : any){
+    this.cartService.removeItem(productId).subscribe();
+  }
+
+  addOne(productId : any){
+    this.cartService.addOne(productId).subscribe();
+  }
+
+  removeOne(productId : any){
+    this.cartService.removeOne(productId).subscribe();
   }
 
 

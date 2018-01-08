@@ -16,7 +16,7 @@ routes.get('/', (req, res) => {
 
 // Create a cart
 routes.post('/create', (req, res) => {
-    var newCart = new Cart({ status: req.body.status, grossTotal: 0 });
+    var newCart = new Cart({ status: req.body.status, grossTotal: 0, itemsTotal: 0 });
 
     newCart.save(function (err) {
         if (err) return handleError(err);
@@ -37,26 +37,27 @@ routes.put('/add', (req, res) => {
     var p_sku = req.body.sku;
     var quantity = req.body.quantity;
     var p_title = req.body.title;
-    
-    var p_price;
 
-    //get the product list price from the DB
     Product.findOne({ 'sku': p_sku }, 'pricing.list', function (err, product) {
         if (err) return handleError(err);
+
         p_price = product.pricing.list;
-    })
+
+        Cart.findByIdAndUpdate(
+            id,
+            { $push: { items: { sku: p_sku, qty: quantity, listPrice: p_price, title: p_title } } },
+            { safe: true, upsert: true, new: true },
+            function (err, cart) {
+                if (err) return handleError(err);
+                res.send(cart);
+            }
+        );
+
+    });
 
     //Update the cart then send it back
 
-    Cart.findByIdAndUpdate(
-        id,
-        { $push: { items: { sku: p_sku, qty: quantity, listPrice: p_price, title: p_title } } },
-        { safe: true, upsert: true, new: true },
-        function (err, cart) {
-            if (err) return handleError(err);
-            res.send(cart);
-        }
-    );
+   
 
 });
 

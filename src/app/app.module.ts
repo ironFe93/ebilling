@@ -12,6 +12,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatCardModule} from '@angular/material/card';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 import { AppComponent } from './app.component';
 import { NavComponent } from './nav/nav.component';
@@ -22,6 +23,8 @@ import {ProductsService} from "./products.service";
 import { ShoppingCartComponent } from './shopping-cart/shopping-cart.component';
 import { ProductsComponent } from './products/products.component';
 import { ShoppingCartService } from './shopping-cart.service';
+import { MessagesComponent } from './messages/messages.component';
+import { MessageService } from './message.service';
 
 const appRoutes = [{ path: 'products', component: ProductsComponent }];
 /*const appRoutes: Routes = [
@@ -40,7 +43,8 @@ const appRoutes = [{ path: 'products', component: ProductsComponent }];
     SearchComponent,
     SearchResultsComponent,
     ShoppingCartComponent,
-    ProductsComponent
+    ProductsComponent,
+    MessagesComponent
   ],
   imports: [
     BrowserModule,
@@ -57,9 +61,10 @@ const appRoutes = [{ path: 'products', component: ProductsComponent }];
     MatInputModule,
     MatCardModule,
     MatToolbarModule,
+    MatSnackBarModule,
     RouterModule.forRoot( appRoutes )
   ],
-  providers: [ProductsService, ShoppingCartService],
+  providers: [ProductsService, ShoppingCartService, MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

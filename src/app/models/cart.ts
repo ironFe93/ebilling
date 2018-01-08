@@ -5,6 +5,7 @@ import {Item} from './item'
         last_modified: Date;
         status: string;
         grossTotal: number;
+        itemsTotal: number;
         items: [{
             sku: string;
             qty: number;
