@@ -22,7 +22,9 @@ export class SearchResultsComponent implements OnInit {
   }
 
   addProductToCart(product: Product, quantity: number) {
-    console.log("Inside AddProductToCart");
+
+    console.log('qty: ' + quantity);
+
     this.cartService.addItem(product, quantity).subscribe();
 
   }

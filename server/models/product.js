@@ -13,7 +13,16 @@ var productSchema = new Schema({
     retail: Number,
     savings: Number,
     pct_savings: Number
+  },
+  inventory: {
+    qty: Number,
+    carted: [{
+      qty: Number,
+      cart_id: Schema.Types.ObjectId,
+      timestamp: { type: Date, default: Date.now },
+    }]
   }
+
 });
 
 // the schema is useless so far

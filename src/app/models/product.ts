@@ -1,3 +1,5 @@
+import {Cart} from './cart';
+
 // create a schema
 export class Product {
   sku: string;
@@ -9,5 +11,13 @@ export class Product {
     retail: number;
     savings: number;
     pct_savings: number;
+  };
+  inventory: {
+    qty: number;
+    carted: [{
+      qty: number;
+      cart_id: Cart[];
+      timestamp: string;
+    }]
   }
 };

@@ -24,9 +24,9 @@ routes.get('/findall', (req, res) => {
 // Get by SKU
 routes.get('/findsku/:sku', (req, res) => {
 
-    var sku = req.params.sku
+    var sku = req.params.sku;
 
-    Product.find({'sku': sku}, function (err, products) {
+    Product.find({'sku': sku},{'sku': true , 'title': true}, function (err, products) {
         if (err) throw err;
 
         // object of all the users

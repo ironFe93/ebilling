@@ -7,6 +7,7 @@ var Cart = require('../models/cart');
 
 
 function handleError(error) {
+    console.log("throwing error: ");
     console.log(error);
 };
 
@@ -43,6 +44,7 @@ routes.put('/add', (req, res) => {
 
         p_price = product.pricing.list;
 
+        //Update the cart then send it back
         Cart.findByIdAndUpdate(
             id,
             { $push: { items: { sku: p_sku, qty: quantity, listPrice: p_price, title: p_title } } },
@@ -52,13 +54,86 @@ routes.put('/add', (req, res) => {
                 res.send(cart);
             }
         );
-
     });
+});
+
+// +1 to a product in a cart
+routes.put('/addOne', (req, res) => {
+    console.log("+1 product!");
+
+    //get the cartID and product SKU
+    id = req.body.cartId;
+    sku = req.body.sku;
 
     //Update the cart then send it back
+    //https://stackoverflow.com/questions/26156687/mongoose-find-update-subdocument
+    Cart.findOneAndUpdate(
+        { "_id": id, "items.sku": sku },
+        {
+            $inc: {
+                "items.$.qty": 1
+            }
+        },
+        { safe: true, upsert: false, new: true },
+        function (err, cart) {
+            if (err) return handleError(err);
+            res.send(cart);
+        }
+    );
+});
 
-   
+// -1 to a product in a cart
+routes.put('/removeOne', (req, res) => {
+    console.log("-1 product!");
+
+    //get the cartID and product SKU
+    id = req.body.cartId;
+    sku = req.body.sku;
+
+    //Update the cart then send it back
+    //https://stackoverflow.com/questions/26156687/mongoose-find-update-subdocument
+    Cart.findOneAndUpdate(
+        { "_id": id, "items.sku": sku },
+        {
+            $inc: {
+                "items.$.qty": -1
+            }
+        },
+        { safe: true, upsert: false, new: true },
+        function (err, cart) {
+            if (err) return handleError(err);
+            res.send(cart);
+        }
+    );
+});
+
+// remove a product in a cart
+routes.put('/remove', (req, res) => {
+
+    //get the cartID and product SKU
+    id = req.body.cartId;
+    sku = req.body.sku;
+
+    //Update the cart then send it back
+    //https://stackoverflow.com/questions/15323422/mongodb-cannot-apply-pull-pullall-modifier-to-non-array-how-to-remove-array-e
+    Cart.findOneAndUpdate(
+        { "_id": id },
+        {
+            $pull: {
+                "items": {
+                    "sku": sku
+                }
+            }
+        },
+        { safe: true, upsert: false, new: true },
+        function (err, cart) {
+            if (err) return handleError(err);
+            res.send(cart);
+        }
+    );
+
 
 });
+
 
 module.exports = routes;

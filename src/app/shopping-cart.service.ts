@@ -62,7 +62,7 @@ export class ShoppingCartService {
       this.messageService.add("Cart Service: Item already exists in cart!");
       return of(this.cart);
     } else {
-      
+
       //To Do: Handle Errors
       return this.http.put<Cart>(this.cartsUrl + '/add',
         {
@@ -84,31 +84,41 @@ export class ShoppingCartService {
     }
   }
 
-  public removeOne(productId: any) {
+  public removeOne(productSku: any) {
 
     return this.http.put<Cart>(this.cartsUrl + '/removeOne',
       {
-        'product': productId, 'cartId': this.cart._id,
+        'sku': productSku, 'cartId': this.cart._id,
         headers: new HttpHeaders().set('Authorization', 'some-token')
-      });
+      }).pipe(tap(cart => {
+
+        this.UpdateCartSubject(cart);
+      }));
   }
 
-  public addOne(productId: any) {
+  //TODO: merge addOne and removeOne
+  public addOne(productSku: any) {
 
     return this.http.put<Cart>(this.cartsUrl + '/addOne',
       {
-        'product': productId, 'cartId': this.cart._id,
+        'sku': productSku, 'cartId': this.cart._id,
         headers: new HttpHeaders().set('Authorization', 'some-token')
-      });
+      }).pipe(tap(cart => {
+
+        this.UpdateCartSubject(cart);
+      }));
   }
 
-  public removeItem(productId: any) {
+  public removeItem(productSku: any) {
 
     return this.http.put<Cart>(this.cartsUrl + '/remove',
       {
-        'productId': productId, 'cartId': this.cart._id,
+        'sku': productSku, 'cartId': this.cart._id,
         headers: new HttpHeaders().set('Authorization', 'some-token')
-      });
+      }).pipe(tap(cart => {
+
+        this.UpdateCartSubject(cart);
+      }));
   }
 
   public destroyCart() {
@@ -132,6 +142,14 @@ export class ShoppingCartService {
   /** Log a HeroService message with the MessageService */
   private log(message: string) {
     this.messageService.add(" HeroService: " + message);
+  }
+
+  private UpdateCartSubject(cart: Cart) {
+    cart.grossTotal = cart.items.reduce((prevVal, item) => prevVal + item.listPrice * item.qty, 0);
+    cart.itemsTotal = cart.items.reduce((prevVal, item) => prevVal + item.qty, 0);
+
+    this.cart = cart; // save your data
+    this.subjectCart.next(this.cart); // emit your data
   }
 
 }
