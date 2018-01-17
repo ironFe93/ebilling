@@ -27,6 +27,8 @@ export class ShoppingCartService {
   constructor(private http: HttpClient,
     private messageService: MessageService) {
 
+      this.createCart().subscribe();
+
   }
 
   public getObservableCart() {
@@ -42,7 +44,9 @@ export class ShoppingCartService {
 
     //post the new cart to the DB, then the resulting observable<Cart>,
     // put it into this.observableCart and return it
-    return this.http.post<Cart>(this.cartsUrl + '/create', newCart)
+    return this.http.post<Cart>(this.cartsUrl + '/create', newCart,  {
+      headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
+    })
       .pipe(tap(cart => {
         this.cart = cart; // save your data
         this.subjectCart.next(this.cart); // emit your data
@@ -69,7 +73,9 @@ export class ShoppingCartService {
           'sku': product.sku,
           'title': product.title,
           'quantity': quantity,
-          'cartId': this.cart._id,
+          'cartId': this.cart._id
+        },  {
+          headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
         })
         .pipe(tap(cart => {
 
@@ -84,25 +90,13 @@ export class ShoppingCartService {
     }
   }
 
-  public removeOne(productSku: any) {
+  public deltaOne(productSku: any, operation: string) {
 
-    return this.http.put<Cart>(this.cartsUrl + '/removeOne',
+    return this.http.put<Cart>(this.cartsUrl + '/deltaOne',
       {
-        'sku': productSku, 'cartId': this.cart._id,
-        headers: new HttpHeaders().set('Authorization', 'some-token')
-      }).pipe(tap(cart => {
-
-        this.UpdateCartSubject(cart);
-      }));
-  }
-
-  //TODO: merge addOne and removeOne
-  public addOne(productSku: any) {
-
-    return this.http.put<Cart>(this.cartsUrl + '/addOne',
-      {
-        'sku': productSku, 'cartId': this.cart._id,
-        headers: new HttpHeaders().set('Authorization', 'some-token')
+        'sku': productSku, 'cartId': this.cart._id, 'operation': operation
+      }, {
+        headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
       }).pipe(tap(cart => {
 
         this.UpdateCartSubject(cart);
@@ -113,11 +107,28 @@ export class ShoppingCartService {
 
     return this.http.put<Cart>(this.cartsUrl + '/remove',
       {
-        'sku': productSku, 'cartId': this.cart._id,
-        headers: new HttpHeaders().set('Authorization', 'some-token')
+        'sku': productSku, 'cartId': this.cart._id
+      },  {
+        headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
       }).pipe(tap(cart => {
 
         this.UpdateCartSubject(cart);
+      }));
+  }
+
+  public completeCartCheckout() {
+
+    return this.http.put<Cart>(this.cartsUrl + '/completeCheckout',
+      {
+        'cartId': this.cart._id
+      },  {
+        headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
+      }).pipe(tap(cart => {
+        this.UpdateCartSubject(cart);
+        if (cart.status == "complete"){
+          this.log("Venta realizada exitosamente");
+          //redirigir a la vista de hitorial de ventas...
+        }
       }));
   }
 
@@ -139,9 +150,9 @@ export class ShoppingCartService {
     };
   }
 
-  /** Log a HeroService message with the MessageService */
+  /** Log a Service message with the MessageService */
   private log(message: string) {
-    this.messageService.add(" HeroService: " + message);
+    this.messageService.add(" CartService: " + message);
   }
 
   private UpdateCartSubject(cart: Cart) {

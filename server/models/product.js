@@ -15,7 +15,10 @@ var productSchema = new Schema({
     pct_savings: Number
   },
   inventory: {
-    qty: Number,
+    qty: {
+      type: Number,
+      min: [0, 'Inventory cant be negative']
+    },
     carted: [{
       qty: Number,
       cart_id: Schema.Types.ObjectId,

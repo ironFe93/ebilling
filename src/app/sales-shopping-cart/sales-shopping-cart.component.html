@@ -11,12 +11,12 @@
   <mat-card-subtitle *ngFor="let item of (observableCart | async).items">
     {{item.title}} : {{item.listPrice}} x {{item.qty}}
     <span>
-      <button mat-icon-button (click)="addOne(item.sku)">
+      <button mat-icon-button (click)="deltaOne(item.sku, 'add')">
         <mat-icon aria-label="icon-button to add +1 item">add</mat-icon>
       </button>
     </span>
     <span>
-      <button mat-icon-button (click)="removeOne(item.sku)">
+      <button mat-icon-button (click)="deltaOne(item.sku, 'substract')">
         <mat-icon aria-label="icon-button to substract -1 item">remove</mat-icon>
       </button>
     </span>
@@ -28,5 +28,6 @@
   </mat-card-subtitle>
 
   <form class="shopping-cart-form full-width">
+      <button mat-raised-button (click)="goToCheckout()">Checkout</button>
   </form>
 </mat-card>

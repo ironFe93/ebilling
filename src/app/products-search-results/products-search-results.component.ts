@@ -5,11 +5,11 @@ import { ShoppingCartService } from '../shopping-cart.service';
 
 
 @Component({
-  selector: 'app-search-results',
-  templateUrl: './search-results.component.html',
-  styleUrls: ['./search-results.component.css']
+  selector: 'app-products-search-results',
+  templateUrl: './products-search-results.component.html',
+  styleUrls: ['./products-search-results.component.css']
 })
-export class SearchResultsComponent implements OnInit {
+export class ProductsSearchResultsComponent implements OnInit {
 
   // instantiate posts to an empty array
   @Input() products: any = [];

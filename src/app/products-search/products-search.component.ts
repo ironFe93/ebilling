@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 
 import {ProductsService} from '../products.service';
+import {ShoppingCartService} from '../shopping-cart.service';
 import {Product} from '../models/product';
+import {Cart} from '../models/cart';
 
 @Component({
-  selector: 'app-search',
-  templateUrl: './search.component.html',
-  styleUrls: ['./search.component.css']
+  selector: 'app-products-search',
+  templateUrl: './products-search.component.html',
+  styleUrls: ['./products-search.component.css']
 })
-export class SearchComponent implements OnInit {
+export class ProductsSearchComponent implements OnInit {
 
   products: Product[];
 
