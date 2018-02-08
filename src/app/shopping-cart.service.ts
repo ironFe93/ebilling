@@ -12,27 +12,59 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 import { of } from 'rxjs/observable/of';
 import { catchError, map, tap } from 'rxjs/operators';
-import { Subject } from 'rxjs/Subject';
+
 
 @Injectable()
 export class ShoppingCartService {
 
   private cartsUrl = "/api/cart";
   private cartId;
+  //represents the current ShoppingCart
   private cart: Cart = new Cart();
+  //sale is a cart with status = complete
+  //represents the current sale that has been queried.
+  private sale: Cart = new Cart();
 
   private subjectCart = new BehaviorSubject(this.cart);
   //https://stackoverflow.com/questions/42798236/angular2-how-to-update-an-item-inside-an-observable-collection
+  
+  private subjectSale = new BehaviorSubject(this.cart);
 
   constructor(private http: HttpClient,
     private messageService: MessageService) {
 
-      this.createCart().subscribe();
+  }
 
+  public getCart() {
+    return this.cart;
   }
 
   public getObservableCart() {
     return this.subjectCart.asObservable();
+  }
+
+  public getObservableSale() {
+    return this.subjectSale.asObservable();
+  }
+
+  public getCarts(terms) {
+
+    // put it into this.observableCart and return it
+    return this.http.get<Cart[]>(this.cartsUrl + '/get/'+ terms,  {
+      headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
+    }).pipe(catchError(this.handleError('getCartDetail', [])));
+  }
+
+  public getCartDetail(id) {
+
+    // put it into this.observableCart and return it
+    return this.http.get<Cart>(this.cartsUrl + '/getDetail/'+ id,  {
+      headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
+    }).pipe(tap(cart => {
+      this.sale = cart; // save your data
+      this.subjectSale.next(this.sale); // emit your data
+      
+    }), catchError(this.handleError('getCartDetail', [])));
   }
 
   //add a new Cart to the server
@@ -86,7 +118,7 @@ export class ShoppingCartService {
 
           this.cart = cart; // save your data
           this.subjectCart.next(this.cart); // emit your data
-        }));
+        }), catchError(this.handleError('Add Product', [])));
     }
   }
 
@@ -124,10 +156,14 @@ export class ShoppingCartService {
       },  {
         headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
       }).pipe(tap(cart => {
-        this.UpdateCartSubject(cart);
         if (cart.status == "complete"){
           this.log("Venta realizada exitosamente");
-          //redirigir a la vista de hitorial de ventas...
+          //clear the Cart and CartObservable
+          this.cart = new Cart();
+          this.subjectCart.next(this.cart);
+          // save received cart as Sale then emit to SaleSubject
+          this.sale = cart; 
+          this.subjectSale.next(this.sale); 
         }
       }));
   }
@@ -143,7 +179,10 @@ export class ShoppingCartService {
       console.error(error); // log to console instead
 
       // TODO: better job of transforming error for user consumption
-      this.log(`${operation} failed: ${error.message}`);
+      this.log(`${operation} failed: ${error.error.message}`);
+      if(error.error.message == "Cart is expired"){
+        this.createCart().subscribe();
+      }
 
       // Let the app keep running by returning an empty result.
       return of(result as T);

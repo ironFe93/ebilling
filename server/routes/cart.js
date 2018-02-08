@@ -2,12 +2,29 @@ const express = require('express');
 const routes = express.Router();
 const { celebrate, Joi, errors } = require('celebrate');
 
-var Product = require('../models/product');
-var Item = require('../models/item');
-var Cart = require('../models/cart');
+const Product = require('../models/product');
+const Item = require('../models/item');
+const Cart = require('../models/cart');
 
 routes.get('/', (req, res, next) => {
     res.status(200).json({ message: 'carts!' });
+});
+
+// get a list of carts
+routes.get('/get/:_id', (req, res, next) => {
+    Cart.find({ "_id": req.params._id }, "_id status", function (err, carts) {
+        if (err) return next(err);
+        res.send(carts);
+    });
+});
+
+// get a cart
+routes.get('/getDetail/:_id', (req, res, next) => {
+
+    Cart.findById(req.params._id, (err, cart) => {
+        if (err) return next(err);
+        res.send(cart);
+    });
 });
 
 // Create a cart
@@ -18,17 +35,21 @@ routes.post('/create', celebrate(
         })
     }
 ), (req, res, next) => {
-    var newCart = new Cart({ status: req.body.status, grossTotal: 0, itemsTotal: 0 });
+    const newCart = new Cart({ status: "active", grossTotal: 0, itemsTotal: 0 });
 
-    newCart.save(function (err, cart) {
-        if (err) {
-            return next(err)
-        } else {
+    newCart.save((err, cart) => {
+        if (err) return next(err);
+
+        if (cart) {
+            setTimeout(function () {
+                expireCart(cart._id);
+            }, 1000 * 60 * 60 * 8);
+            //1000 * 60 * 60 * 8)
             res.send(cart);
-        };
+        } else {
+            return next(new Error("Cart is empty"))
+        }
     });
-
-
 });
 
 // Add a product to a cart
@@ -45,12 +66,12 @@ routes.put('/add', celebrate(
 ), (req, res, next) => {
 
     //get the cartID
-    var id = req.body.cartId;
+    const id = req.body.cartId;
 
     //get the rest of the data
-    var p_sku = req.body.sku;
-    var quantity = req.body.quantity;
-    var p_title = req.body.title;
+    const p_sku = req.body.sku;
+    const quantity = req.body.quantity;
+    const p_title = req.body.title;
 
     Product.findOneAndUpdate(
         { 'sku': p_sku, 'inventory.qty': { '$gte': quantity } },
@@ -68,13 +89,13 @@ routes.put('/add', celebrate(
 
         },
         'pricing.list inventory.qty',
-        function (err, product) {
+        (err, product) => {
             if (err) return next(err);
 
             if (product) {
                 p_price = product.pricing.list;
             } else {
-                return next(new Error("Invalid SKU or not enough inventory"));
+                return next(new Error("Not enough inventory"));
             }
 
             console.log("product was found with enough inventory.");
@@ -84,13 +105,15 @@ routes.put('/add', celebrate(
                 { "_id": id, "status": "active", "items.sku": { $ne: p_sku } },
                 { $push: { items: { sku: p_sku, qty: quantity, listPrice: p_price, title: p_title } } },
                 { safe: true, upsert: false, new: true },
-                function (err, cart) {
+                (err, cart) => {
                     if (err) return next(err);
 
                     if (cart) {
                         res.send(cart);
                     } else {
-                        return next(new Error("Cart is not active, doesn't exist or item already exists in cart"));
+                        //cart is expired => return inventory
+                        returnInventory(p_sku, quantity, id);
+                        return next(new Error("Cart is expired"));
                     }
 
                 }
@@ -108,11 +131,9 @@ routes.put('/deltaOne', celebrate(
         })
     }
 ), (req, res, next) => {
-
     //get the cartID and product SKU
-    id = req.body.cartId;
-    var sku = req.body.sku;
-
+    const id = req.body.cartId;
+    const sku = req.body.sku;
     var qty = 1;
 
     if (req.body.operation === 'substract') qty = -1;
@@ -126,10 +147,10 @@ routes.put('/deltaOne', celebrate(
             }
         },
         'sku inventory.qty',
-        function (err, product) {
-            if (err) throw next(err);
+        (err, product) => {
+            if (err) return next(err);
             if (!product) {
-                throw next(new Error("Invalid SKU or not enough inventory"));
+                return next(new Error("Invalid SKU or not enough inventory"));
             }
         }
     );
@@ -146,7 +167,7 @@ routes.put('/deltaOne', celebrate(
             }
         },
         { safe: true, upsert: false, new: true },
-        function (err, cart) {
+        (err, cart) => {
             if (err) return next(err);
             if (cart) {
                 res.send(cart);
@@ -170,8 +191,8 @@ routes.put('/remove', celebrate(
 ), (req, res, next) => {
 
     //get the cartID and product SKU
-    var id = req.body.cartId;
-    var sku = req.body.sku;
+    const id = req.body.cartId;
+    const sku = req.body.sku;
 
     //Update the cart then send it back
     //https://stackoverflow.com/questions/15323422/mongodb-cannot-apply-pull-pullall-modifier-to-non-array-how-to-remove-array-e
@@ -185,7 +206,7 @@ routes.put('/remove', celebrate(
             }
         },
         { safe: true, upsert: false, new: true },
-        function (err, cart) {
+        (err, cart) => {
             if (err) return next(err);
             if (cart) {
                 res.send(cart);
@@ -205,16 +226,16 @@ routes.put('/completeCheckout', celebrate(
     }
 ), (req, res, next) => {
 
-    var id = req.body.cartId;
+    const id = req.body.cartId;
 
     //Update the cart then send it back
     Cart.findOneAndUpdate(
         { "_id": id },
         {
-            $set:{status:"complete"}
+            $set: { status: "complete" }
         },
         { safe: true, new: true },
-        function (err, cart) {
+        (err, cart) => {
             if (err) return next(err);
             if (cart.status == "complete") {
                 res.send(cart);
@@ -224,7 +245,56 @@ routes.put('/completeCheckout', celebrate(
         }
     );
 
+    //remove cart from inventory.carted array
+    Product.update(
+        { "inventory.carted.cart_id": id },
+        {
+            $pull: {
+                "inventory.carted": {
+                    "cart_id": id
+                }
+            }
+        }, (err) => {
+            if (err) return next(err);
+        }
+    );
+
 
 });
+
+const expireCart = id => {
+    //Set status as expired
+    Cart.findByIdAndUpdate(
+        id,
+        {
+            $set: { status: "expired" }
+        },
+        (err, resp) => {
+            if (err) return next(err);
+            if (resp) {
+                const cart = resp;
+                //for each item in the cart, return inventory
+                cart.items.forEach(item => returnInventory(item.sku, item.qty, cart._id));
+            } else {
+                return next(new Error("Expired cart ID not found"));
+            }
+        }
+    );
+}
+
+const returnInventory = (sku, qty, id) => Product.findOneAndUpdate(
+    { 'sku': sku },
+    {
+        $inc: {
+            "inventory.qty": + qty
+        },
+        $pull: {
+            "inventory.carted": {
+                "cart_id": id
+            }
+
+        }
+    }, err => { if (err) return next(err); }
+);
 
 module.exports = routes;

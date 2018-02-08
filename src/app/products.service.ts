@@ -3,24 +3,48 @@ import { Injectable } from '@angular/core';
 import { Product } from './models/product';
 
 import { Observable } from 'rxjs/Observable';
-import { HttpClient } from '@angular/common/http';
-import 'rxjs/add/operator/map';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable()
 export class ProductsService {
 
-  private productsUrl = "/api/product"
+  constructor(private http: HttpClient) {
+  }
 
-  constructor(private http: HttpClient) { }
-  
-    // Get all products from the API
-    getAllProducts(): Observable<Product[]> {
-      return this.http.get<Product[]>(this.productsUrl + '/findall');
-    }
+  private productsUrl = "/api/product";
 
-    // Get all products from the API
-    getBySKU(terms) {
-      return this.http.get<Product[]>(this.productsUrl + '/findsku/'+terms);
-    }
+  private subjectProduct: BehaviorSubject<Product> = new BehaviorSubject<Product>(new Product());
+
+  getProductObservable(){
+    return this.subjectProduct.asObservable();
+  }
+
+  // Get all products from the API
+  getAllProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(this.productsUrl + '/findall');
+  }
+
+  // Get all products by search terms: simple search using defined indexes
+  getByTerms(terms) {
+    return this.http.get<Product[]>(this.productsUrl + '/find/' + terms);
+  }
+
+  // Get all product Details
+  getProductDetail(id: any) {
+    return this.http.get<Product>(this.productsUrl + '/getDetails/' + id)
+    .pipe(tap( product => this.subjectProduct.next(product)));
+  }
+
+  // Get all products from the API
+  createProduct(product: Product) {
+
+    return this.http.post<Product>(
+      this.productsUrl + '/create',
+      product,
+      {headers: new HttpHeaders().set('Authorization', 'my-auth-token')}
+    );
+  }
 
 }

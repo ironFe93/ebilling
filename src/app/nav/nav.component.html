@@ -6,11 +6,11 @@
 <mat-sidenav-container [ngStyle]="{'height' : '100vh'}" class="sidebar-container">
   <mat-sidenav #sidebar mode="side" class="sidebar" [ngStyle]="{'width.em': sidenavWidth}" opened="true">
     <mat-nav-list>
-      <mat-list-item routerLink="home" routerLinkActive="active">
+      <mat-list-item routerLink="products" routerLinkActive="active">
         <mat-icon mat-list-icon>home</mat-icon>
         <div fxFlex="10"></div>
         <div *ngIf="sidenavWidth > 6" class="sidebar-item">
-          <h5>Home</h5>
+          <h5>Productos</h5>
         </div>
       </mat-list-item>
       <mat-list-item routerLink="about" routerLinkActive="active">

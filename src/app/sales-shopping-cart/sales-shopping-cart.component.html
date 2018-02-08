@@ -1,3 +1,4 @@
+<div class="containerColumn">
 <mat-card>
   <mat-card-title>Shopping Cart</mat-card-title>
   <mat-card-subtitle>{{(observableCart | async)._id}}</mat-card-subtitle>
@@ -27,7 +28,8 @@
     </span>
   </mat-card-subtitle>
 
-  <form class="shopping-cart-form full-width">
+  <form>
       <button mat-raised-button (click)="goToCheckout()">Checkout</button>
   </form>
 </mat-card>
+</div> 

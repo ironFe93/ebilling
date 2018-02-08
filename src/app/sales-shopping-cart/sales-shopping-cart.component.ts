@@ -27,8 +27,6 @@ export class SalesShoppingCartComponent implements OnInit {
   ngOnInit() {
     
     this.observableCart = this.cartService.getObservableCart();
-    //this.cartService.createCart().subscribe();
-
   }
 
   removeFromCart(productId: any) {

@@ -1,13 +1,13 @@
 // grab the things we need
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 // create a schema
-var productSchema = new Schema({
+const productSchema = new Schema({
   sku: {type: String, required: true, unique:true},
-  type: String,
-  title: String,
-  description: String,
+  type: {type: [String], index: true},
+  title: {type: [String], index: true},
+  description: { type: [String], index: true},
   pricing: {
     list: Number,
     retail: Number,

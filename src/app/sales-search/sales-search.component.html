@@ -1,3 +1,12 @@
-<p>
-  sales-search works!
-</p>
+<div class="containerColumn" fxLayout="column">
+<mat-card>
+    <mat-card-title>Consulta de Ventas</mat-card-title>
+    <form>
+      <mat-form-field>
+        <input type="search" #term matInput placeholder="Venta" (keyup.enter)="onEnter(term.value)">
+      </mat-form-field>
+    </form>
+  </mat-card>
+  
+  <app-sales-search-results [sales]='sales'></app-sales-search-results>
+  </div>

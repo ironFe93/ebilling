@@ -5,22 +5,24 @@ body {
   margin: 0;
 }
 
-.full-width{
-  width:100%;
-}
-
-div.container
-{
+div.containerColumn{
   display: flex;
-  margin: 10px;
+  flex-direction: column;
+  margin: 20px;
+  
 }
 
-div.container > div
-{
-  flex: 1 1 5em;
-  margin-left: 10px;
-  height:50px;
+div.containerRow{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  /**To add spacing in between elements, angularFlexLayout: fxLayoutGap*/
 }
+
+mat-form-field{
+  flex: auto;
+}
+
 
 /**  Copyright 2017 Google Inc. All Rights Reserved.
     Use of this source code is governed by an MIT-style license that

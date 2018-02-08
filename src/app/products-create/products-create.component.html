@@ -1,0 +1,36 @@
+<div class="containerColumn">
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <div class="containerRow" fxLayoutGap="20px">
+
+      <mat-form-field>
+        <input type="text" matInput formControlName="title" placeholder="Titulo">
+      </mat-form-field>
+
+      <mat-form-field>
+        <input type="text" matInput formControlName="sku" placeholder="SKU">
+      </mat-form-field>
+
+    </div>
+    <div class="containerRow" fxLayoutGap="20px">
+
+      <mat-form-field>
+        <input type="number" matInput formControlName="listPrice" placeholder="Precio">
+      </mat-form-field>
+
+      <mat-form-field>
+        <div formGroupName="inventory">
+          <input type="number" formControlName="qty" matInput placeholder="Inventario Inicial">
+        </div>
+      </mat-form-field>
+    </div>
+
+    <div class="containerRow" fxLayoutGap="20px">
+      <mat-form-field>
+        <textarea matInput formControlName="description" placeholder="Descripción"></textarea>
+      </mat-form-field>
+    </div>
+
+    <button type="submit" color="primary">Guardar</button>
+
+  </form>
+</div>

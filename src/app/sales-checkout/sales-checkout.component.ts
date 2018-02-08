@@ -23,7 +23,8 @@ export class SalesCheckoutComponent implements OnInit {
     this.observableCart = this.cartService.getObservableCart();
   }
 
-  goToSales(){
+  confirmPayment(){
+    this.cartService.completeCartCheckout().subscribe();
     this.router.navigateByUrl('/sales');
   }
 

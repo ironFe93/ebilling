@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
+import {ShoppingCartService} from '../shopping-cart.service';
+import {Cart} from '../models/cart';
+
 @Component({
   selector: 'app-sales-search',
   templateUrl: './sales-search.component.html',
@@ -7,9 +10,21 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SalesSearchComponent implements OnInit {
 
-  constructor() { }
+  //a sale is a shopping cart with status = complete;
+  sales: Cart[];
+
+  constructor(private ShoppingCartService: ShoppingCartService) { 
+    
+  }
 
   ngOnInit() {
+  }
+ 
+  onEnter(value: string) { 
+    // Retrieve posts from the API
+    this.ShoppingCartService.getCarts(value).subscribe(sales => {
+      this.sales = sales;
+    });
   }
 
 }

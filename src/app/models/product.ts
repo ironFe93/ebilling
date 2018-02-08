@@ -2,6 +2,7 @@ import {Cart} from './cart';
 
 // create a schema
 export class Product {
+  _id: any;
   sku: string;
   type: string;
   title: string;

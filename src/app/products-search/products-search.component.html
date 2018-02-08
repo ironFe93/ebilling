@@ -1,10 +1,13 @@
+<div class="containerColumn" fxLayout="column" fxLayoutGap="20px" >
 <mat-card>
   <mat-card-title>Búsqueda de Productos</mat-card-title>
-  <form class="product-search-form full-width">
-    <mat-form-field class="full-width">
+  <form>
+    <mat-form-field>
       <input type="search" #term matInput placeholder="Producto" (keyup.enter)="onEnter(term.value)">
     </mat-form-field>
   </form>
 </mat-card>
 
 <app-products-search-results [products]='products'></app-products-search-results>
+
+</div>

@@ -1,0 +1,11 @@
+<mat-tab-group [(selectedIndex)]="selectedTab">
+  <mat-tab label="Busqueda">
+    <div fxLayout="row wrap">
+      <app-products-search fxFlex="auto"></app-products-search>
+      <app-product-details fxFlex="auto"></app-product-details>
+    </div>
+  </mat-tab>
+  <mat-tab label="Nuevo Producto">
+    <app-products-create></app-products-create>
+  </mat-tab>
+</mat-tab-group>
