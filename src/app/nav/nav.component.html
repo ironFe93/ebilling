@@ -1,47 +1,47 @@
-<mat-toolbar class="mat-primary mat-elevation-z6 toolbar">
-  <span>Universal</span>
-  <span class="example-spacer"></span>
-  <mat-icon class="example-icon">shopping cart</mat-icon>
-</mat-toolbar>
-<mat-sidenav-container [ngStyle]="{'height' : '100vh'}" class="sidebar-container">
-  <mat-sidenav #sidebar mode="side" class="sidebar" [ngStyle]="{'width.em': sidenavWidth}" opened="true">
-    <mat-nav-list>
-      <mat-list-item routerLink="products" routerLinkActive="active">
-        <mat-icon mat-list-icon>home</mat-icon>
-        <div fxFlex="10"></div>
-        <div *ngIf="sidenavWidth > 6" class="sidebar-item">
-          <h5>Productos</h5>
-        </div>
-      </mat-list-item>
-      <mat-list-item routerLink="about" routerLinkActive="active">
-        <mat-icon mat-list-icon>info</mat-icon>
-        <div fxFlex="10"></div>
-        <div *ngIf="sidenavWidth > 6" class="sidebar-item">
-          <h5>About</h5>
-        </div>
-      </mat-list-item>
-      <mat-list-item routerLink="sales-checkout" routerLinkActive="active">
-        <mat-icon mat-list-icon>email</mat-icon>
-        <div fxFlex="10"></div>
-        <div *ngIf="sidenavWidth > 6" class="sidebar-item">
-          <h5>Contact Us</h5>
-        </div>
-      </mat-list-item>
-      <mat-list-item routerLink="sales" routerLinkActive="active">
-        <mat-icon mat-list-icon>help</mat-icon>
-        <div fxFlex="10"></div>
-        <div *ngIf="sidenavWidth > 6" class="sidebar-item">
-          <h5>Ventas</h5>
-        </div>
-      </mat-list-item>
-    </mat-nav-list>
-  </mat-sidenav>
-  <mat-sidenav-content>
-    <mat-toolbar class="mat-primary">
-      <span>Ventas</span>
-      <span class="example-spacer"></span>
-    </mat-toolbar>
-    <router-outlet></router-outlet>
-    <app-messages></app-messages>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<div class="containerNav" [class.is-mobile]="mobileQuery.matches">
+  <mat-toolbar class="mat-primary mat-elevation-z6 toolbar">
+    <button mat-icon-button (click)="sidenav.toggle()">
+      <mat-icon class="nav-icon">menu</mat-icon>
+    </button>
+    <h1 class="example-app-name">Responsive App</h1>
+  </mat-toolbar>
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav class="sidenav" #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches"
+      opened="true">
+      <mat-nav-list>
+        <mat-list-item routerLink="products" routerLinkActive="active">
+          <mat-icon mat-list-icon class="nav-icon">home</mat-icon>
+          <div fxFlex="10"></div>
+          <div class="sidebar-item">
+            <h5>Productos</h5>
+          </div>
+        </mat-list-item>
+        <mat-list-item routerLink="about" routerLinkActive="active">
+          <mat-icon mat-list-icon class="nav-icon">info</mat-icon>
+          <div fxFlex="10"></div>
+          <div class="sidebar-item">
+            <h5>About</h5>
+          </div>
+        </mat-list-item>
+        <mat-list-item routerLink="sales-checkout" routerLinkActive="active">
+          <mat-icon mat-list-icon class="nav-icon">email</mat-icon>
+          <div fxFlex="10"></div>
+          <div class="sidebar-item">
+            <h5>Contact Us</h5>
+          </div>
+        </mat-list-item>
+        <mat-list-item routerLink="sales" routerLinkActive="active">
+          <mat-icon mat-list-icon class="nav-icon">help</mat-icon>
+          <div fxFlex="10"></div>
+          <div class="sidebar-item">
+            <h5>Ventas</h5>
+          </div>
+        </mat-list-item>
+      </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <router-outlet></router-outlet>
+      <app-messages></app-messages>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

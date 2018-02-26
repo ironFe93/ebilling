@@ -5,9 +5,9 @@ const Schema = mongoose.Schema;
 // create a schema
 const productSchema = new Schema({
   sku: {type: String, required: true, unique:true},
-  type: {type: [String], index: true},
-  title: {type: [String], index: true},
-  description: { type: [String], index: true},
+  type: {type: String, index: true},
+  title: {type: String, index: true},
+  description: { type: String, index: true},
   pricing: {
     list: Number,
     retail: Number,

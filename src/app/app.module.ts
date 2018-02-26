@@ -18,7 +18,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {MatTabsModule} from '@angular/material/tabs';
-//import {MatDialogModule} from '@angular/material/dialog';
 
 //Components & Services
 import { AppComponent } from './app.component';
@@ -38,11 +37,24 @@ import { SalesDetailComponent } from './sales-detail/sales-detail.component';
 import { ProductsComponent } from './products/products.component';
 import { ProductsCreateComponent } from './products-create/products-create.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
+import { LoginComponent } from './login/login.component';
+import { AuthGuard } from './auth-guard.service';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+
+//Auth
+import { JwtModule } from '@auth0/angular-jwt';
+import { AuthService } from './auth.service';
+//https://github.com/auth0/angular2-jwt/tree/v1.0
+
 
 const appRoutes = [
-  { path: 'sales', component: SalesComponent },
-  { path: 'sales-checkout', component: SalesCheckoutComponent },
-  { path: 'products', component: ProductsComponent}];
+  { path: 'sales', component: SalesComponent , canActivate: [AuthGuard] },
+  { path: 'sales-checkout', component: SalesCheckoutComponent , canActivate: [AuthGuard]},
+  { path: 'products', component: ProductsComponent, canActivate: [AuthGuard]},
+  { path: 'home', component: NavComponent },
+  { path: 'unauthorized', component: UnauthorizedComponent , canActivate: [AuthGuard]}
+];
+  
 /*const appRoutes: Routes = [
   { path: 'sales', component: SalesComponent },
   { path: 'about', component: AboutComponent },
@@ -67,7 +79,9 @@ const appRoutes = [
     SalesDetailComponent,
     ProductsComponent,
     ProductsCreateComponent,
-    ProductDetailsComponent
+    ProductDetailsComponent,
+    LoginComponent ,
+    UnauthorizedComponent
   ],
   imports: [
     BrowserModule,
@@ -87,11 +101,19 @@ const appRoutes = [
     MatToolbarModule,
     MatSnackBarModule,
     MatRadioModule,
-    MatTabsModule,
-    // MatDialogModule,
-    RouterModule.forRoot(appRoutes)
+    MatTabsModule, 
+    RouterModule.forRoot(appRoutes),
+    JwtModule.forRoot({
+      config: {
+        tokenGetter: () => {
+          return localStorage.getItem('token'); //missing scenariotoken is null in C:\Users\Christos\universal-app\node_modules\@auth0\angular-jwt\bundles\core.umd.js
+        },
+        whitelistedDomains: ['localhost:3000'],
+        authScheme: 'jwt '
+      }
+    })
   ],
-  providers: [ProductsService, ShoppingCartService, MessageService],
+  providers: [ProductsService, ShoppingCartService, MessageService, AuthService , AuthGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

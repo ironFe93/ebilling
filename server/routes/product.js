@@ -4,12 +4,12 @@ const { celebrate, Joi, errors } = require('celebrate');
 
 var Product = require('../models/product');
 
-routes.get('/', (req, res) => {
+routes.get('/', (req, res, next) => {
     res.status(200).json({ message: 'Products!' });
 });
 
 // Get all products
-routes.get('/findall', (req, res) => {
+routes.get('/findall', (req, res, next) => {
     // Get posts from the mock api
     // This should ideally be replaced with a service that connects to MongoDB
 

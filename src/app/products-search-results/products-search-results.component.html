@@ -1,5 +1,5 @@
 <div class="containerRow" fxLayoutGap="20px">
-    <mat-card *ngFor="let product of products">
+    <mat-card *ngFor="let product of products" fxFlex="auto">
       <mat-card-title>{{product.title}}</mat-card-title>
       <div>
           <input matInput #qty placeholder="quantity" value="1">

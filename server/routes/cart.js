@@ -41,13 +41,13 @@ routes.post('/create', celebrate(
         if (err) return next(err);
 
         if (cart) {
-            setTimeout(function () {
+/*             setTimeout(function () {
                 expireCart(cart._id);
             }, 1000 * 60 * 60 * 8);
-            //1000 * 60 * 60 * 8)
+            //1000 * 60 * 60 * 8) */
             res.send(cart);
         } else {
-            return next(new Error("Cart is empty"))
+            return next(new Error("Cart creation failed"))
         }
     });
 });
@@ -262,10 +262,22 @@ routes.put('/completeCheckout', celebrate(
 
 });
 
+routes.put('/expire', celebrate(
+    {
+        body: Joi.object().keys({
+            cartId: Joi.string().required()
+        })
+    }
+), (req, res, next) => {
+
+    expirecart(req.cartId);
+
+});
+
 const expireCart = id => {
     //Set status as expired
-    Cart.findByIdAndUpdate(
-        id,
+    Cart.findOneAndUpdate(
+        {"_id":id, "status":  { $ne: "complete"}},
         {
             $set: { status: "expired" }
         },
@@ -276,7 +288,7 @@ const expireCart = id => {
                 //for each item in the cart, return inventory
                 cart.items.forEach(item => returnInventory(item.sku, item.qty, cart._id));
             } else {
-                return next(new Error("Expired cart ID not found"));
+                return next(new Error("Expired cart ID not found or cart is complete"));
             }
         }
     );

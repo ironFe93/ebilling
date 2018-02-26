@@ -23,6 +23,14 @@ mat-form-field{
   flex: auto;
 }
 
+.nav-icon{
+  color: white;
+}
+
+.example-icon {
+  padding: 0 14px;
+}
+
 
 /**  Copyright 2017 Google Inc. All Rights Reserved.
     Use of this source code is governed by an MIT-style license that

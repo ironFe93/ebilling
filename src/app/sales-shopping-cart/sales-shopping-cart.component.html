@@ -9,23 +9,22 @@
   </mat-card-subtitle>
 
   <mat-card-title>Detail</mat-card-title>
-  <mat-card-subtitle *ngFor="let item of (observableCart | async).items">
+  <mat-card-subtitle class="detail-subtitle" *ngFor="let item of (observableCart | async).items">
     {{item.title}} : {{item.listPrice}} x {{item.qty}}
-    <span>
+<!--     <span>
       <button mat-icon-button (click)="deltaOne(item.sku, 'add')">
-        <mat-icon aria-label="icon-button to add +1 item">add</mat-icon>
+        <mat-icon class="cart-icon" aria-label ="icon-button to add +1 item">add</mat-icon>
       </button>
     </span>
     <span>
       <button mat-icon-button (click)="deltaOne(item.sku, 'substract')">
-        <mat-icon aria-label="icon-button to substract -1 item">remove</mat-icon>
+        <mat-icon class="cart-icon" aria-label="icon-button to substract -1 item">remove</mat-icon>
       </button>
     </span>
-    <span>
+    <span> -->
       <button mat-icon-button (click)="removeFromCart(item.sku)">
-        <mat-icon aria-label="icon-button to clear the item">clear</mat-icon>
+        <mat-icon class="cart-icon" aria-label="icon-button to clear the item">clear</mat-icon>
       </button>
-    </span>
   </mat-card-subtitle>
 
   <form>

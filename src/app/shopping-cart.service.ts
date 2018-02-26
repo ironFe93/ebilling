@@ -12,10 +12,11 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 import { of } from 'rxjs/observable/of';
 import { catchError, map, tap } from 'rxjs/operators';
+import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
 
 
 @Injectable()
-export class ShoppingCartService {
+export class ShoppingCartService implements OnDestroy {
 
   private cartsUrl = "/api/cart";
   private cartId;
@@ -27,12 +28,11 @@ export class ShoppingCartService {
 
   private subjectCart = new BehaviorSubject(this.cart);
   //https://stackoverflow.com/questions/42798236/angular2-how-to-update-an-item-inside-an-observable-collection
-  
+
   private subjectSale = new BehaviorSubject(this.cart);
 
   constructor(private http: HttpClient,
     private messageService: MessageService) {
-
   }
 
   public getCart() {
@@ -50,20 +50,18 @@ export class ShoppingCartService {
   public getCarts(terms) {
 
     // put it into this.observableCart and return it
-    return this.http.get<Cart[]>(this.cartsUrl + '/get/'+ terms,  {
-      headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
-    }).pipe(catchError(this.handleError('getCartDetail', [])));
+    return this.http.get<Cart[]>(this.cartsUrl + '/get/' + terms
+    ).pipe(catchError(this.handleError('getCartDetail', [])));
   }
 
   public getCartDetail(id) {
 
     // put it into this.observableCart and return it
-    return this.http.get<Cart>(this.cartsUrl + '/getDetail/'+ id,  {
-      headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
-    }).pipe(tap(cart => {
+    return this.http.get<Cart>(this.cartsUrl + '/getDetail/' + id
+    ).pipe(tap(cart => {
       this.sale = cart; // save your data
       this.subjectSale.next(this.sale); // emit your data
-      
+
     }), catchError(this.handleError('getCartDetail', [])));
   }
 
@@ -76,9 +74,7 @@ export class ShoppingCartService {
 
     //post the new cart to the DB, then the resulting observable<Cart>,
     // put it into this.observableCart and return it
-    return this.http.post<Cart>(this.cartsUrl + '/create', newCart,  {
-      headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
-    })
+    return this.http.post<Cart>(this.cartsUrl + '/create', newCart)
       .pipe(tap(cart => {
         this.cart = cart; // save your data
         this.subjectCart.next(this.cart); // emit your data
@@ -92,12 +88,14 @@ export class ShoppingCartService {
 
   public addItem(product: Product, quantity: number) {
 
-    var repeated = this.cart.items.find(item => product.sku == item.sku);
+    const repeated = this.cart.items.find(item => product.sku == item.sku);
 
     if (repeated) {
       this.messageService.add("Cart Service: Item already exists in cart!");
       return of(this.cart);
     } else {
+
+
 
       //To Do: Handle Errors
       return this.http.put<Cart>(this.cartsUrl + '/add',
@@ -106,8 +104,6 @@ export class ShoppingCartService {
           'title': product.title,
           'quantity': quantity,
           'cartId': this.cart._id
-        },  {
-          headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
         })
         .pipe(tap(cart => {
 
@@ -127,8 +123,6 @@ export class ShoppingCartService {
     return this.http.put<Cart>(this.cartsUrl + '/deltaOne',
       {
         'sku': productSku, 'cartId': this.cart._id, 'operation': operation
-      }, {
-        headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
       }).pipe(tap(cart => {
 
         this.UpdateCartSubject(cart);
@@ -140,8 +134,6 @@ export class ShoppingCartService {
     return this.http.put<Cart>(this.cartsUrl + '/remove',
       {
         'sku': productSku, 'cartId': this.cart._id
-      },  {
-        headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
       }).pipe(tap(cart => {
 
         this.UpdateCartSubject(cart);
@@ -153,17 +145,15 @@ export class ShoppingCartService {
     return this.http.put<Cart>(this.cartsUrl + '/completeCheckout',
       {
         'cartId': this.cart._id
-      },  {
-        headers: new HttpHeaders().set('Authorization', 'my-auth-token'),
       }).pipe(tap(cart => {
-        if (cart.status == "complete"){
+        if (cart.status == "complete") {
           this.log("Venta realizada exitosamente");
           //clear the Cart and CartObservable
           this.cart = new Cart();
           this.subjectCart.next(this.cart);
           // save received cart as Sale then emit to SaleSubject
-          this.sale = cart; 
-          this.subjectSale.next(this.sale); 
+          this.sale = cart;
+          this.subjectSale.next(this.sale);
         }
       }));
   }
@@ -180,7 +170,7 @@ export class ShoppingCartService {
 
       // TODO: better job of transforming error for user consumption
       this.log(`${operation} failed: ${error.error.message}`);
-      if(error.error.message == "Cart is expired"){
+      if (error.error.message == "Cart is expired") {
         this.createCart().subscribe();
       }
 
@@ -200,6 +190,14 @@ export class ShoppingCartService {
 
     this.cart = cart; // save your data
     this.subjectCart.next(this.cart); // emit your data
+  }
+
+  ngOnDestroy() {
+    if (this.cart.status !== "complete") {
+      this.http.put<Cart>(this.cartsUrl + '/expire',
+        { 'cartId': this.cart._id }
+      )
+    }
   }
 
 }

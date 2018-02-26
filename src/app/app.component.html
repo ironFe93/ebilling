@@ -1,2 +1,2 @@
-
-  <app-nav></app-nav>
+<app-login *ngIf="!this.auth.loggedIn()"></app-login>
+<app-nav *ngIf="this.auth.loggedIn()"></app-nav>

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { MediaMatcher } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
 
 @Component({
@@ -7,19 +8,24 @@ import { Router } from '@angular/router';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent implements OnInit {
-  
-  sidenavWidth = 15;
-  constructor ( private router: Router ) { }
+
+  mobileQuery: MediaQueryList;
+
+  private _mobileQueryListener: () => void;
+
+  constructor ( private router: Router, changeDetectorRef: ChangeDetectorRef, media: MediaMatcher ) {
+    this.mobileQuery = media.matchMedia('(max-width: 600px)');
+    this._mobileQueryListener = () => changeDetectorRef.detectChanges();
+    this.mobileQuery.addListener(this._mobileQueryListener);
+   }
   
   ngOnInit() {
   }
 
-  increase () {
-    this.sidenavWidth = 15;
+  ngOnDestroy(): void {
+    this.mobileQuery.removeListener(this._mobileQueryListener);
   }
 
-  decrease () {
-    this.sidenavWidth = 15;
-  }
+  
 
 }

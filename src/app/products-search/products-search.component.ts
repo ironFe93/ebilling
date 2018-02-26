@@ -25,6 +25,8 @@ export class ProductsSearchComponent implements OnInit {
     this.productsService.getByTerms(value).subscribe(products => {
       this.products = products;
     });
+
+    
   }
 
 }

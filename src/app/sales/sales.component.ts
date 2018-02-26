@@ -21,8 +21,8 @@ export class SalesComponent implements OnInit {
     
     // subscribe to router event
     this.activatedRoute.params.subscribe((params: Params) => {
-      let userId = params['userId'];
-      console.log(userId);
+/*       let userId = params['userId'];
+      console.log(userId); */
     });
   }
 
