@@ -42,8 +42,7 @@ export class ProductsService {
 
     return this.http.post<Product>(
       this.productsUrl + '/create',
-      product,
-      {headers: new HttpHeaders().set('Authorization', 'my-auth-token')}
+      product
     );
   }
 

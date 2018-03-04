@@ -44,6 +44,7 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 //Auth
 import { JwtModule } from '@auth0/angular-jwt';
 import { AuthService } from './auth.service';
+import { PurchasesComponent } from './purchases/purchases.component';
 //https://github.com/auth0/angular2-jwt/tree/v1.0
 
 
@@ -81,7 +82,8 @@ const appRoutes = [
     ProductsCreateComponent,
     ProductDetailsComponent,
     LoginComponent ,
-    UnauthorizedComponent
+    UnauthorizedComponent,
+    PurchasesComponent
   ],
   imports: [
     BrowserModule,
