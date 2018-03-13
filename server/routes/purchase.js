@@ -6,6 +6,7 @@ const Product = require('../models/product');
 const Item = require('../models/item');
 const Purchase = require('../models/purchase');
 const PurchaseOrder = require('../models/purchase-order');
+const InboundItem = require('../models/inbound-item');
 
 
 // get a list of purchases. Method incomplete.
@@ -16,7 +17,7 @@ routes.get('/get/:_id', (req, res, next) => {
     });
 });
 
-// get a single Purchase, by id
+// get a single Purchase with full detail, by id
 routes.get('/getDetail/:_id', (req, res, next) => {
 
     Purchase.findById(req.params._id, (err, cart) => {
@@ -61,20 +62,6 @@ routes.put('/createOrder', celebrate(
 
     ////////////
 
-    req.body.items.forEach(item => {
-
-        Product.findOneAndUpdate(
-            { 'sku': item.sku },
-            {
-                $inc: {
-                    "inventory.qty": item.qty
-                }
-            },
-            'sku',
-            (err, product) => {
-                if (err) return next(err);
-            });
-    })
 });
 
 // assign a date to 'order_sent'. Send an order to a provider.
@@ -101,6 +88,7 @@ routes.put('/sendOrder', celebrate(
 });
 
 // make a payment. grossTotal should be received from an invoice.
+//TO DO: create a PAYMENTS module and migrate this code.
 routes.put('/pay', celebrate(
     {
         body: Joi.object().keys({
@@ -116,13 +104,14 @@ routes.put('/pay', celebrate(
                 sku: Joi.string().required(),
                 qty: Joi.number().required(),
                 title: Joi.string().required()
-            }))
+            })),
+            items_entry: Joi.boolean().required(),
         })
     }
 ), (req, res, next) => {
 
     const purchase = new Purchase(
-        {   
+        {
             pOrderId: req.body.pOrderId,
             provider: req.body.provider,
             invoice: req.body.invoice,
@@ -132,7 +121,7 @@ routes.put('/pay', celebrate(
             method: req.body.method,
             method_reference: req.body.method_reference,
             items: req.body.items,
-            
+
         }
     );
 
@@ -146,33 +135,67 @@ routes.put('/pay', celebrate(
         }
     });
 
-});
-
-//stock items either partially or completely. 
-routes.put('/receive', celebrate(
-    {
-        body: Joi.object().keys({
-            items: Joi.array().items(Joi.object({
-                sku: Joi.string().required(),
-                qty: Joi.number().required(),
-
-            })),
-            provider: Joi.string()
-        })
+    ///After a purchase has been payed, we must control the entry of items, be it inmediate or scheduled.
+    //For all items in the purchase.
+    //**check efficiency of this process */
+    const inbound_status = 'complete';
+    if (!req.body.items_entry) {
+        inbound_status = 'pending'
     }
-), (req, res, next) => {
 
-    Purchase.update(
-        { _id: req.body.purchaseId },
-        {
-            $set:
-                {
+    purchase.items.forEach(item => {
+        var InboundItem = new InboundItem(
+            {
+                status: inbound_status,
+                sku: item.sku,
+                qty: item.qty,
+                title: item.title,
+                purchaseId: purchase._id
+            }
+        );
 
-                }
-        },
-        function (err) {
+        //if items entry is true, item reception happens immediately after payment.
+        if (req.body.items_entry) {
+            InboundItem.set('reception',
+                [{
+                    arrival_date: Date.now(),
+                    arrival_qty: req.body.arrival_qty,
+                    arrival_details: req.body
+                }]
+            )
+
+        }
+
+        InboundItem.save((err, resp) => {
             if (err) return next(err);
+
+            if (resp) {
+                res.send(order);
+            } else {
+                return next(new Error("item entry registration failed"))
+            }
         });
+
+        //if item entry is immediate, update inventory as well.
+        if (req.body.items_entry) {
+            //update inventory immediately after
+            Product.findByIdAndUpdate(
+                item.sku,
+                {
+                    $inc: {
+                        "inventory.qty": item.qty
+                    }
+                },
+                'sku',
+                (err, product) => {
+                    if (err) return next(err);
+                }
+            );
+        }
+
+
+    });
+
 
 });
 
