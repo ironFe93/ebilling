@@ -1,0 +1,8 @@
+<div class="containerRow" fxLayoutGap="20px" *ngFor="let req of reqs" >
+    <mat-card>
+      <mat-card-subtitle>{{req._id}}</mat-card-subtitle>
+      <label>{{req.date | date:'dd-MM-yy HH:mm a'}} </label>
+      <!-- https://angular.io/guide/user-input template reference variable-->
+      <button mat-raised-button color="primary" (click)="getReqDetail(req._id)">Ver</button>
+    </mat-card>
+  </div>

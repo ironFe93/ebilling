@@ -27,41 +27,67 @@ routes.get('/getDetail/:_id', (req, res, next) => {
 });
 
 ///Create a purchase order. 
-//An order becomes a purchase when status_payment is payed and status_items is received.
-routes.put('/createOrder', celebrate(
-    {
-        body: Joi.object().keys({
-            items: Joi.array().items(Joi.object({
-                sku: Joi.string().required(),
-                qty: Joi.number().required(),
-                title: Joi.string().required()
-            })),
-            provider: Joi.string()
-        })
-    }
-), (req, res, next) => {
-
+routes.post('/registerPurchaseOrder', (req, res, next) => {
     const order = new PurchaseOrder(
         {
-            order_placed: Date.now(),
-            status: 'order',
             items: req.body.items,
             provider: req.body.provider
         }
     );
-
     order.save((err, order) => {
         if (err) return next(err);
-
         if (order) {
             res.send(order);
         } else {
             return next(new Error("purchase order creation failed"))
         }
     });
+});
 
-    ////////////
+// Get Req by searchTerms
+routes.get('/findPO', (req, res, next) => {
+    const datePlaced1 = new Date(req.query.datePlaced1);
+    const datePlaced2 = new Date(req.query.datePlaced2);
+    const dateSent1 = new Date(req.query.dateSent1);
+    const dateSent2 = new Date(req.query.dateSent2);
+    const sku = req.query.sku;
+    const string = req.query.string;
+    const status = req.query.status;
+    const provider = req.query.provider;
 
+    var query = PurchaseOrder.find();
+
+    if(checkIfDateValid(datePlaced1)) query.where('date_placed').gte(datePlaced1);
+    if(checkIfDateValid(datePlaced2)) query.where('date_placed').lte(datePlaced2);
+    if(checkIfDateValid(dateSent1)) query.where('date_sent').gte(dateSent1);
+    if(checkIfDateValid(dateSent2)) query.where('date_sent').lte(dateSent2);
+    if(sku) query.where({ 'items.sku': sku });
+    if(string) query.where({ 'items.title': string });
+    if(status) query.where({ 'status': status });
+    if(provider) query.where({ 'provider': provider });
+
+    query.select('_id date provider');
+
+    query.exec((err,resp) => {
+        if (err) return next(err);
+        res.send(resp);
+    });
+});
+
+// Get req details by ID
+routes.get('/getPOrderDetail/:id', (req, res, next) => {
+
+    const id = req.params.id;
+
+    PurchaseOrder.findById(id, function (err, req) {
+        if (err) return next(err)
+        if (req) {
+            res.send(req);
+        } else {
+            return new Error("PO not found");
+        }
+
+    });
 });
 
 // assign a date to 'order_sent'. Send an order to a provider.

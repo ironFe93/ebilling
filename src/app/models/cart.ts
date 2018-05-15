@@ -6,11 +6,11 @@ import {Item} from './item'
         status: string;
         grossTotal: number;
         itemsTotal: number;
-        items: [{
+        items: {
             sku: string;
             qty: number;
             title: string;
             listPrice: number
-          }];
+          }[];
        
     }

@@ -15,10 +15,10 @@ export class Product {
   };
   inventory: {
     qty: number;
-    carted: [{
+    carted: {
       qty: number;
       cart_id: Cart[];
       timestamp: string;
-    }]
+    }[]
   }
 };

@@ -11,13 +11,16 @@ import { ReactiveFormsModule } from '@angular/forms'
 
 //Material
 import { MatSidenavModule, MatButtonModule, MatIconModule, MatListModule } from "@angular/material";
-import {MatRadioModule} from '@angular/material/radio';
+import { MatRadioModule} from '@angular/material/radio';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {MatTabsModule} from '@angular/material/tabs';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material';
+
 
 //Components & Services
 import { AppComponent } from './app.component';
@@ -40,27 +43,35 @@ import { ProductDetailsComponent } from './product-details/product-details.compo
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth-guard.service';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import { PurchasingComponent } from './purchasing/purchasing.component';
+import { PurchaseOrderComponent } from './purchase-order/purchase-order.component';
+import { PurchaseService } from './purchase.service';
 
 //Auth
 import { JwtModule } from '@auth0/angular-jwt';
 import { AuthService } from './auth.service';
-import { PurchasesComponent } from './purchases/purchases.component';
-//https://github.com/auth0/angular2-jwt/tree/v1.0
+import { InventoryRequisitionComponent } from './inventory-requisition/inventory-requisition.component';
+import { PurchasingSearchComponent } from './purchasing-search/purchasing-search.component';
+import { PurchasingDetailComponent } from './purchasing-detail/purchasing-detail.component';
+import { PurchasingSearchResultsComponent } from './purchasing-search-results/purchasing-search-results.component';
+import { InventoryComponent } from './inventory/inventory.component';
+import { InventoryReqSearchComponent } from './inventory-req-search/inventory-req-search.component';
+import { InventoryReqSearchResultsComponent } from './inventory-req-search-results/inventory-req-search-results.component';
+import { InventoryReqDetailsComponent } from './inventory-req-details/inventory-req-details.component';
 
 
 const appRoutes = [
   { path: 'sales', component: SalesComponent , canActivate: [AuthGuard] },
   { path: 'sales-checkout', component: SalesCheckoutComponent , canActivate: [AuthGuard]},
   { path: 'products', component: ProductsComponent, canActivate: [AuthGuard]},
+  { path: 'inventory', component: InventoryComponent, canActivate: [AuthGuard]},
+  { path: 'purchasing', component: PurchasingComponent, canActivate: [AuthGuard]},
   { path: 'home', component: NavComponent },
   { path: 'unauthorized', component: UnauthorizedComponent , canActivate: [AuthGuard]}
 ];
   
 /*const appRoutes: Routes = [
   { path: 'sales', component: SalesComponent },
-  { path: 'about', component: AboutComponent },
-  { path: 'contact-us', component: ContactUsComponent },
-  { path: 'support', component: SupportComponent },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', component: HomeComponent }
 ];*/
@@ -83,7 +94,16 @@ const appRoutes = [
     ProductDetailsComponent,
     LoginComponent ,
     UnauthorizedComponent,
-    PurchasesComponent
+    PurchasingComponent,
+    PurchaseOrderComponent,
+    InventoryRequisitionComponent,
+    PurchasingSearchComponent,
+    PurchasingDetailComponent,
+    PurchasingSearchResultsComponent,
+    InventoryComponent,
+    InventoryReqSearchComponent,
+    InventoryReqSearchResultsComponent,
+    InventoryReqDetailsComponent
   ],
   imports: [
     BrowserModule,
@@ -103,19 +123,25 @@ const appRoutes = [
     MatToolbarModule,
     MatSnackBarModule,
     MatRadioModule,
-    MatTabsModule, 
+    MatTabsModule,
+    MatDatepickerModule,
+    MatNativeDateModule, 
     RouterModule.forRoot(appRoutes),
     JwtModule.forRoot({
       config: {
         tokenGetter: () => {
-          return localStorage.getItem('token'); //missing scenariotoken is null in C:\Users\Christos\universal-app\node_modules\@auth0\angular-jwt\bundles\core.umd.js
+          if (!localStorage.getItem('token')){
+            localStorage.setItem('token','jwt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f75773');
+          }
+          return localStorage.getItem('token'); //missing scenario token is null in C:\Users\Christos\universal-app\node_modules\@auth0\angular-jwt\bundles\core.umd.js
         },
-        whitelistedDomains: ['localhost:3000'],
+        whitelistedDomains: [/^null$/],
         authScheme: 'jwt '
       }
     })
   ],
-  providers: [ProductsService, ShoppingCartService, MessageService, AuthService , AuthGuard],
+  providers: [ProductsService, ShoppingCartService,
+     PurchaseService, MessageService, AuthService , AuthGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

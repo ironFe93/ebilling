@@ -12,11 +12,10 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 
 import { of } from 'rxjs/observable/of';
 import { catchError, map, tap } from 'rxjs/operators';
-import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
 
 
 @Injectable()
-export class ShoppingCartService implements OnDestroy {
+export class ShoppingCartService{
 
   private cartsUrl = "/api/cart";
   private cartId;
@@ -192,12 +191,6 @@ export class ShoppingCartService implements OnDestroy {
     this.subjectCart.next(this.cart); // emit your data
   }
 
-  ngOnDestroy() {
-    if (this.cart.status !== "complete") {
-      this.http.put<Cart>(this.cartsUrl + '/expire',
-        { 'cartId': this.cart._id }
-      )
-    }
-  }
+
 
 }

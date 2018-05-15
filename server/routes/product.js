@@ -3,6 +3,7 @@ const routes = express.Router();
 const { celebrate, Joi, errors } = require('celebrate');
 
 var Product = require('../models/product');
+var ProductRequisition = require('../models/product-req');
 
 routes.get('/', (req, res, next) => {
     res.status(200).json({ message: 'Products!' });
@@ -28,7 +29,7 @@ routes.get('/find/:terms', (req, res) => {
     const terms = req.params.terms;
     console.log(terms);
 
-    Product.find({$text : { $search: terms }},{'sku': true , 'title': true}, function (err, products) {
+    Product.find({ $text: { $search: terms } }, { 'sku': true, 'title': true }, function (err, products) {
         if (err) throw err;
         res.send(products);
     });
@@ -45,14 +46,14 @@ routes.get('/getDetails/:id', celebrate(
 
     const id = req.params.id;
 
-    Product.findById( id , function (err, product) {
+    Product.findById(id, function (err, product) {
         if (err) throw err;
-        if (product){
+        if (product) {
             res.send(product);
-        }else{
+        } else {
             throw new Error("Product not found");
         }
-        
+
     });
 });
 
@@ -63,7 +64,7 @@ routes.post('/create', celebrate(
             sku: Joi.string().required(),
             title: Joi.string().required(),
             description: Joi.string(),
-            inventory : {
+            inventory: {
                 qty: Joi.string().required()
             },
             listPrice: Joi.string().required()
@@ -77,5 +78,75 @@ routes.post('/create', celebrate(
         res.send(prod);
     });
 });
+
+// Create a ProductRequisition
+routes.post('/registerReq', celebrate(
+    {
+        body: Joi.object().keys({
+            items: Joi.array().items({
+                sku: Joi.string().required(),
+                qty: Joi.number().required(),
+                title: Joi.string().required(),
+                status: Joi.string()
+            })
+        })
+    }
+), (req, res, next) => {
+    const newProdReq = new ProductRequisition(req.body);
+    console.log(req.body);
+    newProdReq.save((err, resp) => {
+        if (err) return next(err);
+        res.send(resp);
+    });
+});
+
+// Get Req by searchTerms
+routes.get('/findReq', (req, res, next) => {
+    'findReq?y1=yyyy&m1=mm&d1=dd&y2=yyyy&m2=mm&d2=dd&sku=12345678=string=test&status=active'
+    const date1 = new Date(req.query.date1);
+    const date2 = new Date(req.query.date2);
+    const sku = req.query.sku;
+    const string = req.query.string;
+    const status = req.query.status;
+
+    var query = ProductRequisition.find();
+
+    if(checkIfDateValid(date1)) query.where('date').gte(date1);
+    if(checkIfDateValid(date2)) query.where('date').lte(date2);
+    if(sku) query.where({ 'items.sku': sku });
+    if(string) query.where({ 'items.title': string });
+    if(status) query.where({ 'status': status });
+
+    query.select('_id date');
+
+    query.exec((err,resp) => {
+        if (err) return next(err);
+        res.send(resp);
+    });
+});
+
+// Get req details by ID
+routes.get('/getReqDetail/:id', (req, res, next) => {
+
+    const id = req.params.id;
+
+    ProductRequisition.findById(id, function (err, req) {
+        if (err) return next(err)
+        if (req) {
+            res.send(req);
+        } else {
+            return new Error("req not found");
+        }
+
+    });
+});
+
+//checks if a date object is valid
+checkIfDateValid = (date) => {
+
+    if ( Object.prototype.toString.call(date) === "[object Date]" ) { // it is a date
+        if (isNaN( date.getTime())) return false ; else return true; // d.valueOf() could also work
+      } else return false;
+}
 
 module.exports = routes;
