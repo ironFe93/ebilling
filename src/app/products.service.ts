@@ -13,20 +13,20 @@ import { MessageService } from './message.service';
 @Injectable()
 export class ProductsService {
 
-  private productsUrl = "/api/product";
-  //-----For creating new Reqs----------
+  private productsUrl = '/api/product';
+  // -----For creating new Reqs----------
   private productReq: ProductReq = new ProductReq();
   private subjectProdReq = new BehaviorSubject(this.productReq);
-  //------------------------------------
-  //-----For displaying new Reqs----------
-  //private reqDetail: ProductReq = new ProductReq();
+  // ------------------------------------
+  // -----For displaying new Reqs----------
+  // private reqDetail: ProductReq = new ProductReq();
   private subjectReqDetail = new BehaviorSubject(new ProductReq());
-  //------------------------------------
+  // ------------------------------------
 
   private subjectProduct: BehaviorSubject<Product> = new BehaviorSubject<Product>(new Product());
 
   constructor(private http: HttpClient, private messageService: MessageService) {
-    this.productReq.items = []; //otherwise .items is undefined
+    this.productReq.items = []; // otherwise .items is undefined
   }
 
   getProductObservable() {
@@ -62,20 +62,20 @@ export class ProductsService {
   }
 
   addToReq = (product: Product, quantity: Number) => {
-    const repeated = this.productReq.items.find(item => product.sku == item.sku);
+    const repeated = this.productReq.items.find(item => product.sku === item.sku);
     if (repeated) {
-      this.messageService.add("Purchase Service: Item already exists in order!");
+      this.messageService.add('Purchase Service: Item already exists in order!');
       return of(this.productReq);
     } else {
-      const item = {'sku': product.sku, 'qty': quantity, 'title': product.title, 'status': 'pending'}
+      const item = {'sku': product.sku, 'qty': quantity, 'title': product.title, 'status': 'pending'};
       this.productReq.items.push(item);
       this.subjectProdReq.next(this.productReq);
     }
   }
 
   removeFromReq = (sku: String) => {
-    var isProduct = (item) => item.sku !== sku
-    var modifiedItems = this.productReq.items.filter(isProduct);
+    const isProduct = (item) => item.sku !== sku;
+    const modifiedItems = this.productReq.items.filter(isProduct);
     this.productReq.items = modifiedItems;
     this.subjectProdReq.next(this.productReq);
   }
@@ -88,7 +88,7 @@ export class ProductsService {
   }
 
   findReqs(queryObject): Observable<ProductReq[]> {
-    var queryString = new HttpParams();
+    let queryString = new HttpParams();
 
     const string = queryObject.string;
     const sku = queryObject.sku;
@@ -107,17 +107,16 @@ export class ProductsService {
     return this.http.get<ProductReq[]>(this.productsUrl + '/findReq', { params: queryString });
   }
 
-  ///Get fully detailed Requisition
+  /// Get fully detailed Requisition
   getReqDetail(id: String) {
     return this.http.get<ProductReq>(this.productsUrl + '/getReqDetail/' + id)
       .pipe(tap(req => {
-        //this.reqDetail = req;
+        // this.reqDetail = req;
         this.subjectReqDetail.next(req);
       }));
   }
 
   getReqDetailAsObservable() {
     return this.subjectReqDetail.asObservable();
-  }  
-
+  }
 }

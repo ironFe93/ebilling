@@ -16,7 +16,7 @@ export class PurchasingSearchResultsComponent {
   @Input() pOrders: any = [];
   @Input() selectedTab: number;
 
-  displayPurchaseOrder(id: String){
+  displayPurchaseOrder(id: String) {
       this.purchaseService.getPOrderDetail(id).subscribe();
   }
 }

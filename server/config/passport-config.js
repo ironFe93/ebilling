@@ -31,4 +31,3 @@ var strategy = new JwtStrategy(jwtOptions, function(jwt_payload, done) {
 passport.use(strategy);
 
 module.exports = passport;
-///////

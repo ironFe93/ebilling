@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
   templateUrl: './nav.component.html',
   styleUrls: ['./nav.component.css']
 })
-export class NavComponent implements OnInit {
+export class NavComponent {
 
   mobileQuery: MediaQueryList;
 
@@ -18,14 +18,11 @@ export class NavComponent implements OnInit {
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
    }
-  
-  ngOnInit() {
-  }
 
+
+  // tslint:disable-next-line:use-life-cycle-interface
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this._mobileQueryListener);
   }
-
-  
 
 }

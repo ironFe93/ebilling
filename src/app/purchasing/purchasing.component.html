@@ -1,14 +1,14 @@
 <mat-tab-group>
-  <mat-tab label="Consultas">
-    <div fxLayout="row wrap">
-      <app-purchasing-search fxFlex="auto"></app-purchasing-search>
-      <app-purchasing-detail fxFlex="auto"></app-purchasing-detail>
-    </div>
-  </mat-tab>
   <mat-tab label="Orden de Compra">
     <div fxLayout="row wrap">
       <app-products-search fxFlex="66%" fxFlex.lt-md="auto"></app-products-search>
       <app-purchase-order fxFlex="34%" fxFlex.lt-md="auto"></app-purchase-order>
     </div>
   </mat-tab>
+  <mat-tab label="Consultas">
+      <div fxLayout="row wrap">
+        <app-purchasing-search fxFlex="auto"></app-purchasing-search>
+        <app-purchasing-detail fxFlex="auto"></app-purchasing-detail>
+      </div>
+    </mat-tab>
 </mat-tab-group>

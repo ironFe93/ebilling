@@ -1,0 +1,25 @@
+<div class="containerColumn" fxLayout="column" fxLayoutGap="20px">
+  <mat-card>
+    <mat-card-subtitle>Productos</mat-card-subtitle>
+    <div class="detail-subtitle" *ngFor="let productsDashReg of (productsDash$ | async)">
+      <label>{{productsDashReg.reference}}: {{productsDashReg.subject}}</label>
+    </div>
+  </mat-card>
+</div>
+<div class="containerColumn" fxLayout="column" fxLayoutGap="20px">
+  <mat-card>
+    <mat-card-subtitle>Reqs</mat-card-subtitle>
+    <div class="detail-subtitle" *ngFor="let reqsDashReg of (reqsDash$ | async)">
+      <label>{{reqsDashReg.reference}}: {{reqsDashReg.subject}}</label>
+    </div>
+  </mat-card>
+</div>
+<div class="containerColumn" fxLayout="column" fxLayoutGap="20px">
+  <mat-card>
+    <mat-card-subtitle>Ordenes</mat-card-subtitle>
+    <div class="detail-subtitle" *ngFor="let pOrdersDashReg of (pOrdersDash$ | async)">
+      <label>{{pOrdersDashReg.reference}}: {{pOrdersDashReg.subject}}</label>
+    </div>
+  </mat-card>
+</div>
+<!---->

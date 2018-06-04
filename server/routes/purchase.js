@@ -7,6 +7,7 @@ const Item = require('../models/item');
 const Purchase = require('../models/purchase');
 const PurchaseOrder = require('../models/purchase-order');
 const InboundItem = require('../models/inbound-item');
+const dboard = require('../methods/dashboard');
 
 
 // get a list of purchases. Method incomplete.
@@ -34,12 +35,12 @@ routes.post('/registerPurchaseOrder', (req, res, next) => {
             provider: req.body.provider
         }
     );
-    order.save((err, order) => {
+    order.save(async (err, resp) => {
         if (err) return next(err);
-        if (order) {
-            res.send(order);
-        } else {
-            return next(new Error("purchase order creation failed"))
+        res.send(resp);
+        if (resp.status === 'open') {
+            const reg = await dboard.findOrCreate('pOrders', resp._id, 'open', next);
+            if (reg) dboard.emit(req);
         }
     });
 });

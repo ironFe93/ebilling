@@ -14,20 +14,17 @@ export class ProductsSearchComponent implements OnInit {
   products: Product[];
   @Input() selectedTab: number;
 
-  constructor(private productsService: ProductsService) { 
-    
+  constructor(private productsService: ProductsService) {
   }
 
   ngOnInit() {
   }
- 
-  onEnter(value: string) { 
+
+  onEnter(value: string) {
     // Retrieve posts from the API
     this.productsService.getByTerms(value).subscribe(products => {
       this.products = products;
     });
-
-    
   }
 
 }

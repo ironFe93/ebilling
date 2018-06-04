@@ -6,13 +6,15 @@ const Product = require('../models/product');
 const Item = require('../models/item');
 const Cart = require('../models/cart');
 
+const dboard = require('../methods/dashboard');
+
 routes.get('/', (req, res, next) => {
     res.status(200).json({ message: 'carts!' });
 });
 
 // get a list of carts
 routes.get('/get/:_id', (req, res, next) => {
-    Cart.find({ "_id": req.params._id }, "_id status", function (err, carts) {
+    Cart.find({ '_id': req.params._id }, '_id status', function (err, carts) {
         if (err) return next(err);
         res.send(carts);
     });
@@ -35,7 +37,7 @@ routes.post('/create', celebrate(
         })
     }
 ), (req, res, next) => {
-    const newCart = new Cart({ status: "active", grossTotal: 0, itemsTotal: 0 });
+    const newCart = new Cart({ status: 'active', grossTotal: 0, itemsTotal: 0 });
 
     newCart.save((err, cart) => {
         if (err) return next(err);
@@ -47,13 +49,13 @@ routes.post('/create', celebrate(
             //1000 * 60 * 60 * 8) */
             res.send(cart);
         } else {
-            return next(new Error("Cart creation failed"))
+            return next(new Error('Cart creation failed'));
         }
     });
 });
 
 // Add a product to a cart
-//Joi validation with Celebrate libary
+// Joi validation with Celebrate libary
 routes.put('/add', celebrate(
     {
         body: Joi.object().keys({
@@ -65,10 +67,10 @@ routes.put('/add', celebrate(
     }
 ), (req, res, next) => {
 
-    //get the cartID
+    // get the cartID
     const id = req.body.cartId;
 
-    //get the rest of the data
+    // get the rest of the data
     const p_sku = req.body.sku;
     const quantity = req.body.quantity;
     const p_title = req.body.title;
@@ -77,9 +79,9 @@ routes.put('/add', celebrate(
         { 'sku': p_sku, 'inventory.qty': { '$gte': quantity } },
         {
             $inc: {
-                "inventory.qty": -quantity
+                'inventory.qty': -quantity
             }, $push: {
-                "inventory.carted":
+                'inventory.carted':
                     {
                         cart_id: id,
                         qty: quantity,
@@ -91,29 +93,29 @@ routes.put('/add', celebrate(
         'pricing.list inventory.qty',
         (err, product) => {
             if (err) return next(err);
-
+                let p_price;
             if (product) {
                 p_price = product.pricing.list;
             } else {
-                return next(new Error("Not enough inventory"));
+                return next(new Error('Not enough inventory'));
             }
 
-            console.log("product was found with enough inventory.");
+            console.log('product was found with enough inventory.');
 
-            //Update the cart then send it back but only if status is active. else return error message.
+            // Update the cart then send it back but only if status is active. else return error message.
             Cart.findOneAndUpdate(
-                { "_id": id, "status": "active", "items.sku": { $ne: p_sku } },
+                { '_id': id, 'status': 'active', 'items.sku': { $ne: p_sku } },
                 { $push: { items: { sku: p_sku, qty: quantity, listPrice: p_price, title: p_title } } },
                 { safe: true, upsert: false, new: true },
-                (err, cart) => {
+                (error, cart) => {
                     if (err) return next(err);
 
                     if (cart) {
                         res.send(cart);
                     } else {
-                        //cart is expired => return inventory
-                        returnInventory(p_sku, quantity, id);
-                        return next(new Error("Cart is expired"));
+                        // cart is expired => return inventory
+                        returnInventory(p_sku, quantity, id, next);
+                        return next(new Error('Cart is expired'));
                     }
 
                 }
@@ -131,39 +133,39 @@ routes.put('/deltaOne', celebrate(
         })
     }
 ), (req, res, next) => {
-    //get the cartID and product SKU
+    // get the cartID and product SKU
     const id = req.body.cartId;
     const sku = req.body.sku;
-    var qty = 1;
+    let qty = 1;
 
     if (req.body.operation === 'substract') qty = -1;
 
-    //check stock, for the 'add' case
+    // check stock, for the 'add' case
     Product.findOneAndUpdate(
         { 'sku': sku, 'inventory.qty': { '$gte': qty } },
         {
             $inc: {
-                "inventory.qty": -qty
+                'inventory.qty': -qty
             }
         },
         'sku inventory.qty',
         (err, product) => {
             if (err) return next(err);
             if (!product) {
-                return next(new Error("Invalid SKU or not enough inventory"));
+                return next(new Error('Invalid SKU or not enough inventory'));
             }
         }
     );
 
-    console.log("product was found with enough inventory.");
+    console.log('product was found with enough inventory.');
 
-    //Update the cart then send it back
-    //https://stackoverflow.com/questions/26156687/mongoose-find-update-subdocument
+    // Update the cart then send it back
+    // https://stackoverflow.com/questions/26156687/mongoose-find-update-subdocument
     Cart.findOneAndUpdate(
-        { "_id": id, "items.sku": sku },
+        { '_id': id, 'items.sku': sku },
         {
             $inc: {
-                "items.$.qty": qty
+                'items.$.qty': qty
             }
         },
         { safe: true, upsert: false, new: true },
@@ -172,7 +174,7 @@ routes.put('/deltaOne', celebrate(
             if (cart) {
                 res.send(cart);
             } else {
-                next(new Error("No Update: Cart doesn't exist or item not in cart."));
+                next(new Error('No Update: Cart does not exist or item not in cart.'));
             }
 
         }
@@ -180,7 +182,7 @@ routes.put('/deltaOne', celebrate(
 });
 
 
-// remove a product in a cart
+// remove a product in a cart. Lacks: add inventory back to product.
 routes.put('/remove', celebrate(
     {
         body: Joi.object().keys({
@@ -190,18 +192,18 @@ routes.put('/remove', celebrate(
     }
 ), (req, res, next) => {
 
-    //get the cartID and product SKU
+    // get the cartID and product SKU
     const id = req.body.cartId;
     const sku = req.body.sku;
 
-    //Update the cart then send it back
-    //https://stackoverflow.com/questions/15323422/mongodb-cannot-apply-pull-pullall-modifier-to-non-array-how-to-remove-array-e
+    // Update the cart then send it back
+    // https://stackoverflow.com/questions/15323422/mongodb-cannot-apply-pull-pullall-modifier-to-non-array-how-to-remove-array-e
     Cart.findOneAndUpdate(
-        { "_id": id, "items.sku": sku },
+        { '_id': id, 'items.sku': sku },
         {
             $pull: {
-                "items": {
-                    "sku": sku
+                'items': {
+                    'sku': sku
                 }
             }
         },
@@ -211,7 +213,7 @@ routes.put('/remove', celebrate(
             if (cart) {
                 res.send(cart);
             } else {
-                next(new Error("No Remove: Cart doesn't exist or item not in cart."));
+                next(new Error('No Remove: Cart does not exist or item not in cart.'));
             }
         }
     );
@@ -228,30 +230,46 @@ routes.put('/completeCheckout', celebrate(
 
     const id = req.body.cartId;
 
-    //Update the cart then send it back
+    // Update the cart then send it back
     Cart.findOneAndUpdate(
-        { "_id": id },
+        { '_id': id },
         {
-            $set: { status: "complete" }
+            $set: { status: 'complete' }
         },
         { safe: true, new: true },
         (err, cart) => {
             if (err) return next(err);
-            if (cart.status == "complete") {
+            if (cart.status === 'complete') {
                 res.send(cart);
             } else {
-                next(new Error("No Checkout: Cart doesn't exist or is no longer active."));
+                next(new Error('No Checkout: Cart does not exist or is no longer active.'));
             }
         }
     );
 
-    //remove cart from inventory.carted array
+    // check inventory level of products
+    Product.find(
+        { 'inventory.carted.cart_id': id, 'inventory.qty': {'$lte': 10} },
+        (err, lowInvArray) => {
+            if (err) return next(err);
+            if (lowInvArray) {
+                lowInvArray.forEach(
+                    async lowInvProd => {
+                        const reg = await dboard.findOrCreate('products', lowInvProd._id, 'low inventory', next);
+                        if (reg) dboard.emit(req);
+                    }
+                );
+            }
+        },
+    );
+
+    // remove cart from inventory.carted array
     Product.update(
-        { "inventory.carted.cart_id": id },
+        { 'inventory.carted.cart_id': id },
         {
             $pull: {
-                "inventory.carted": {
-                    "cart_id": id
+                'inventory.carted': {
+                    'cart_id': id
                 }
             }
         }, (err) => {
@@ -269,40 +287,38 @@ routes.put('/expire', celebrate(
         })
     }
 ), (req, res, next) => {
-
-    expirecart(req.cartId);
-
+    expireCart(req.cartId, next);
 });
 
-const expireCart = id => {
-    //Set status as expired
+const expireCart = (id, next) => {
+    // Set status as expired
     Cart.findOneAndUpdate(
-        {"_id":id, "status":  { $ne: "complete"}},
+        {'_id': id, 'status':  { $ne: 'complete'}},
         {
-            $set: { status: "expired" }
+            $set: { status: 'expired' }
         },
         (err, resp) => {
             if (err) return next(err);
             if (resp) {
                 const cart = resp;
-                //for each item in the cart, return inventory
-                cart.items.forEach(item => returnInventory(item.sku, item.qty, cart._id));
+                // for each item in the cart, return inventory
+                cart.items.forEach(item => returnInventory(item.sku, item.qty, cart._id, next));
             } else {
-                return next(new Error("Expired cart ID not found or cart is complete"));
+                return next(new Error('Expired cart ID not found or cart is complete'));
             }
         }
     );
-}
+};
 
-const returnInventory = (sku, qty, id) => Product.findOneAndUpdate(
+const returnInventory = (sku, qty, id, next) => Product.findOneAndUpdate(
     { 'sku': sku },
     {
         $inc: {
-            "inventory.qty": + qty
+            'inventory.qty': + qty
         },
         $pull: {
-            "inventory.carted": {
-                "cart_id": id
+            'inventory.carted': {
+                'cart_id': id
             }
 
         }

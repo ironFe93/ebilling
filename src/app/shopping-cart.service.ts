@@ -15,18 +15,18 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 
 @Injectable()
-export class ShoppingCartService{
+export class ShoppingCartService {
 
-  private cartsUrl = "/api/cart";
+  private cartsUrl = '/api/cart';
   private cartId;
-  //represents the current ShoppingCart
+  // represents the current ShoppingCart
   private cart: Cart = new Cart();
-  //sale is a cart with status = complete
-  //represents the current sale that has been queried.
+  // sale is a cart with status = complete
+  // represents the current sale that has been queried.
   private sale: Cart = new Cart();
 
   private subjectCart = new BehaviorSubject(this.cart);
-  //https://stackoverflow.com/questions/42798236/angular2-how-to-update-an-item-inside-an-observable-collection
+  // https://stackoverflow.com/questions/42798236/angular2-how-to-update-an-item-inside-an-observable-collection
 
   private subjectSale = new BehaviorSubject(this.cart);
 
@@ -64,14 +64,14 @@ export class ShoppingCartService{
     }), catchError(this.handleError('getCartDetail', [])));
   }
 
-  //add a new Cart to the server
+  // add a new Cart to the server
   public createCart() {
 
-    //create a new Cart
+    // create a new Cart
     const newCart = new Cart;
-    newCart.status = "active";
+    newCart.status = 'active';
 
-    //post the new cart to the DB, then the resulting observable<Cart>,
+    // post the new cart to the DB, then the resulting observable<Cart>,
     // put it into this.observableCart and return it
     return this.http.post<Cart>(this.cartsUrl + '/create', newCart)
       .pipe(tap(cart => {
@@ -81,22 +81,22 @@ export class ShoppingCartService{
       }), catchError(this.handleError('createCart', [])));
 
 
-    //https://stackoverflow.com/questions/41554156/angular-2-cache-observable-http-result-data
-    //https://stackoverflow.com/questions/39494058/behaviorsubject-vs-observable
+    // https://stackoverflow.com/questions/41554156/angular-2-cache-observable-http-result-data
+    // https://stackoverflow.com/questions/39494058/behaviorsubject-vs-observable
   }
 
   public addItem(product: Product, quantity: number) {
 
-    const repeated = this.cart.items.find(item => product.sku == item.sku);
+    const repeated = this.cart.items.find(item => product.sku === item.sku);
 
     if (repeated) {
-      this.messageService.add("Cart Service: Item already exists in cart!");
+      this.messageService.add('Cart Service: Item already exists in cart!');
       return of(this.cart);
     } else {
 
 
 
-      //To Do: Handle Errors
+      // To Do: Handle Errors
       return this.http.put<Cart>(this.cartsUrl + '/add',
         {
           'sku': product.sku,
@@ -106,7 +106,7 @@ export class ShoppingCartService{
         })
         .pipe(tap(cart => {
 
-          //this.subjectCart.next(Object.assign({}, this.cart)); // emit completely new value
+          // this.subjectCart.next(Object.assign({}, this.cart)); // emit completely new value
 
           cart.grossTotal = cart.items.reduce((prevVal, item) => prevVal + item.listPrice * item.qty, 0);
           cart.itemsTotal = cart.items.reduce((prevVal, item) => prevVal + item.qty, 0);
@@ -145,16 +145,16 @@ export class ShoppingCartService{
       {
         'cartId': this.cart._id
       }).pipe(tap(cart => {
-        if (cart.status == "complete") {
-          this.log("Venta realizada exitosamente");
-          //clear the Cart and CartObservable
+        if (cart.status === 'complete') {
+          this.log('Venta realizada exitosamente');
+          // clear the Cart and CartObservable
           this.cart = new Cart();
           this.subjectCart.next(this.cart);
           // save received cart as Sale then emit to SaleSubject
           this.sale = cart;
           this.subjectSale.next(this.sale);
         }
-      }));
+      }), catchError(this.handleError('Complete Checkout: ', [])));
   }
 
   public destroyCart() {
@@ -169,7 +169,7 @@ export class ShoppingCartService{
 
       // TODO: better job of transforming error for user consumption
       this.log(`${operation} failed: ${error.error.message}`);
-      if (error.error.message == "Cart is expired") {
+      if (error.error.message === 'Cart is expired') {
         this.createCart().subscribe();
       }
 
@@ -180,7 +180,7 @@ export class ShoppingCartService{
 
   /** Log a Service message with the MessageService */
   private log(message: string) {
-    this.messageService.add(" CartService: " + message);
+    this.messageService.add('CartService: ' + message);
   }
 
   private UpdateCartSubject(cart: Cart) {

@@ -15,7 +15,7 @@ export class InventoryReqSearchResultsComponent implements OnInit {
   ngOnInit() {
   }
 
-  getReqDetail(id: any){
+  getReqDetail(id: any) {
     this.productsService.getReqDetail(id).subscribe();
   }
 }

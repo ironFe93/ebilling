@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageService } from '../message.service';
 
-import { MatSnackBar } from '@angular/material'
+import { MatSnackBar } from '@angular/material';
 import { Observable } from 'rxjs/Observable';
 
 @Component({
@@ -19,18 +19,14 @@ export class MessagesComponent implements OnInit {
     this.messageService.messages$.subscribe(
       arr => {
         if (arr.length) {
-          this.openSnackBar(arr[arr.length - 1], "Dismiss")
+          this.openSnackBar(arr[arr.length - 1]);
         }
       });
   }
 
-  openSnackBar(message: string, action: string) {
-    console.log("opening snackbar...");
-    this.snackBar.open(message, action, {
-      //duration: 2000,
-    });
-
-    //To Do: Handle Dismiss
+  openSnackBar(message: string) {
+    this.snackBar.open(message, 'Dismiss', {duration: 1000});
+    // To Do: Handle Dismiss
   }
 
 }

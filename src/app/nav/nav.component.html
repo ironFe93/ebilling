@@ -3,12 +3,19 @@
     <button mat-icon-button (click)="sidenav.toggle()">
       <mat-icon class="nav-icon">menu</mat-icon>
     </button>
-    <h1 class="example-app-name">Responsive App</h1>
+    <h1 class="example-app-name">Universal</h1>
   </mat-toolbar>
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav class="sidenav" #sidenav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches"
       opened="true">
       <mat-nav-list>
+        <mat-list-item routerLink="dashboard" routerLinkActive="active">
+          <mat-icon mat-list-icon class="nav-icon">assignment</mat-icon>
+          <div fxFlex="10"></div>
+          <div class="sidebar-item">
+            <h5>Dashboard</h5>
+          </div>
+        </mat-list-item>
         <mat-list-item routerLink="products" routerLinkActive="active">
           <mat-icon mat-list-icon class="nav-icon">home</mat-icon>
           <div fxFlex="10"></div>

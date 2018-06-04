@@ -6,9 +6,9 @@ import { catchError, map, tap } from 'rxjs/operators';
 @Injectable()
 export class AuthService {
 
-  private authUrl = "/api/auth";
+  private authUrl = '/api/auth';
 
-  constructor(private http: HttpClient, private jwtHelper: JwtHelperService) { 
+  constructor(private http: HttpClient, private jwtHelper: JwtHelperService) {
     console.log(this.jwtHelper.isTokenExpired());
     console.log(this.jwtHelper.getTokenExpirationDate());
   }
@@ -28,8 +28,8 @@ export class AuthService {
       this.authUrl + '/login',
       { username: username, password: password }
     ).pipe(tap(res => {
-      if (res.message == "ok") {
-        localStorage.setItem('token', res.token)
+      if (res.message === 'ok') {
+        localStorage.setItem('token', res.token);
       }
     }));
   }

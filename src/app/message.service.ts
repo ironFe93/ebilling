@@ -13,15 +13,15 @@ export class MessageService {
 
   private subjectMessages = new BehaviorSubject(this.messages);
   messages$ = this.subjectMessages.asObservable();
-  
-   add(message: string) {
-     this.messages.push(message); //save your data
-     this.subjectMessages.next(this.messages); //emit your data
-   }
-  
-   clear() {
-     this.messages = [];
-     this.subjectMessages.next(this.messages);
-   }
+
+  add(message: string) {
+    this.messages.push(message); // save your data
+    this.subjectMessages.next(this.messages); // emit your data
+  }
+
+  clear() {
+    this.messages = [];
+    this.subjectMessages.next(this.messages);
+  }
 
 }

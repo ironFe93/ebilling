@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+// tslint:disable-next-line:import-blacklist
 import { Observable, pipe } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -19,7 +20,7 @@ export class InventoryReqDetailsComponent {
   req: Observable<ProductReq> = this.productsService.getReqDetailAsObservable();
 
   convertToPO() {
-    let reqItems : {};
+    let reqItems: {};
     this.productsService.getReqDetailAsObservable()
       .subscribe(req => reqItems = req.items);
     this.purchasingService.clearPO();
