@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import {ProductsService} from '../products.service';
 import {Product} from '../models/product';

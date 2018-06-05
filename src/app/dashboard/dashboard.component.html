@@ -2,7 +2,7 @@
   <mat-card>
     <mat-card-subtitle>Productos</mat-card-subtitle>
     <div class="detail-subtitle" *ngFor="let productsDashReg of (productsDash$ | async)">
-      <label>{{productsDashReg.reference}}: {{productsDashReg.subject}}</label>
+      <label (click)="viewProdDetail(productsDashReg.reference)">{{productsDashReg.reference}}: {{productsDashReg.subject}}</label>
     </div>
   </mat-card>
 </div>
@@ -22,4 +22,5 @@
     </div>
   </mat-card>
 </div>
-<!---->
+<!--missing: use ngFor to build this template.-->
+

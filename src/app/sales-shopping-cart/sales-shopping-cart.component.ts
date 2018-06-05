@@ -6,8 +6,7 @@ import { Cart } from '../models/cart';
 import { Product } from '../models/product';
 import { SalesCheckoutComponent } from '../sales-checkout/sales-checkout.component';
 
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
+import { Observable ,  Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sales-shopping-cart',
@@ -17,15 +16,14 @@ import { Subscription } from 'rxjs/Subscription';
 export class SalesShoppingCartComponent implements OnInit {
 
   observableCart: Observable<Cart>;
-  cartSubscription: Subscription; //so we can unsub later.
+  cartSubscription: Subscription; // so we can unsub later.
 
-  constructor(private cartService: ShoppingCartService, 
+  constructor(private cartService: ShoppingCartService,
     private router: Router) {
 
   }
 
   ngOnInit() {
-    
     this.observableCart = this.cartService.getObservableCart();
   }
 
@@ -37,10 +35,7 @@ export class SalesShoppingCartComponent implements OnInit {
     this.cartService.deltaOne(productId, operation).subscribe();
   }
 
-  goToCheckout(){
+  goToCheckout() {
     this.router.navigateByUrl('/sales-checkout');
   }
-
-
-
 }

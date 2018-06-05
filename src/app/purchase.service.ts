@@ -5,18 +5,14 @@ import { Product } from './models/product';
 
 import { MessageService } from './message.service';
 
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable ,  Observer ,  BehaviorSubject ,  of } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
-
-import { of } from 'rxjs/observable/of';
 import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable()
 export class PurchaseService {
 
-  private purchasingUrl = "/api/purchase";
+  private purchasingUrl = '/api/purchase';
 
   private pOrder: PurchaseOrder = new PurchaseOrder();
   private subjectPurchaseOrder = new BehaviorSubject(this.pOrder);
@@ -49,21 +45,21 @@ export class PurchaseService {
 
   public addToPO(product: Product, quantity: number) {
 
-    const repeated = this.pOrder.items.find(item => product.sku == item.sku);
+    const repeated = this.pOrder.items.find(item => product.sku === item.sku);
 
     if (repeated) {
-      this.messageService.add("Purchase Service: Item already exists in order!");
+      this.messageService.add('Purchase Service: Item already exists in order!');
       return of(this.pOrder);
     } else {
-      const item = { 'sku': product.sku, 'qty': quantity, 'title': product.title }
+      const item = { 'sku': product.sku, 'qty': quantity, 'title': product.title };
       this.pOrder.items.push(item);
       this.subjectPurchaseOrder.next(this.pOrder);
     }
   }
 
   public removeItem(sku: any) {
-    var isProduct = (item) => item.sku !== sku
-    var modifiedItems = this.pOrder.items.filter(isProduct);
+    const isProduct = (item) => item.sku !== sku ;
+    const modifiedItems = this.pOrder.items.filter(isProduct);
     this.pOrder.items = modifiedItems;
     this.subjectPurchaseOrder.next(this.pOrder);
   }
@@ -74,7 +70,7 @@ export class PurchaseService {
     return this.http.post<PurchaseOrder>(this.purchasingUrl + '/registerPurchaseOrder', this.pOrder,
     ).pipe(tap(pOrder => {
       if (pOrder) {
-        this.log("Orden de Compra registrada exitosamente");
+        this.log('Orden de Compra registrada exitosamente');
         this.pOrder = null;
         this.subjectPurchaseOrder.next(this.pOrder);
         this.subjectPurchaseOrderDetail.next(pOrder);
@@ -83,7 +79,7 @@ export class PurchaseService {
   }
 
   findPOrders(queryObject): Observable<PurchaseOrder[]> {
-    var queryString = new HttpParams();
+    let queryString = new HttpParams();
 
     const string = queryObject.string;
     const provider = queryObject.provider;
@@ -106,11 +102,11 @@ export class PurchaseService {
     return this.http.get<PurchaseOrder[]>(this.purchasingUrl + '/findPO', { params: queryString });
   }
 
-  ///Get fully detailed Requisition
+  /// Get fully detailed Requisition
   public getPOrderDetail(id: String) {
     return this.http.get<PurchaseOrder>(this.purchasingUrl + '/getPOrderDetail/' + id)
       .pipe(tap(pOrder => {
-        //this.pOrderDetail = pOrder;
+        // this.pOrderDetail = pOrder;
         this.subjectPurchaseOrderDetail.next(pOrder);
       }));
   }
@@ -123,8 +119,8 @@ export class PurchaseService {
 
       // TODO: better job of transforming error for user consumption
       this.log(`${operation} failed: ${error.error.message}`);
-      if (error.error.message == "Cart is expired") {
-        //this.createCart().subscribe();
+      if (error.error.message === 'Cart is expired') {
+        // this.createCart().subscribe();
       }
 
       // Let the app keep running by returning an empty result.
@@ -134,7 +130,7 @@ export class PurchaseService {
 
   /** Log a Service message with the MessageService */
   private log(message: string) {
-    this.messageService.add(" PurchasingService: " + message);
+    this.messageService.add(' PurchasingService: ' + message);
   }
 
 }

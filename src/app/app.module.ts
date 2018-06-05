@@ -20,6 +20,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatNativeDateModule} from '@angular/material';
+import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 
 
 // Components & Services
@@ -130,6 +131,7 @@ const appRoutes = [
     MatTabsModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatBottomSheetModule,
     RouterModule.forRoot(appRoutes),
     JwtModule.forRoot({
       config: {
@@ -147,6 +149,9 @@ const appRoutes = [
         authScheme: 'jwt '
       }
     })
+  ],
+  entryComponents: [
+    ProductDetailsComponent
   ],
   providers: [ProductsService, ShoppingCartService,
      PurchaseService, MessageService, AuthService , AuthGuard, DashboardService, SocketioService],

@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { ShoppingCartService } from '../shopping-cart.service';
 import { Cart } from '../models/cart';
 
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-sales-checkout',

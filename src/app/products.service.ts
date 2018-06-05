@@ -3,11 +3,9 @@ import { Injectable } from '@angular/core';
 import { Product } from './models/product';
 import { ProductReq } from './models/product-req';
 
-import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable , BehaviorSubject ,  of } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
-import { of } from 'rxjs/observable/of';
 import { MessageService } from './message.service';
 
 @Injectable()
@@ -38,7 +36,7 @@ export class ProductsService {
   }
 
   // Get all products from the API
-  getAllProducts(): Observable<Product[]> {
+  getAllProducts() {
     return this.http.get<Product[]>(this.productsUrl + '/findall');
   }
 
@@ -87,7 +85,7 @@ export class ProductsService {
     );
   }
 
-  findReqs(queryObject): Observable<ProductReq[]> {
+  findReqs(queryObject) {
     let queryString = new HttpParams();
 
     const string = queryObject.string;

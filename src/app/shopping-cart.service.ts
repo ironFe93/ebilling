@@ -5,12 +5,8 @@ import { Product } from './models/product';
 
 import { MessageService } from './message.service';
 
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable ,  Observer ,  BehaviorSubject ,  of } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-
-import { of } from 'rxjs/observable/of';
 import { catchError, map, tap } from 'rxjs/operators';
 
 

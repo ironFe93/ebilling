@@ -5,8 +5,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { PurchaseService } from '../purchase.service';
 import { Product } from '../models/product';
 
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
+import { Observable ,  Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-purchase-order',
