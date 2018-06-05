@@ -21,6 +21,8 @@ import {MatTabsModule} from '@angular/material/tabs';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatNativeDateModule} from '@angular/material';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 
 // Components & Services
@@ -62,6 +64,7 @@ import { InventoryReqSearchComponent } from './inventory-req-search/inventory-re
 import { InventoryReqSearchResultsComponent } from './inventory-req-search-results/inventory-req-search-results.component';
 import { InventoryReqDetailsComponent } from './inventory-req-details/inventory-req-details.component';
 import { SocketioService } from './socketio.service';
+import { DashProdDialogComponent } from './dashboard/dash-prod-dialog/dash-prod-dialog.component';
 
 const appRoutes = [
   { path: 'sales', component: SalesComponent , canActivate: [AuthGuard] },
@@ -108,7 +111,8 @@ const appRoutes = [
     InventoryReqSearchComponent,
     InventoryReqSearchResultsComponent,
     InventoryReqDetailsComponent,
-    DashboardComponent
+    DashboardComponent,
+    DashProdDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -132,6 +136,8 @@ const appRoutes = [
     MatDatepickerModule,
     MatNativeDateModule,
     MatBottomSheetModule,
+    MatDialogModule,
+    MatTooltipModule,
     RouterModule.forRoot(appRoutes),
     JwtModule.forRoot({
       config: {
@@ -151,7 +157,8 @@ const appRoutes = [
     })
   ],
   entryComponents: [
-    ProductDetailsComponent
+    ProductDetailsComponent,
+    DashProdDialogComponent
   ],
   providers: [ProductsService, ShoppingCartService,
      PurchaseService, MessageService, AuthService , AuthGuard, DashboardService, SocketioService],

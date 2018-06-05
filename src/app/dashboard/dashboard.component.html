@@ -3,6 +3,9 @@
     <mat-card-subtitle>Productos</mat-card-subtitle>
     <div class="detail-subtitle" *ngFor="let productsDashReg of (productsDash$ | async)">
       <label (click)="viewProdDetail(productsDashReg.reference)">{{productsDashReg.reference}}: {{productsDashReg.subject}}</label>
+      <button mat-icon-button matTooltip="Añadir a Req" (click)="openDialog(productsDashReg.reference)">
+        <mat-icon aria-label="icon-button to add to req">file_copy</mat-icon>
+      </button>
     </div>
   </mat-card>
 </div>

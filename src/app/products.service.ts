@@ -62,7 +62,7 @@ export class ProductsService {
   addToReq = (product: Product, quantity: Number) => {
     const repeated = this.productReq.items.find(item => product.sku === item.sku);
     if (repeated) {
-      this.messageService.add('Purchase Service: Item already exists in order!');
+      this.messageService.add('Products Service: Item already exists in req!');
       return of(this.productReq);
     } else {
       const item = {'sku': product.sku, 'qty': quantity, 'title': product.title, 'status': 'pending'};

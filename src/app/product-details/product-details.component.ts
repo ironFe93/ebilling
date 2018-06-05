@@ -5,7 +5,6 @@ import { ProductsService } from '../products.service';
 
 import { Observable } from 'rxjs';
 import { DashboardComponent } from '../dashboard/dashboard.component';
-import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'app-product-details',
@@ -17,8 +16,7 @@ export class ProductDetailsComponent implements OnInit {
 
   $product: Observable<Product> = this.productsService.getProductObservable();
 
-  constructor(private productsService: ProductsService,
-    private bottomSheetRef: MatBottomSheetRef<DashboardComponent>) { }
+  constructor(private productsService: ProductsService) { }
 
   ngOnInit() {
   }
