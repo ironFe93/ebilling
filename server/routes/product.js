@@ -99,7 +99,7 @@ routes.post('/registerReq', celebrate(
         if (err) return next(err);
         res.send(resp);
         if (resp.status === 'open') {
-            const reg = await dboard.findOrCreate('requisitions', resp._id, 'open', next);
+            const reg = await dboard.findOrCreate('requisitions', resp._id, 'open', next, null, null);
             if (reg) dboard.emit(req);
         }
     });

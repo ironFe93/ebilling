@@ -158,6 +158,8 @@ const appRoutes = [
   ],
   entryComponents: [
     ProductDetailsComponent,
+    PurchasingDetailComponent,
+    InventoryReqDetailsComponent,
     DashProdDialogComponent
   ],
   providers: [ProductsService, ShoppingCartService,

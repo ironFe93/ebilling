@@ -255,7 +255,8 @@ routes.put('/completeCheckout', celebrate(
             if (lowInvArray) {
                 lowInvArray.forEach(
                     async lowInvProd => {
-                        const reg = await dboard.findOrCreate('products', lowInvProd._id, 'low inventory', next);
+                        const reg = await dboard.findOrCreate('products', lowInvProd._id, 
+                        'low inventory', next, lowInvProd.title, lowInvProd.sku);
                         if (reg) dboard.emit(req);
                     }
                 );
