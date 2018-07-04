@@ -23,13 +23,6 @@
             <h5>Productos</h5>
           </div>
         </mat-list-item>
-        <mat-list-item routerLink="inventory" routerLinkActive="active">
-          <mat-icon mat-list-icon class="nav-icon">info</mat-icon>
-          <div fxFlex="10"></div>
-          <div class="sidebar-item">
-            <h5>Inventario</h5>
-          </div>
-        </mat-list-item>
         <mat-list-item routerLink="purchasing" routerLinkActive="active">
           <mat-icon mat-list-icon class="nav-icon">email</mat-icon>
           <div fxFlex="10"></div>
@@ -48,7 +41,6 @@
     </mat-sidenav>
     <mat-sidenav-content>
       <router-outlet></router-outlet>
-      <app-messages></app-messages>
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>

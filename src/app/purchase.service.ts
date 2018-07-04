@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 
-import { PurchaseOrder } from './models/purchase-order';
+import { PurchaseInvoice } from './models/purchase-invoice';
 import { Product } from './models/product';
 
 import { MessageService } from './message.service';
 
-import { Observable ,  Observer ,  BehaviorSubject ,  of } from 'rxjs';
+import { Observable, Observer, BehaviorSubject, of } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -14,100 +14,91 @@ export class PurchaseService {
 
   private purchasingUrl = '/api/purchase';
 
-  private pOrder: PurchaseOrder = new PurchaseOrder();
-  private subjectPurchaseOrder = new BehaviorSubject(this.pOrder);
-
-  private pOrderDetail: PurchaseOrder = new PurchaseOrder();
-  private subjectPurchaseOrderDetail = new BehaviorSubject(this.pOrderDetail);
+  private invoice$ = new BehaviorSubject(new PurchaseInvoice);
+  private invoiceDetail$ = new BehaviorSubject(new PurchaseInvoice);
 
   constructor(private http: HttpClient,
     private messageService: MessageService) {
-    this.pOrder.items = [];
   }
 
-  public getObservablePurchaseOrder() {
-    return this.subjectPurchaseOrder.asObservable();
+  public getInvoiceAsObservable() {
+    return this.invoice$.asObservable();
   }
 
-  public getObservablePODetail() {
-    return this.subjectPurchaseOrderDetail.asObservable();
+  public getInvoiceDetailAsObservable() {
+    return this.invoiceDetail$.asObservable();
   }
 
-  public clearPO() {
-    this.pOrder = new PurchaseOrder();
-    this.subjectPurchaseOrder.next(this.pOrder);
+  public clearInvoice() {
+    this.invoice$.next(new PurchaseInvoice);
   }
 
-  public addItemsFromReq(items: any) {
-    this.pOrder.items = items;
-    this.subjectPurchaseOrder.next(this.pOrder);
-  }
+  public addToInvoice(product: Product, quantity: number) {
 
-  public addToPO(product: Product, quantity: number) {
-
-    const repeated = this.pOrder.items.find(item => product.sku === item.sku);
+    const repeated = this.invoice$.getValue().items.find(item => product.sku === item.sku);
 
     if (repeated) {
       this.messageService.add('Purchase Service: Item already exists in order!');
-      return of(this.pOrder);
+      // Make better!!
+      // return of(this.pOrder);
     } else {
       const item = { 'sku': product.sku, 'qty': quantity, 'title': product.title };
-      this.pOrder.items.push(item);
-      this.subjectPurchaseOrder.next(this.pOrder);
+      const invoice = this.invoice$.getValue();
+      invoice.items.push(item);
+      this.invoice$.next(invoice);
     }
   }
 
   public removeItem(sku: any) {
-    const isProduct = (item) => item.sku !== sku ;
-    const modifiedItems = this.pOrder.items.filter(isProduct);
-    this.pOrder.items = modifiedItems;
-    this.subjectPurchaseOrder.next(this.pOrder);
+    const invoice = this.invoice$.getValue();
+    const isProduct = (item) => item.sku !== sku;
+    const modifiedItems = invoice.items.filter(isProduct);
+
+    invoice.items = modifiedItems;
+    this.invoice$.next(invoice);
   }
 
-  public registerPurchaseOrder(provider: String) {
-    this.pOrder.provider = provider;
-    this.subjectPurchaseOrder.next(this.pOrder);
-    return this.http.post<PurchaseOrder>(this.purchasingUrl + '/registerPurchaseOrder', this.pOrder,
-    ).pipe(tap(pOrder => {
-      if (pOrder) {
-        this.log('Orden de Compra registrada exitosamente');
-        this.pOrder = null;
-        this.subjectPurchaseOrder.next(this.pOrder);
-        this.subjectPurchaseOrderDetail.next(pOrder);
+  public registerInvoice(provider: String, ruc: Number) {
+    const invoice = this.invoice$.getValue();
+    invoice.provider = provider;
+    invoice.ruc = ruc;
+    this.invoice$.next(invoice);
+    return this.http.post<PurchaseInvoice>(this.purchasingUrl + '/registerInvoice',
+      this.invoice$.getValue()
+    ).pipe(tap(resp => {
+      if (resp) {
+        this.log('Factura/Boleta registrada exitosamente');
+        this.invoice$.next(new PurchaseInvoice);
+        this.invoiceDetail$.next(resp);
       }
     }));
   }
 
-  findPOrders(queryObject): Observable<PurchaseOrder[]> {
+  findInvoices(queryObject): Observable<PurchaseInvoice[]> {
     let queryString = new HttpParams();
 
     const string = queryObject.string;
     const provider = queryObject.provider;
     const sku = queryObject.sku;
-    const datePlaced1 = queryObject.datePlaced1;
-    const datePlaced2 = queryObject.datePlaced2;
-    const dateSent1 = queryObject.dateSent1;
-    const dateSent2 = queryObject.dateSent2;
+    const date1 = queryObject.datePlaced1;
+    const date2 = queryObject.datePlaced2;
     const status = queryObject.status;
 
     if (string) queryString = queryString.append('string', string);
     if (provider) queryString = queryString.append('provider', provider);
     if (sku) queryString = queryString.append('sku', sku);
-    if (datePlaced1) queryString = queryString.append('datePlaced1', datePlaced1);
-    if (datePlaced2) queryString = queryString.append('datePlaced2', datePlaced2);
-    if (dateSent1) queryString = queryString.append('dateSent1', dateSent1);
-    if (dateSent2) queryString = queryString.append('dateSent2', dateSent2);
+    if (date1) queryString = queryString.append('date1', date1);
+    if (date2) queryString = queryString.append('date2', date2);
     if (status) queryString = queryString.append('status', status);
 
-    return this.http.get<PurchaseOrder[]>(this.purchasingUrl + '/findPO', { params: queryString });
+    return this.http.get<PurchaseInvoice[]>(this.purchasingUrl + '/findInvoice', { params: queryString });
   }
 
-  /// Get fully detailed Requisition
-  public getPOrderDetail(id: String) {
-    return this.http.get<PurchaseOrder>(this.purchasingUrl + '/getPOrderDetail/' + id)
-      .pipe(tap(pOrder => {
-        // this.pOrderDetail = pOrder;
-        this.subjectPurchaseOrderDetail.next(pOrder);
+  /// Get fully detailed Invoice
+  public getInvoiceDetail(id: String) {
+    return this.http.get<PurchaseInvoice>(this.purchasingUrl + '/getInvoiceDetail/' + id)
+      .pipe(tap(resp => {
+        this.invoiceDetail$.next(resp);
       }));
   }
 

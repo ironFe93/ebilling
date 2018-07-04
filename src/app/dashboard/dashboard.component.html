@@ -9,27 +9,6 @@
     </div>
   </mat-card>
 </div>
-<div class="containerColumn" fxLayout="column" fxLayoutGap="20px">
-  <mat-card>
-    <mat-card-subtitle>Reqs</mat-card-subtitle>
-    <div class="detail-subtitle" *ngFor="let reqsDashReg of (reqsDash$ | async)">
-      <label (click)="viewReqDetail(reqsDashReg.reference)">{{reqsDashReg.reference}}: {{reqsDashReg.subject}}</label>
-      <button mat-icon-button matTooltip="Transferir a Nueva Orden" (click)="transferToOrder(reqsDashReg.reference)">
-        <mat-icon aria-label="icon-button to add to req">file_copy</mat-icon>
-      </button>
-    </div>
-  </mat-card>
-</div>
-<div class="containerColumn" fxLayout="column" fxLayoutGap="20px">
-  <mat-card>
-    <mat-card-subtitle>Ordenes</mat-card-subtitle>
-    <div class="detail-subtitle" *ngFor="let pOrdersDashReg of (pOrdersDash$ | async)">
-      <label (click)="viewOrderDetail(pOrdersDashReg.reference)">{{pOrdersDashReg.reference}}: {{pOrdersDashReg.subject}}</label>
-      <button mat-icon-button matTooltip="Ingreso de Mercadería" (click)="productArrival()">
-        <mat-icon aria-label="icon-button to add to req">file_copy</mat-icon>
-      </button>
-    </div>
-  </mat-card>
-</div>
+
 <!--missing: use ngFor to build this template.-->
 

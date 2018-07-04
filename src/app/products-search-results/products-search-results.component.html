@@ -1,9 +1,9 @@
 <div class="containerRow" fxLayoutGap="20px">
     <mat-card *ngFor="let product of products" fxFlex="auto">
       <mat-card-title>{{product.title}}</mat-card-title>
-      <div>
+      <mat-form-field>
           <input matInput #qty placeholder="quantity" value="1">
-      </div>
+        </mat-form-field>
       <!-- https://angular.io/guide/user-input template reference variable-->
       <button mat-raised-button color="primary" (click)="routeFunctions(product, qty.value)">Agregar</button>
     </mat-card>

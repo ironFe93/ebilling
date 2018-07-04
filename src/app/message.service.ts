@@ -1,27 +1,40 @@
 import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material';
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 
 
 @Injectable()
 export class MessageService {
 
-  constructor() { }
+  private messages: {message: string, action: string }[] = [];
+  private messages$ = new BehaviorSubject(this.messages);
 
-  private messages: string[] = [];
+  constructor(public snackbar: MatSnackBar) {
+    this.messages$.forEach( msgs => {
+      if (msgs.length > 0) {
+        this.openSnackbar(msgs[msgs.length - 1].message);
+      }
+    });
+  }
 
-  private subjectMessages = new BehaviorSubject(this.messages);
-  messages$ = this.subjectMessages.asObservable();
+  getMessagesAsObservable() {
+    return this.messages$.asObservable();
+  }
 
-  add(message: string) {
-    this.messages.push(message); // save your data
-    this.subjectMessages.next(this.messages); // emit your data
+  add(message: string, action?: string) {
+    this.messages.push({message, action}); // save your data
+    this.messages$.next(this.messages); // emit your data
   }
 
   clear() {
     this.messages = [];
-    this.subjectMessages.next(this.messages);
+    this.messages$.next(this.messages);
+  }
+
+  public openSnackbar(msg: any) {
+    this.snackbar.open(msg, 'close');
   }
 
 }

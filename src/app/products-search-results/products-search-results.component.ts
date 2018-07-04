@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Product } from '../models/product';
-import { ShoppingCartService } from '../shopping-cart.service';
+import { SalesService } from '../sales.service';
 import { ProductsService } from '../products.service';
 import { PurchaseService } from '../purchase.service';
 
@@ -13,7 +13,7 @@ import { PurchaseService } from '../purchase.service';
 })
 export class ProductsSearchResultsComponent implements OnInit {
 
-  constructor(private cartService: ShoppingCartService,
+  constructor(private cartService: SalesService,
     private productsService: ProductsService,
     private purchaseService: PurchaseService,
     private router: Router) { }
@@ -29,13 +29,13 @@ export class ProductsSearchResultsComponent implements OnInit {
   routeFunctions(product, quantity) {
     console.log(this.router.url);
     console.log(this.selectedTab);
-    if (this.router.url == '/sales') {
+    if (this.router.url === '/sales') {
       this.addProductToCart(product, quantity);
-    } else if (this.router.url == '/products') {
+    } else if (this.router.url === '/products') {
       this.displayProductDetails(product._id);
-    }else if (this.router.url == '/purchasing') {
-      this.addProductToPurchaseOrder(product, quantity);
-    } else if (this.router.url == '/inventory') {
+    }else if (this.router.url === '/purchasing') {
+      this.addProductToPurchaseInvoice(product, quantity);
+    } else if (this.router.url === '/inventory') {
       this.addProductToProductReq(product, quantity);
     }
   }
@@ -44,8 +44,8 @@ export class ProductsSearchResultsComponent implements OnInit {
     this.cartService.addItem(product, quantity).subscribe();
   }
 
-  addProductToPurchaseOrder(product: Product, quantity: number) {
-    this.purchaseService.addToPO(product, quantity);
+  addProductToPurchaseInvoice(product: Product, quantity: number) {
+    this.purchaseService.addToInvoice(product, quantity);
   }
 
   displayProductDetails(id) {

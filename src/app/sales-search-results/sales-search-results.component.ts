@@ -1,9 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-
-import {ShoppingCartService} from '../shopping-cart.service';
-import {Cart} from '../models/cart';
-
-import {tap } from 'rxjs/operators';
+import {SalesService} from '../sales.service';
 
 @Component({
   selector: 'app-sales-search-results',
@@ -13,15 +9,14 @@ import {tap } from 'rxjs/operators';
 export class SalesSearchResultsComponent implements OnInit {
 
   @Input() sales: any = [];
-  //saleDetail : Cart;
 
-  constructor(private ShoppingCartService: ShoppingCartService) { }
+  constructor(private salesService: SalesService) { }
 
   ngOnInit() {
   }
 
-  getCartDetails(cartId: any){
-    this.ShoppingCartService.getCartDetail(cartId).subscribe();
+  getSaleDetails(saleId: any) {
+    this.salesService.getSaleDetail(saleId).subscribe();
   }
 
 }

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ShoppingCartService } from '../shopping-cart.service';
-import { Cart } from '../models/cart';
+import { SalesService } from '../sales.service';
+import { Sale } from '../models/cart';
 
 import { Observable } from 'rxjs';
 
@@ -13,17 +13,17 @@ import { Observable } from 'rxjs';
 })
 export class SalesCheckoutComponent implements OnInit {
 
-  observableCart: Observable<Cart>;
-  change: number = 0.00;
+  observableCart: Observable<Sale>;
+  change: Number = 0.00;
 
-  constructor(private cartService: ShoppingCartService,
+  constructor(private cartService: SalesService,
      private router: Router) { }
 
   ngOnInit() {
     this.observableCart = this.cartService.getObservableCart();
   }
 
-  confirmPayment(){
+  confirmPayment() {
     this.cartService.completeCartCheckout().subscribe();
     this.router.navigateByUrl('/sales');
   }

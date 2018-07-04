@@ -1,4 +1,4 @@
-import {Cart} from './cart';
+import {Sale} from './cart';
 
 // create a schema
 export class Product {
@@ -17,8 +17,8 @@ export class Product {
     qty: number;
     carted: {
       qty: number;
-      cart_id: Cart[];
+      cart_id: Sale[];
       timestamp: string;
     }[]
-  }
-};
+  };
+}

@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ShoppingCartService } from '../shopping-cart.service';
-import { Cart } from '../models/cart';
+import { SalesService } from '../sales.service';
+import {ConfirmDialogComponent} from './confirm-dialog/confirm-dialog.component';
+import { Sale } from '../models/cart';
 import { Product } from '../models/product';
 import { SalesCheckoutComponent } from '../sales-checkout/sales-checkout.component';
+
+import {MatDialog } from '@angular/material';
 
 import { Observable ,  Subscription } from 'rxjs';
 
@@ -15,11 +18,11 @@ import { Observable ,  Subscription } from 'rxjs';
 })
 export class SalesShoppingCartComponent implements OnInit {
 
-  observableCart: Observable<Cart>;
+  observableCart: Observable<Sale>;
   cartSubscription: Subscription; // so we can unsub later.
 
-  constructor(private cartService: ShoppingCartService,
-    private router: Router) {
+  constructor(private cartService: SalesService,
+    private router: Router, public dialog: MatDialog) {
 
   }
 
@@ -38,4 +41,15 @@ export class SalesShoppingCartComponent implements OnInit {
   goToCheckout() {
     this.router.navigateByUrl('/sales-checkout');
   }
+
+  openCheckoutDialog() {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '250px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
+  }
+
 }

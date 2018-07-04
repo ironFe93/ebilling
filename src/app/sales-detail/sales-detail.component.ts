@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
-import { ShoppingCartService } from '../shopping-cart.service';
-import { Cart } from '../models/cart';
+import { SalesService } from '../sales.service';
+import { Sale } from '../models/cart';
 
 import { Observable } from 'rxjs';
 
@@ -12,9 +12,9 @@ import { Observable } from 'rxjs';
 })
 export class SalesDetailComponent implements OnInit {
 
-  sale: Observable<Cart>;
+  sale: Observable<Sale>;
 
-  constructor(private cartService: ShoppingCartService) { }
+  constructor(private cartService: SalesService) { }
 
   ngOnInit() {
     this.sale = this.cartService.getObservableSale();

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { PurchaseOrder } from '../models/purchase-order';
+import { PurchaseInvoice } from '../models/purchase-invoice';
 import { PurchaseService } from '../purchase.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
@@ -10,28 +10,26 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 })
 export class PurchasingSearchComponent {
 
-  pOrders: PurchaseOrder[];
-  pOForm: FormGroup;
+  invoices: PurchaseInvoice[];
+  form: FormGroup;
 
-  constructor(private purchaseService: PurchaseService, private fb: FormBuilder,) { 
+  constructor(private purchaseService: PurchaseService, private fb: FormBuilder) {
     this.createForm();
   }
 
   createForm() {
-    this.pOForm = this.fb.group({
-      string: ['',Validators.required],
-      provider: ['',Validators.required],
-      datePlaced1: [''],
-      datePlaced2: [''],
-      dateSent1: [''],
-      dateSent2: [''],
+    this.form = this.fb.group({
+      string: ['', Validators.required],
+      provider: ['', Validators.required],
+      date1: [''],
+      date2: [''],
       status: ['open', Validators.required],
     });
   }
- 
-  onSubmit(value: string) { 
-    this.purchaseService.findPOrders(this.pOForm.value).subscribe(pOrders => {
-      this.pOrders = pOrders;
+
+  onSubmit(value: string) {
+    this.purchaseService.findInvoices(this.form.value).subscribe(invoices => {
+      this.invoices = invoices;
     });
   }
 

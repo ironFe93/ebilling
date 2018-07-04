@@ -30,31 +30,15 @@ routes.get('/getDetail/:_id', (req, res, next) => {
 });
 
 // Create a cart
-routes.post('/create', celebrate(
-    {
-        body: Joi.object().keys({
-            status: Joi.string().required()
-        })
-    }
-), (req, res, next) => {
+routes.post('/create', (req, res, next) => {
     const newCart = new Cart({ status: 'active', grossTotal: 0, itemsTotal: 0 });
-
     newCart.save((err, cart) => {
         if (err) return next(err);
-
-        if (cart) {
-/*             setTimeout(function () {
-                expireCart(cart._id);
-            }, 1000 * 60 * 60 * 8);
-            //1000 * 60 * 60 * 8) */
-            res.send(cart);
-        } else {
-            return next(new Error('Cart creation failed'));
-        }
+        res.send(cart);
     });
 });
 
-// Add a product to a cart
+// Add a product to a cart OPTIMIZE THIS ROUTE BY LOOKING FOR DUPES FIRST THEN EXTRACTING INVENTORY
 // Joi validation with Celebrate libary
 routes.put('/add', celebrate(
     {
@@ -67,10 +51,7 @@ routes.put('/add', celebrate(
     }
 ), (req, res, next) => {
 
-    // get the cartID
     const id = req.body.cartId;
-
-    // get the rest of the data
     const p_sku = req.body.sku;
     const quantity = req.body.quantity;
     const p_title = req.body.title;
@@ -93,7 +74,7 @@ routes.put('/add', celebrate(
         'pricing.list inventory.qty',
         (err, product) => {
             if (err) return next(err);
-                let p_price;
+            let p_price;
             if (product) {
                 p_price = product.pricing.list;
             } else {
@@ -108,7 +89,7 @@ routes.put('/add', celebrate(
                 { $push: { items: { sku: p_sku, qty: quantity, listPrice: p_price, title: p_title } } },
                 { safe: true, upsert: false, new: true },
                 (error, cart) => {
-                    if (err) return next(err);
+                    if (error) return next(error);
 
                     if (cart) {
                         res.send(cart);
@@ -255,7 +236,7 @@ routes.put('/completeCheckout', celebrate(
             if (lowInvArray) {
                 lowInvArray.forEach(
                     async lowInvProd => {
-                        const reg = await dboard.findOrCreate('products', lowInvProd._id, 
+                        const reg = await dboard.findOrCreate('products', lowInvProd._id,
                         'low inventory', next, lowInvProd.title, lowInvProd.sku);
                         if (reg) dboard.emit(req);
                     }

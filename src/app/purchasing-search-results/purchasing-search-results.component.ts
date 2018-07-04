@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { PurchaseService } from '../purchase.service';
-import { PurchaseOrder } from '../models/purchase-order';
+import { PurchaseInvoice } from '../models/purchase-invoice';
 
 @Component({
   selector: 'app-purchasing-search-results',
@@ -9,15 +9,13 @@ import { PurchaseOrder } from '../models/purchase-order';
 })
 export class PurchasingSearchResultsComponent {
 
-  constructor(private purchaseService: PurchaseService
-  ) { }
+  constructor(private purchaseService: PurchaseService) { }
 
   // instantiate posts to an empty array
-  @Input() pOrders: any = [];
-  @Input() selectedTab: number;
+  @Input() invoices: any = [];
 
-  displayPurchaseOrder(id: String) {
-      this.purchaseService.getPOrderDetail(id).subscribe();
+  displayInvoice(id: String) {
+      this.purchaseService.getInvoiceDetail(id).subscribe();
   }
 }
 

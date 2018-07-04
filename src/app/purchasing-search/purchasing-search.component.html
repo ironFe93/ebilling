@@ -1,48 +1,31 @@
 <div class="containerColumn" fxLayout="column" fxLayoutGap="20px" >
   <mat-card>
-    <mat-card-title>Busqueda de Ordenes de Compra</mat-card-title>
-    <form [formGroup]="pOForm" (ngSubmit)="onSubmit()">
+    <mat-card-title>Consulta Compras</mat-card-title>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div>
         <mat-form-field>
-          <input type="search" matInput placeholder="PO" formControlName="string" (keyup.enter)="onSubmit()">
+          <input type="search" matInput placeholder="Invoice" formControlName="string" (keyup.enter)="onSubmit()">
         </mat-form-field>
         <mat-form-field>
-            <input type="search" matInput placeholder="PO" formControlName="provider" (keyup.enter)="onSubmit()">
+            <input type="search" matInput placeholder="Provider" formControlName="provider" (keyup.enter)="onSubmit()">
           </mat-form-field>
-        <mat-radio-group formControlName="status">
-          <mat-radio-button value="open">Pendientes</mat-radio-button>
-          <mat-radio-button value="finished">Finalizadas</mat-radio-button>
-        </mat-radio-group>
       </div>
       <div>
-        <label>Fecha de Generación</label>
+        <label>Fecha</label>
         <mat-form-field>
-          <input matInput [matDatepicker]="picker1" placeholder="Desde" formControlName="datePlaced1">
+          <input matInput [matDatepicker]="picker1" placeholder="Desde" formControlName="date1">
           <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
           <mat-datepicker #picker1></mat-datepicker>
         </mat-form-field>
         <mat-form-field>
-          <input matInput [matDatepicker]="picker2" placeholder="Hasta" formControlName="datePlaced2">
+          <input matInput [matDatepicker]="picker2" placeholder="Hasta" formControlName="date2">
           <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
           <mat-datepicker #picker2></mat-datepicker>
         </mat-form-field>
       </div>
-      <div>
-          <label>Fecha de Envío</label>
-          <mat-form-field>
-            <input matInput [matDatepicker]="picker3" placeholder="Desde" formControlName="dateSent1">
-            <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
-            <mat-datepicker #picker3></mat-datepicker>
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput [matDatepicker]="picker4" placeholder="Hasta" formControlName="dateSent2">
-            <mat-datepicker-toggle matSuffix [for]="picker4"></mat-datepicker-toggle>
-            <mat-datepicker #picker4></mat-datepicker>
-          </mat-form-field>
-        </div>
     </form>
   </mat-card>
   
-  <app-purchasing-search-results [pOrders]='pOrders' [selectedTab]='selectedTab'></app-purchasing-search-results>
+  <app-purchasing-search-results [invoices]='invoices'></app-purchasing-search-results>
   
   </div>

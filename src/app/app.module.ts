@@ -4,10 +4,9 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
-import { HttpModule } from '@angular/http';
-import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 // Material
 import { MatSidenavModule, MatButtonModule, MatIconModule, MatListModule } from '@angular/material';
@@ -33,9 +32,7 @@ import { ProductsSearchResultsComponent } from './products-search-results/produc
 import { ProductsService } from './products.service';
 import { SalesShoppingCartComponent } from './sales-shopping-cart/sales-shopping-cart.component';
 import { SalesComponent } from './sales/sales.component';
-import { ShoppingCartService } from './shopping-cart.service';
-import { MessagesComponent } from './messages/messages.component';
-import { MessageService } from './message.service';
+import { SalesService } from './sales.service';
 import { SalesCheckoutComponent } from './sales-checkout/sales-checkout.component';
 import { SalesSearchComponent } from './sales-search/sales-search.component';
 import { SalesSearchResultsComponent } from './sales-search-results/sales-search-results.component';
@@ -47,7 +44,7 @@ import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth-guard.service';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { PurchasingComponent } from './purchasing/purchasing.component';
-import { PurchaseOrderComponent } from './purchase-order/purchase-order.component';
+import { PurchaseInvoiceComponent } from './purchase-invoice/purchase-invoice.component';
 import { PurchaseService } from './purchase.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DashboardService } from './dashboard.service';
@@ -55,22 +52,21 @@ import { DashboardService } from './dashboard.service';
 // Auth
 import { JwtModule } from '@auth0/angular-jwt';
 import { AuthService } from './auth.service';
-import { InventoryRequisitionComponent } from './inventory-requisition/inventory-requisition.component';
+
 import { PurchasingSearchComponent } from './purchasing-search/purchasing-search.component';
 import { PurchasingDetailComponent } from './purchasing-detail/purchasing-detail.component';
 import { PurchasingSearchResultsComponent } from './purchasing-search-results/purchasing-search-results.component';
-import { InventoryComponent } from './inventory/inventory.component';
-import { InventoryReqSearchComponent } from './inventory-req-search/inventory-req-search.component';
-import { InventoryReqSearchResultsComponent } from './inventory-req-search-results/inventory-req-search-results.component';
-import { InventoryReqDetailsComponent } from './inventory-req-details/inventory-req-details.component';
 import { SocketioService } from './socketio.service';
 import { DashProdDialogComponent } from './dashboard/dash-prod-dialog/dash-prod-dialog.component';
+import { ConfirmDialogComponent } from './sales-shopping-cart/confirm-dialog/confirm-dialog.component';
+import { ErrorHandlerService } from './error-handler.service';
+import { HttpInterceptorService } from './http-interceptor.service';
+import { MessageService } from './message.service';
 
 const appRoutes = [
   { path: 'sales', component: SalesComponent , canActivate: [AuthGuard] },
   { path: 'sales-checkout', component: SalesCheckoutComponent , canActivate: [AuthGuard]},
   { path: 'products', component: ProductsComponent, canActivate: [AuthGuard]},
-  { path: 'inventory', component: InventoryComponent, canActivate: [AuthGuard]},
   { path: 'purchasing', component: PurchasingComponent, canActivate: [AuthGuard]},
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard]},
   { path: 'home', component: NavComponent },
@@ -91,7 +87,6 @@ const appRoutes = [
     ProductsSearchResultsComponent,
     SalesShoppingCartComponent,
     SalesComponent,
-    MessagesComponent,
     SalesCheckoutComponent,
     SalesSearchComponent,
     SalesSearchResultsComponent,
@@ -102,21 +97,16 @@ const appRoutes = [
     LoginComponent ,
     UnauthorizedComponent,
     PurchasingComponent,
-    PurchaseOrderComponent,
-    InventoryRequisitionComponent,
+    PurchaseInvoiceComponent,
     PurchasingSearchComponent,
     PurchasingDetailComponent,
     PurchasingSearchResultsComponent,
-    InventoryComponent,
-    InventoryReqSearchComponent,
-    InventoryReqSearchResultsComponent,
-    InventoryReqDetailsComponent,
     DashboardComponent,
-    DashProdDialogComponent
+    DashProdDialogComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule,
-    HttpModule,
     HttpClientModule,
     ReactiveFormsModule,
     FormsModule,
@@ -159,11 +149,24 @@ const appRoutes = [
   entryComponents: [
     ProductDetailsComponent,
     PurchasingDetailComponent,
-    InventoryReqDetailsComponent,
-    DashProdDialogComponent
+    DashProdDialogComponent,
+    ConfirmDialogComponent
   ],
-  providers: [ProductsService, ShoppingCartService,
-     PurchaseService, MessageService, AuthService , AuthGuard, DashboardService, SocketioService],
+  providers: [
+    ProductsService,
+    SalesService,
+    PurchaseService,
+    MessageService,
+    AuthService,
+    AuthGuard,
+    DashboardService,
+    SocketioService,
+    ErrorHandlerService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpInterceptorService,
+      multi: true,
+    }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
