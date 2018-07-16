@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-nav',
@@ -13,7 +14,7 @@ export class NavComponent {
 
   private _mobileQueryListener: () => void;
 
-  constructor ( private router: Router, changeDetectorRef: ChangeDetectorRef, media: MediaMatcher ) {
+  constructor ( private router: Router, changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, public authService: AuthService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
@@ -23,6 +24,10 @@ export class NavComponent {
   // tslint:disable-next-line:use-life-cycle-interface
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+  test() {
+    this.authService.test().subscribe();
   }
 
 }

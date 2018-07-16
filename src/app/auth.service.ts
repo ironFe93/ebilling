@@ -2,13 +2,16 @@ import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
+import { MessageService } from './message.service';
 
 @Injectable()
 export class AuthService {
 
   private authUrl = '/api/auth';
 
-  constructor(private http: HttpClient, private jwtHelper: JwtHelperService) {
+  constructor(private http: HttpClient,
+    private jwtHelper: JwtHelperService,
+    public messageService: MessageService) {
     console.log(this.jwtHelper.isTokenExpired());
     console.log(this.jwtHelper.getTokenExpirationDate());
   }
@@ -32,6 +35,15 @@ export class AuthService {
         localStorage.setItem('token', res.token);
       }
     }));
+  }
+
+  test() {
+    return this.http.post<any>(
+      '/api/soap/test',
+      { test: 'test data'}
+    ).pipe(tap(
+      x => console.log(x)
+    ));
   }
 
 }

@@ -5,7 +5,6 @@ import { SalesService } from '../sales.service';
 import {ConfirmDialogComponent} from './confirm-dialog/confirm-dialog.component';
 import { Sale } from '../models/cart';
 import { Product } from '../models/product';
-import { SalesCheckoutComponent } from '../sales-checkout/sales-checkout.component';
 
 import {MatDialog } from '@angular/material';
 
@@ -42,9 +41,10 @@ export class SalesShoppingCartComponent implements OnInit {
     this.router.navigateByUrl('/sales-checkout');
   }
 
-  openCheckoutDialog() {
+  openCheckoutDialog(ruc, rs) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '250px'
+      width: '250px',
+      data: { ruc: ruc, rs: rs }
     });
 
     dialogRef.afterClosed().subscribe(result => {

@@ -6,8 +6,6 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const app = express();
 
-
-
 // Conect MongoDB
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://admin:PPEKCJ4236702+@universalcluster0-shard-00-00-dlslo.mongodb.net:27017,' +
@@ -50,7 +48,6 @@ app.get('*', (req, res) => {
 if (app.get('env') === 'development') {
 
   app.use(function (err, req, res, next) {
-    console.log(err.message);
     res.status(err.status || 500).send(err.toString());
   });
 
@@ -86,5 +83,9 @@ app.set('socketio', io);
 /**
  * Listen on provided port, on all network interfaces.
  */
-server.listen(port, () => console.log(`API running on localhost:${port}`));
+server.listen(port, () => {
+  console.log(`API running on localhost:${port}`);
+  
+
+});
 

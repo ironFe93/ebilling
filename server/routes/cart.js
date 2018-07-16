@@ -32,8 +32,10 @@ routes.get('/getDetail/:_id', (req, res, next) => {
 // Create a cart
 routes.post('/create', (req, res, next) => {
     const newCart = new Cart({ status: 'active', grossTotal: 0, itemsTotal: 0 });
+    
     newCart.save((err, cart) => {
         if (err) return next(err);
+        if (!cart) return next(new Error('Error creating cart'));
         res.send(cart);
     });
 });
@@ -204,18 +206,23 @@ routes.put('/remove', celebrate(
 routes.put('/completeCheckout', celebrate(
     {
         body: Joi.object().keys({
-            cartId: Joi.string().required()
+            cartId: Joi.string().required(),
+            ruc: Joi.string().required(),
+            rs: Joi.string().required(),
         })
     }
 ), (req, res, next) => {
 
     const id = req.body.cartId;
+    const ruc = req.body.ruc;
+    const rs = req.body.rs;
+
 
     // Update the cart then send it back
     Cart.findOneAndUpdate(
         { '_id': id },
         {
-            $set: { status: 'complete' }
+            $set: { status: 'complete' , ruc: ruc, rs: rs }
         },
         { safe: true, new: true },
         (err, cart) => {

@@ -1,5 +1,5 @@
 import { Component, OnInit, } from '@angular/core';
-import {Router, ActivatedRoute, Params} from '@angular/router';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 
 import { SalesService } from '../sales.service';
 
@@ -14,14 +14,14 @@ export class SalesComponent implements OnInit {
   selectedTab: number;
 
   constructor(private activatedRoute: ActivatedRoute,
-  private cartService: SalesService) { }
+    private cartService: SalesService) { }
 
   ngOnInit() {
     this.selectedTab = 0;
     // subscribe to router event
     this.activatedRoute.params.subscribe((params: Params) => {
-/*       let userId = params['userId'];
-      console.log(userId); */
+      /*       let userId = params['userId'];
+            console.log(userId); */
     });
   }
 
@@ -30,7 +30,9 @@ export class SalesComponent implements OnInit {
   createCart() {
     console.log('tab: ' + this.selectedTab);
     if (this.selectedTab === 1) {
-      if (!this.cartService.checkIfCartExists()) this.cartService.createCart().subscribe();
+      if (!this.cartService.checkIfCartExists()) {
+        this.cartService.createCart().subscribe();
+      }
     }
   }
 

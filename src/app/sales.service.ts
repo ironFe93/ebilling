@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material';
 
 import { Sale } from './models/cart';
 import { Product } from './models/product';
 
 import { MessageService } from './message.service';
 
-import { Observable, Observer, BehaviorSubject, of } from 'rxjs';
+import { Observable, Observer, BehaviorSubject, of, throwError } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, catchError } from 'rxjs/operators';
 
 
 @Injectable()
@@ -19,7 +20,7 @@ export class SalesService {
   private sale$ = new BehaviorSubject(new Sale); // a completed sale
 
   constructor(private http: HttpClient,
-    private messageService: MessageService) {
+    private messageService: MessageService, public snackbar: MatSnackBar) {
   }
 
   public getObservableCart() {
@@ -56,7 +57,12 @@ export class SalesService {
         tap(resp => {
           this.cart$.next(resp);
           this.messageService.add('CartService: Shopping Cart ready');
-        }));
+        }),
+/*        catchError(err => {
+          this.retryCart();
+          return of(err);
+          }) */
+      );
   }
 
   public addItem(product: Product, quantity: number) {
@@ -104,11 +110,13 @@ export class SalesService {
       }));
   }
 
-  public completeCartCheckout() {
+  public completeCartCheckout(ruc: string, rs: string) {
 
     return this.http.put<Sale>(this.cartsUrl + '/completeCheckout',
       {
-        'cartId': this.cart$.getValue()._id
+        'cartId': this.cart$.getValue()._id,
+        'ruc': ruc,
+        'rs': rs
       }).pipe(tap(resp => {
         if (resp.status === 'complete') {
           this.messageService.add('Venta realizada exitosamente');
@@ -137,6 +145,14 @@ export class SalesService {
   private calculateItemsTotal(cart: Sale) {
     cart.itemsTotal = cart.items.reduce((prevVal, item) => prevVal + item.qty, 0);
     this.cart$.next(cart);
+  }
+
+  retryCart() {
+    this.snackbar.open('Failed to create cart. Retry?', 'Retry')
+      .onAction()
+      .subscribe( () => {
+        this.createCart().subscribe();
+      });
   }
 
 

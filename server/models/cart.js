@@ -2,9 +2,13 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-// create a schema
+// if (ruc) then sale is 'factura', else it's 'boleta'
 var cartSchema = new Schema({
   last_modified: Date,
+  client:{
+    name: String,
+    ruc: String,
+  },
   status: String,
   grossTotal: Number,
   itemsTotal: Number,

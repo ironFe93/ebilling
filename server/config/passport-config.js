@@ -15,8 +15,7 @@ jwtOptions.secretOrKey = 'nancy';
 jwtOptions.audience = 'yoursite.net'; */
 
 var strategy = new JwtStrategy(jwtOptions, function(jwt_payload, done) {
-  console.log('payload received', jwt_payload);
-  // usually this would be a database call:
+
   user.findById(jwt_payload.id, function(err, res){
     if (err) console.log(err);
 

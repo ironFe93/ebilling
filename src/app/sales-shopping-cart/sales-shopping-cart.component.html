@@ -1,34 +1,23 @@
 <div class="containerColumn">
-<mat-card>
-  <mat-card-title>Shopping Cart</mat-card-title>
-  <mat-card-subtitle>{{(observableCart | async)._id}}</mat-card-subtitle>
-  <mat-card-subtitle>
-    Sub Total ({{(observableCart | async).itemsTotal}} items):
-    <!--<span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal | currency:'PEN':true}}</span> -->
-    <span class="text--red text--bold js-cart-total">{{(observableCart | async).grossTotal}}</span>
-  </mat-card-subtitle>
+  <mat-card>
+    <mat-card-title>Shopping Cart</mat-card-title>
+    <mat-card-subtitle>{{(observableCart | async)._id}}</mat-card-subtitle>
+    <mat-card-subtitle>
+      Sub Total ({{(observableCart | async).itemsTotal}} items):
+      <span>{{(observableCart | async).grossTotal}}</span>
+    </mat-card-subtitle>
 
-  <mat-card-title>Detail</mat-card-title>
-  <mat-card-subtitle class="detail-subtitle" *ngFor="let item of (observableCart | async).items">
-    {{item.title}} : {{item.listPrice}} x {{item.qty}}
-<!--     <span>
-      <button mat-icon-button (click)="deltaOne(item.sku, 'add')">
-        <mat-icon class="cart-icon" aria-label ="icon-button to add +1 item">add</mat-icon>
-      </button>
-    </span>
-    <span>
-      <button mat-icon-button (click)="deltaOne(item.sku, 'substract')">
-        <mat-icon class="cart-icon" aria-label="icon-button to substract -1 item">remove</mat-icon>
-      </button>
-    </span>
-    <span> -->
+    <mat-card-title>Detail</mat-card-title>
+    <mat-card-subtitle class="detail-subtitle" *ngFor="let item of (observableCart | async).items">
+      {{item.title}} : {{item.listPrice}} x {{item.qty}}
       <button mat-icon-button (click)="removeFromCart(item.sku)">
         <mat-icon class="cart-icon" aria-label="icon-button to clear the item">clear</mat-icon>
       </button>
-  </mat-card-subtitle>
+    </mat-card-subtitle>
 
-  <form>
-      <button mat-raised-button (click)="openCheckoutDialog()">Checkout</button>
-  </form>
-</mat-card>
-</div> 
+    <mat-card-title>Cliente</mat-card-title>
+    <input type="text" #ruc matInput placeholder="RUC">
+    <input type="text" #rs matInput placeholder="RS">
+    <button mat-raised-button (click)="openCheckoutDialog(ruc.value, RS.value)">Checkout</button>
+  </mat-card>
+</div>

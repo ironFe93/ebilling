@@ -33,7 +33,6 @@ import { ProductsService } from './products.service';
 import { SalesShoppingCartComponent } from './sales-shopping-cart/sales-shopping-cart.component';
 import { SalesComponent } from './sales/sales.component';
 import { SalesService } from './sales.service';
-import { SalesCheckoutComponent } from './sales-checkout/sales-checkout.component';
 import { SalesSearchComponent } from './sales-search/sales-search.component';
 import { SalesSearchResultsComponent } from './sales-search-results/sales-search-results.component';
 import { SalesDetailComponent } from './sales-detail/sales-detail.component';
@@ -65,7 +64,6 @@ import { MessageService } from './message.service';
 
 const appRoutes = [
   { path: 'sales', component: SalesComponent , canActivate: [AuthGuard] },
-  { path: 'sales-checkout', component: SalesCheckoutComponent , canActivate: [AuthGuard]},
   { path: 'products', component: ProductsComponent, canActivate: [AuthGuard]},
   { path: 'purchasing', component: PurchasingComponent, canActivate: [AuthGuard]},
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard]},
@@ -87,7 +85,6 @@ const appRoutes = [
     ProductsSearchResultsComponent,
     SalesShoppingCartComponent,
     SalesComponent,
-    SalesCheckoutComponent,
     SalesSearchComponent,
     SalesSearchResultsComponent,
     SalesDetailComponent,
