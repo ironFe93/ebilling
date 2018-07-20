@@ -1,6 +1,3 @@
-import {Sale} from './cart';
-
-// create a schema
 export class Product {
   _id: any;
   sku: string;
@@ -15,10 +12,5 @@ export class Product {
   };
   inventory: {
     qty: number;
-    carted: {
-      qty: number;
-      cart_id: Sale[];
-      timestamp: string;
-    }[]
   };
 }

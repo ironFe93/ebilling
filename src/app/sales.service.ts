@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
 
-import { Sale } from './models/cart';
+import { Bill } from './models/bill';
 import { Product } from './models/product';
 
 import { MessageService } from './message.service';
@@ -16,8 +16,8 @@ export class SalesService {
 
   private cartsUrl = '/api/cart';
 
-  private cart$ = new BehaviorSubject(new Sale); // a sale in process
-  private sale$ = new BehaviorSubject(new Sale); // a completed sale
+  private cart$ = new BehaviorSubject(new Bill); // a sale in process
+  private sale$ = new BehaviorSubject(new Bill); // a completed sale
 
   constructor(private http: HttpClient,
     private messageService: MessageService, public snackbar: MatSnackBar) {
@@ -32,7 +32,7 @@ export class SalesService {
   }
 
   public getSales(terms: string) {
-    return this.http.get<Sale[]>(this.cartsUrl + '/get/' + terms)
+    return this.http.get<Bill[]>(this.cartsUrl + '/get/' + terms)
       .pipe(tap(resp => {
         console.log(resp);
         if (resp.length === 0) this.messageService.add('No Results');
@@ -40,7 +40,7 @@ export class SalesService {
   }
 
   public getSaleDetail(id) {
-    return this.http.get<Sale>(this.cartsUrl + '/getDetail/' + id)
+    return this.http.get<Bill>(this.cartsUrl + '/getDetail/' + id)
       .pipe(tap(resp => {
         this.sale$.next(resp);
       }));
@@ -49,10 +49,10 @@ export class SalesService {
   // add a new Cart to the server
   public createCart() {
 
-    const newCart = new Sale;
+    const newCart = new Bill;
     newCart.status = 'active';
 
-    return this.http.post<Sale>(this.cartsUrl + '/create', newCart)
+    return this.http.post<Bill>(this.cartsUrl + '/create', newCart)
       .pipe(
         tap(resp => {
           this.cart$.next(resp);
@@ -74,7 +74,7 @@ export class SalesService {
       return of(this.cart$.getValue());
     } else {
 
-      return this.http.put<Sale>(this.cartsUrl + '/add',
+      return this.http.put<Bill>(this.cartsUrl + '/add',
         {
           'sku': product.sku,
           'title': product.title,
@@ -91,7 +91,7 @@ export class SalesService {
 
   public deltaOne(productSku: any, operation: string) {
 
-    return this.http.put<Sale>(this.cartsUrl + '/deltaOne',
+    return this.http.put<Bill>(this.cartsUrl + '/deltaOne',
       {
         'sku': productSku, 'cartId': this.cart$.getValue()._id, 'operation': operation
       }).pipe(tap(resp => {
@@ -101,7 +101,7 @@ export class SalesService {
   }
 
   public removeItem(productSku: any) {
-    return this.http.put<Sale>(this.cartsUrl + '/remove',
+    return this.http.put<Bill>(this.cartsUrl + '/remove',
       {
         'sku': productSku, 'cartId': this.cart$.getValue()._id
       }).pipe(tap(resp => {
@@ -112,7 +112,7 @@ export class SalesService {
 
   public completeCartCheckout(ruc: string, rs: string) {
 
-    return this.http.put<Sale>(this.cartsUrl + '/completeCheckout',
+    return this.http.put<Bill>(this.cartsUrl + '/completeCheckout',
       {
         'cartId': this.cart$.getValue()._id,
         'ruc': ruc,
@@ -137,12 +137,12 @@ export class SalesService {
     return false;
   }
 
-  private calculateGrossTotal(cart: Sale) {
+  private calculateGrossTotal(cart: Bill) {
     cart.grossTotal = cart.items.reduce((prevVal, item) => prevVal + item.listPrice * item.qty, 0);
     this.cart$.next(cart);
   }
 
-  private calculateItemsTotal(cart: Sale) {
+  private calculateItemsTotal(cart: Bill) {
     cart.itemsTotal = cart.items.reduce((prevVal, item) => prevVal + item.qty, 0);
     this.cart$.next(cart);
   }

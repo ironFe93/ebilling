@@ -4,28 +4,12 @@ const Schema = mongoose.Schema;
 
 // create a schema
 const productSchema = new Schema({
-  sku: {type: String, required: true, unique:true},
-  type: {type: String, index: true},
-  title: {type: String, index: true},
-  description: { type: String, index: true},
-  pricing: {
-    list: Number,
-    retail: Number,
-    savings: Number,
-    pct_savings: Number
-  },
-  inventory: {
-    qty: {
-      type: Number,
-      min: [0, 'Inventory cant be negative']
-    },
-    carted: [{
-      qty: Number,
-      cart_id: Schema.Types.ObjectId,
-      timestamp: { type: Date, default: Date.now },
-    }]
+  cod_medida: String, //11
+  descripcion: String, //13
+  ref_price: Number,
+  inventario: {
+    cantidad: {type: Number, min:0 }
   }
-
 });
 
 // the schema is useless so far

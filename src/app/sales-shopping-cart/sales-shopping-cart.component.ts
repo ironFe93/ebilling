@@ -3,8 +3,7 @@ import { Router } from '@angular/router';
 
 import { SalesService } from '../sales.service';
 import {ConfirmDialogComponent} from './confirm-dialog/confirm-dialog.component';
-import { Sale } from '../models/cart';
-import { Product } from '../models/product';
+import { Bill } from '../models/bill';
 
 import {MatDialog } from '@angular/material';
 
@@ -17,7 +16,7 @@ import { Observable ,  Subscription } from 'rxjs';
 })
 export class SalesShoppingCartComponent implements OnInit {
 
-  observableCart: Observable<Sale>;
+  observableCart: Observable<Bill>;
   cartSubscription: Subscription; // so we can unsub later.
 
   constructor(private cartService: SalesService,

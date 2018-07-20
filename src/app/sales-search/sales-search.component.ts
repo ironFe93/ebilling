@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import {SalesService} from '../sales.service';
-import {Sale} from '../models/cart';
+import {Bill} from '../models/bill';
 
 @Component({
   selector: 'app-sales-search',
@@ -11,7 +11,7 @@ import {Sale} from '../models/cart';
 export class SalesSearchComponent implements OnInit {
 
   // a sale is a shopping cart with status = complete;
-  sales: Sale[];
+  sales: Bill[];
 
   constructor(private ShoppingCartService: SalesService) {
   }
