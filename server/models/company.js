@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var companySchema = new Schema({
+  _id: String,
   registration_name: String,
   comercial_name: String,
   fiscal_address:{
@@ -22,6 +23,6 @@ var companySchema = new Schema({
   type: String //Owner, Provider or Client
 });
 
-var Company = mongoose.model('Company', companySchema);
+var Company = mongoose.model('Company', companySchema, 'company');
 
 module.exports = Company;

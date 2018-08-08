@@ -3,30 +3,33 @@
     <div class="containerRow" fxLayoutGap="20px">
 
       <mat-form-field>
-        <input type="text" matInput formControlName="title" placeholder="Titulo">
+        <input type="text" matInput formControlName="descripcion" placeholder="Descripción">
       </mat-form-field>
 
       <mat-form-field>
-        <input type="text" matInput formControlName="sku" placeholder="SKU">
+        <mat-select placeholder="Categoria" formControlName='categoria' required>
+          <mat-option>--</mat-option>
+          <mat-option *ngFor="let categoria of categorias" [value]="categoria.desc">
+            {{categoria.desc}}
+          </mat-option>
+        </mat-select>
       </mat-form-field>
 
     </div>
     <div class="containerRow" fxLayoutGap="20px">
 
       <mat-form-field>
-        <input type="number" matInput formControlName="listPrice" placeholder="Precio">
+        <input type="text" matInput formControlName="cod_medida" placeholder="Medida">
       </mat-form-field>
 
       <mat-form-field>
-        <div formGroupName="inventory">
-          <input type="number" formControlName="qty" matInput placeholder="Inventario Inicial">
+        <input type="number" matInput formControlName="ref_price" placeholder="Precio">
+      </mat-form-field>
+
+      <mat-form-field>
+        <div formGroupName="inventario">
+          <input type="number" formControlName="cantidad" matInput placeholder="Inventario Inicial">
         </div>
-      </mat-form-field>
-    </div>
-
-    <div class="containerRow" fxLayoutGap="20px">
-      <mat-form-field>
-        <textarea matInput formControlName="description" placeholder="Descripción"></textarea>
       </mat-form-field>
     </div>
 

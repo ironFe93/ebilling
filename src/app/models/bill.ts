@@ -1,31 +1,18 @@
+import { Item } from './item';
 export class Bill {
-  items: {
-    cantidad: Number; // 12
-    precio_unitario: {  // 15
-      monto: {type: Number, default: 0};
-      type_code: {type: Number, default: 1}
-    };
-    valor_ref_unitario: {  // 15
-      monto: Number;
-      type_code: Number;
-    };
-    IGV: {
-      afectacion_tipo: Number
-    };
-    descuento: {
-      factor: {type: Number, min: 0 , max: 1 }
-    };
-    sku: String;
-  }[] = [];
+  cod?: string;
+  items: Item[] = [];
+  fecha_emision: Date;
   cliente: {
     ruc: {
-      number: Number;
-      type: Number;
+      number: number;
+      type: number;
     };
-    registration_name: String;
-    email: String;
+    registration_name: string;
+    email?: string;
   };
-  descuento_global: {
-    factor: {type: Number, min: 0 , max: 1 }
+  descuento_global?: {
+    factor: {type: number, min: 0 , max: 1 }
   };
+  moneda: string;
 }

@@ -1,8 +1,0 @@
-<div class="containerRow" fxLayoutGap="20px" *ngFor="let invoice of invoices" >
-    <mat-card>
-        <mat-card-subtitle>{{invoice._id}}</mat-card-subtitle>
-        <label>{{invoice.datePlaced | date:'dd-MM-yy HH:mm a'}} </label>
-        <label>{{invoice.provider}} </label>
-      <button mat-raised-button color="primary" (click)="displayInvoice(invoice._id)">Ver</button>
-    </mat-card>
-  </div>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import * as io from 'socket.io-client';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class SocketioService {
@@ -8,7 +9,7 @@ export class SocketioService {
   private socket: SocketIOClient.Socket;
 
   constructor() {
-    this.socket = io();
+    this.socket = io(environment.apiUrl);
     console.log('socket service');
     this.socket.on('message', (data) => {
       console.log('Hi! ' + data);

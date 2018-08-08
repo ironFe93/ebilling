@@ -1,0 +1,145 @@
+<div class="containerColumn" fxLayout="column">
+  <mat-card>
+    <mat-card-title>Items</mat-card-title>
+    <mat-card-content>
+      <form class="example-form" [formGroup]='prodForm'>
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Buscar Productos" [matAutocomplete]="auto" formControlName='userInput'>
+        </mat-form-field>
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onSelectionChanged($event)">
+          <mat-option *ngIf="isLoading" class="is-loading">
+            <mat-spinner diameter="50"></mat-spinner>
+          </mat-option>
+          <ng-container *ngIf="!isLoading">
+            <mat-option *ngFor="let product of filteredProducts" [value]="product">
+              <span>{{ product.descripcion }}</span>
+              <small> | ID: {{product.cod}}</small>
+            </mat-option>
+          </ng-container>
+        </mat-autocomplete>
+      </form>
+    </mat-card-content>
+    <mat-card-content>
+      <mat-card-subtitle>Detalle</mat-card-subtitle>
+      <mat-table #table [dataSource]="dataSource">
+
+        <!-- Code Column -->
+        <ng-container matColumnDef="codigo">
+          <mat-header-cell *matHeaderCellDef> Código </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.cod}} </mat-cell>
+        </ng-container>
+
+        <!-- cantidad Column -->
+        <ng-container matColumnDef="cantidad">
+          <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
+          <mat-cell *matCellDef="let item">
+            <div *ngIf="item.tipo=='Bien'; else servicio">
+              <mat-form-field floatLabel="never">
+                <input matInput type="number" placeholder="cantidad" [value]="item.cantidad" [(ngModel)]="item.cantidad">
+              </mat-form-field>
+            </div>
+            <ng-template #servicio>
+              1
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Unit Measure Column -->
+        <ng-container matColumnDef="medida">
+          <mat-header-cell *matHeaderCellDef> UM </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.medida}} </mat-cell>
+        </ng-container>
+
+        <!-- Desc Column -->
+        <ng-container matColumnDef="descripcion">
+          <mat-header-cell *matHeaderCellDef> Descripcion </mat-header-cell>
+          <mat-cell *matCellDef="let item">
+<!--             <mat-form-field floatLabel="never">
+              <input matInput placeholder="Desc" [value]="item.descripcion" [(ngModel)]="item.descripcion">
+            </mat-form-field> -->
+            {{item.descripcion}}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Unit Price Column -->
+        <ng-container matColumnDef="precio_unit">
+          <mat-header-cell *matHeaderCellDef> Precio Unit. </mat-header-cell>
+          <mat-cell *matCellDef="let item">
+            <mat-form-field floatLabel="never">
+              <input matInput placeholder="precio" [value]="item.precio_unitario.monto" [(ngModel)]="item.precio_unitario.monto">
+            </mat-form-field>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Afectacion Column -->
+        <ng-container matColumnDef="afectacion">
+          <mat-header-cell *matHeaderCellDef> IGV </mat-header-cell>
+          <mat-cell *matCellDef="let item">
+            <mat-form-field floatLabel="never">
+              <mat-select [(value)]="item.IGV.afectacion_tipo" placeholder="Gravado">
+                <mat-option value=10>Gravado</mat-option>
+                <mat-option value=20>Exonerado</mat-option>
+                <mat-option value=30>Inafecto</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Valor Venta Column -->
+        <ng-container matColumnDef="valor_v">
+          <mat-header-cell *matHeaderCellDef> Valor Venta Unit. </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.precio_unitario.monto/1.18 | number}} </mat-cell>
+        </ng-container>
+
+        <!-- Valor_V total Column -->
+        <ng-container matColumnDef="valor_v_total">
+          <mat-header-cell *matHeaderCellDef> Valor Venta Total </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{(item.precio_unitario.monto/1.18)*item.cantidad | number}} </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </mat-card-content>
+
+    <form [formGroup]='billForm' (ngSubmit)="onSubmit()">
+      <mat-card-title>Cliente</mat-card-title>
+      <mat-card-content>
+        <div fxLayout="row" fxLayoutGap="10px">
+          <mat-form-field fxFlex="40%">
+            <input type="text" matInput placeholder="RUC" formControlName='ruc'>
+          </mat-form-field>
+
+          <mat-form-field fxFlex="60%">
+            <input type="text" matInput placeholder="Razón Social" formControlName='razonSocial'>
+          </mat-form-field>
+        </div>
+        <mat-card-title>Datos del Comprobante</mat-card-title>
+
+        <div fxLayout="row" fxLayoutGap="10px">
+          <mat-form-field>
+            <input matInput [matDatepicker]="picker1" placeholder="F. Vencimiento" formControlName='fecha_v'>
+            <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+            <mat-datepicker #picker1></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput [matDatepicker]="picker2" placeholder="F. Emisión" formControlName='fecha_e'>
+            <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+            <mat-datepicker #picker2></mat-datepicker>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-select placeholder="Moneda" formControlName='moneda'>
+              <mat-option value="PEN" selected>Sol</mat-option>
+              <mat-option value="USD">Dólar</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button type="submit" mat-raised-button>Test</button>
+        <!-- <button mat-raised-button (click)="openCheckoutDialog(ruc.value, RS.value)">Checkout</button> -->
+      </mat-card-actions>
+    </form>
+  </mat-card>
+</div>

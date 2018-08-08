@@ -1,0 +1,7 @@
+  <div class="containerRow" fxLayoutGap="20px" *ngFor="let sale of billing" >
+    <mat-card>
+      <mat-card-title>{{sale._id}}</mat-card-title>
+      <!-- https://angular.io/guide/user-input template reference variable-->
+      <button mat-raised-button color="primary" (click)="getSaleDetails(sale._id)">Ver</button>
+    </mat-card>
+  </div>

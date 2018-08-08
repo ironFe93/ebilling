@@ -5,8 +5,8 @@ export class PurchaseInvoice {
     ruc: Number;
     status: String;
     items: {
-        sku: String,
-        qty: Number,
-        title: String
+        _id: String,
+        cantidad: Number,
+        descripcion: String
     }[] = []; // This will give you a correctly typed, empty array stored in the variable 'arr'
 }

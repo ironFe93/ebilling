@@ -3,8 +3,11 @@ var Schema = mongoose.Schema;
 
 var counterSchema = new Schema({
     _id: String,
-    ser: Number, max: 999,
-    seq: Number, max: 99999999
+    desc: String,
+    ser: {type: Number, max: 999},
+    seq: {type: Number, max: 99999999},
+    prefix: String,
+    letter: String
 });
 
 var Counters = mongoose.model('Counters', counterSchema);

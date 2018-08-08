@@ -4,6 +4,7 @@ import { SocketioService } from './socketio.service';
 import { BehaviorSubject } from 'rxjs';
 import { Dashboard } from './models/dashboard';
 import { tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class DashboardService {
@@ -11,7 +12,7 @@ export class DashboardService {
   private productsDash$ = new BehaviorSubject(new Array<Dashboard>());
   private reqsDash$ = new BehaviorSubject(new Array<Dashboard>());
   private pOrdersDash$ = new BehaviorSubject(new Array<Dashboard>());
-  private dashboardUrl = '/api/dashboard';
+  private dashboardUrl =  environment.apiUrl + '/api/dashboard';
 
   constructor(private http: HttpClient, private socketService: SocketioService) {
     this.getDashboard();

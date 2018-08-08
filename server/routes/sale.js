@@ -30,30 +30,35 @@ routes.get('/getDetail/:_id', (req, res, next) => {
 });
 
 // Joi validation with Celebrate libary
-routes.post('/create', (req, res, next) => {
+routes.post('/saveDraft', async (req, res, next) => {
 
-    let company = new Company();
-    const query = Company.findOne().where('type').equals('owner');
-    query.exec().then((err, res) => {
-        if (err) return next(err);
-        company = res;
-    });
+    const query = Company.findOne({ type: 'owner' });
+
+    const company = await query.exec()
+        .then(
+            res => {
+                return res;
+            }
+        ).catch(err => next(err));
 
     let bill = new Bill(req.body);
-    bill.fecha_emision = Date.now();
-    bill.firma.ds_sidnature = '67381dhkkjnkbcjb398hd'
+    //bill.fecha_emision = Date.now();
+    bill.firma.ds_signature = '67381dhkkjnkbcjb398hd'
     bill.firma.cac_signature = '7617268712987128919287219'
     bill.emisor = company;
 
     // set the id number and series
-    const counter = getNextSequence('bill_id');
-    bill.id.serie = counter.ser;
-    bill.id.numero = counter.seq;
+    try {
+        bill.cod = await getNextSequence('bill_id');
+    } catch (error) {
+        next(error);
+    }
+
 
     //process items, quantity, price and taxes and totals
     try {
-        bill.items = calculateInvoiceInline(bill.items);
-        bill = calculateTotals(bill);
+        bill.items = await calculate_invoice_inline(bill.items);
+        bill = calculate_totals(bill);
     } catch (error) {
         next(error);
     }
@@ -65,37 +70,43 @@ routes.post('/create', (req, res, next) => {
     });
 });
 
-getNextSequence = async (name) => {
+const getNextSequence = (name) => {
 
-    const ret = await Counters.findAndModify(
+    query = Counters.findOneAndUpdate(
         {
-            query: { _id: name },
-            update: { $inc: { seq: 1 } },
+            prefix: name
+        },
+        {
+            $inc: { seq: 1 },
             new: true
         }
     );
 
-    // control overflow of IDs
-    if (ret.seq === 99999999) {
-        Counters.findAndModify(
-            {
-                query: { _id: name },
-                update: { $inc: { ser: 1 }, seq=0 },
-                new: true
+    return query.exec()
+        .then(
+            x => {
+                // control overflow of seq
+                if (x.seq === 99999999) {
+                    Counters.findOneAndUpdate(
+                        { _id: name },
+                        { $inc: { ser: 1 }, seq: 0 },
+                    );
+                }
+                cod = x.letter + x.ser + '-' + x.seq;
+                return cod;
             }
-        );
-    }
-
-    return ret;
+        ).catch(err => { return err });
 }
 
-calculateInvoiceInline = (items) => {
-    return items.map(item => {
+calculate_invoice_inline = async (items) => {
+    const newItems = await items.map(async item => {
+        const query = Product.findOne({cod: item.cod});
         try {
-            res = Product.findOne({ 'sku': item.sku })
+            res = await query.exec()
                 .then(
-                    res => { return res },
-                    err => { return err }
+                    res => { return res }
+                ).catch(
+                    err => {return err}
                 );
         } catch (err) {
             return err;
@@ -108,25 +119,26 @@ calculateInvoiceInline = (items) => {
         if (item.IGV.afectacion_tipo === 10) {
             item.valor_unitario = calculate_unit_value(item.precio_unitario.monto);
             item.valor_venta_bruto = calculate_valor_v_bruto(item);
-            item.descuentos.monto = calculate_discount(item);
+            item.descuento.monto = calculate_discount(item);
             item.valor_venta = calculate_valor_venta(item);
             item.IGV.tax_linea = calculate_taxes_IGV(item);
         } else if (item.IGV.afectacion_tipo === 20) {
             item.valor_unitario = item.precio_unitario.monto;
             item.valor_venta_bruto = calculate_valor_v_bruto(item);
-            item.descuentos.monto = calculate_discount(item);
+            item.descuento.monto = calculate_discount(item);
             item.valor_venta = calculate_valor_venta(item);
             item.IGV.tax_linea = 0;
         } else if (item.IGV.afectacion_tipo === 31) {
             item.valor_unitario = 0;
             item.valor_venta_bruto = 0;
-            item.descuentos.monto = 0;
+            item.descuento.monto = 0;
             item.valor_venta = 0;
             item.IGV.tax_linea = 0;
         }
 
         return item;
     });
+    return Promise.all(newItems).then(items => {return items});
 }
 
 calculate_unit_value = (precio_unit) => {
@@ -147,7 +159,7 @@ calculate_discount = (item) => {
 }
 
 calculate_valor_venta = (item) => {
-    return item.valor_venta_bruto - item.descuentos.monto
+    return item.valor_venta_bruto - item.descuento.monto
 }
 
 calculate_taxes_IGV = (item) => {
@@ -174,17 +186,17 @@ calculate_totals = (bill) => {
     bill.items.forEach(item => {
         desc_x_item_acum += item.descuento.monto;
         valor_venta_pre_glob += item.valor_venta;
-        if (item.IGV.tipo_afectacion < 20) {
-            total_op_grav += item.valor_venta * (1-bill.descuento_global.factor); //6
-        }else if( item.IGV.tipo_afectacion <22 ){
-            total_op_exon += item.valor_venta * (1-bill.descuento_global.factor); //7
+        if (item.IGV.afectacion_tipo < 20) {
+            total_op_grav += item.valor_venta * (1 - bill.descuento_global.factor); //6
+        } else if (item.IGV.afectacion_tipo < 22) {
+            total_op_exon += item.valor_venta * (1 - bill.descuento_global.factor); //7
         }
-        igv_total += item.IGV.monto; //8
+        igv_total += item.IGV.tax_linea; //8
 
-        if(item.valor_ref_unitario.monto){
+        if (item.valor_ref_unitario.monto) {
             total_op_grat += item.valor_ref_unitario.monto;
         }
-        
+
     });
 
     bill.descuento_global.monto = bill.descuento_global.factor * valor_venta_pre_glob;
@@ -195,7 +207,7 @@ calculate_totals = (bill) => {
     bill.total_valor_venta.op_gratuitas = total_op_grat;
     bill.sum_IGV.monto = igv_total; //8
     bill.importe_total_venta = total_op_grav + total_op_exon + igv_total; //9
-    bill.total_descuentos.monto = desc_x_item_acum + valor_venta_pre_glob * bill.descuento_global;
+    bill.total_descuentos.monto = desc_x_item_acum + valor_venta_pre_glob * bill.descuento_global.monto;
 
     return bill;
 }

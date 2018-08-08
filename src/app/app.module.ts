@@ -7,6 +7,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import {CdkTableModule} from '@angular/cdk/table';
 
 // Material
 import { MatSidenavModule, MatButtonModule, MatIconModule, MatListModule } from '@angular/material';
@@ -22,6 +23,10 @@ import {MatNativeDateModule} from '@angular/material';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatTableModule} from '@angular/material/table';
+import {MatSelectModule} from '@angular/material/select';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 
 // Components & Services
@@ -30,21 +35,18 @@ import { NavComponent } from './nav/nav.component';
 import { ProductsSearchComponent } from './products-search/products-search.component';
 import { ProductsSearchResultsComponent } from './products-search-results/products-search-results.component';
 import { ProductsService } from './products.service';
-import { SalesShoppingCartComponent } from './sales-shopping-cart/sales-shopping-cart.component';
-import { SalesComponent } from './sales/sales.component';
-import { SalesService } from './sales.service';
-import { SalesSearchComponent } from './sales-search/sales-search.component';
-import { SalesSearchResultsComponent } from './sales-search-results/sales-search-results.component';
-import { SalesDetailComponent } from './sales-detail/sales-detail.component';
+import { CreateBillComponent } from './billing-create-bill/billing-create-bill.component';
+import { BillingComponent } from './billing/billing.component';
+import { BillsService } from './billing.service';
+import { BillingSearchComponent } from './billing-search/billing-search.component';
+import { BillingSearchResultsComponent } from './billing-search-results/billing-search-results.component';
+import { BillingDetailComponent } from './billing-detail/billing-detail.component';
 import { ProductsComponent } from './products/products.component';
 import { ProductsCreateComponent } from './products-create/products-create.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth-guard.service';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
-import { PurchasingComponent } from './purchasing/purchasing.component';
-import { PurchaseInvoiceComponent } from './purchase-invoice/purchase-invoice.component';
-import { PurchaseService } from './purchase.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DashboardService } from './dashboard.service';
 
@@ -52,27 +54,22 @@ import { DashboardService } from './dashboard.service';
 import { JwtModule } from '@auth0/angular-jwt';
 import { AuthService } from './auth.service';
 
-import { PurchasingSearchComponent } from './purchasing-search/purchasing-search.component';
-import { PurchasingDetailComponent } from './purchasing-detail/purchasing-detail.component';
-import { PurchasingSearchResultsComponent } from './purchasing-search-results/purchasing-search-results.component';
 import { SocketioService } from './socketio.service';
 import { DashProdDialogComponent } from './dashboard/dash-prod-dialog/dash-prod-dialog.component';
-import { ConfirmDialogComponent } from './sales-shopping-cart/confirm-dialog/confirm-dialog.component';
 import { ErrorHandlerService } from './error-handler.service';
 import { HttpInterceptorService } from './http-interceptor.service';
 import { MessageService } from './message.service';
 
 const appRoutes = [
-  { path: 'sales', component: SalesComponent , canActivate: [AuthGuard] },
+  { path: 'billing', component: BillingComponent , canActivate: [AuthGuard] },
   { path: 'products', component: ProductsComponent, canActivate: [AuthGuard]},
-  { path: 'purchasing', component: PurchasingComponent, canActivate: [AuthGuard]},
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard]},
   { path: 'home', component: NavComponent },
   { path: 'unauthorized', component: UnauthorizedComponent , canActivate: [AuthGuard]}
 ];
 
 /*const appRoutes: Routes = [
-  { path: 'sales', component: SalesComponent },
+  { path: 'billing', component: billingComponent },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', component: HomeComponent }
 ];*/
@@ -83,24 +80,18 @@ const appRoutes = [
     NavComponent,
     ProductsSearchComponent,
     ProductsSearchResultsComponent,
-    SalesShoppingCartComponent,
-    SalesComponent,
-    SalesSearchComponent,
-    SalesSearchResultsComponent,
-    SalesDetailComponent,
+    CreateBillComponent,
+    BillingComponent,
+    BillingSearchComponent,
+    BillingSearchResultsComponent,
+    BillingDetailComponent,
     ProductsComponent,
     ProductsCreateComponent,
     ProductDetailsComponent,
     LoginComponent ,
     UnauthorizedComponent,
-    PurchasingComponent,
-    PurchaseInvoiceComponent,
-    PurchasingSearchComponent,
-    PurchasingDetailComponent,
-    PurchasingSearchResultsComponent,
     DashboardComponent,
     DashProdDialogComponent,
-    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -125,6 +116,11 @@ const appRoutes = [
     MatBottomSheetModule,
     MatDialogModule,
     MatTooltipModule,
+    CdkTableModule,
+    MatTableModule,
+    MatSelectModule,
+    MatAutocompleteModule,
+    MatProgressSpinnerModule,
     RouterModule.forRoot(appRoutes),
     JwtModule.forRoot({
       config: {
@@ -138,21 +134,19 @@ const appRoutes = [
           return localStorage.getItem('token');
           // missing scenario token is null in C:\...\angular-jwt\bundles\core.umd.js
         },
-        whitelistedDomains: [/^null$/],
+        whitelistedDomains: [/^null$/, 'localhost:3000'],
         authScheme: 'jwt '
       }
     })
   ],
   entryComponents: [
     ProductDetailsComponent,
-    PurchasingDetailComponent,
     DashProdDialogComponent,
-    ConfirmDialogComponent
+    ProductsSearchComponent
   ],
   providers: [
     ProductsService,
-    SalesService,
-    PurchaseService,
+    BillsService,
     MessageService,
     AuthService,
     AuthGuard,

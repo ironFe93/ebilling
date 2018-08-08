@@ -3,7 +3,6 @@ const routes = express.Router();
 const { celebrate, Joi, errors } = require('celebrate');
 
 const Product = require('../models/product');
-const Item = require('../models/item');
 const PurchaseInvoice = require('../models/purchase-invoice');
 const dboard = require('../methods/dashboard');
 

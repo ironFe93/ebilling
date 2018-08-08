@@ -3,7 +3,7 @@ const routes = express.Router();
 const { celebrate, Joi, errors } = require('celebrate');
 
 const Product = require('../models/product');
-const dboard = require('../methods/dashboard');
+const Counters = require('../models/counters');
 
 routes.get('/', (req, res, next) => {
     res.status(200).json({ message: 'Products!' });
@@ -18,16 +18,31 @@ routes.get('/findall', (req, res, next) => {
     });
 });
 
+// Get all categories
+routes.get('/categories', (req, res, next) => {
+
+    query = Counters.find({ 'desc': { $exists: true } });
+    query.select('desc');
+    query.exec()
+        .then(x => res.send(x))
+        .catch(error => next(error));
+});
+
 // Get by SKU
-routes.get('/find/:terms', (req, res) => {
+routes.get('/find', (req, res, next) => {
 
-    const terms = req.params.terms;
-    console.log(terms);
+    if (req.query.term) {
+        const term = req.query.term;
+        console.log(term);
 
-    Product.find({ $text: { $search: terms } }, { 'sku': true, 'title': true }, function (err, products) {
-        if (err) throw err;
-        res.send(products);
-    });
+        Product.find({ $text: { $search: term } }, { '_id': true, 'cod': true, 'descripcion': true }, function (err, products) {
+            if (err) return next(err);
+            res.send(products);
+        });
+
+    } else {
+        res.send([]);
+    }
 });
 
 // Get All details by ID
@@ -48,25 +63,39 @@ routes.get('/getDetails/:id', celebrate(
 });
 
 // Create a Product
-routes.post('/create', celebrate(
-    {
-        body: Joi.object().keys({
-            sku: Joi.string().required(),
-            title: Joi.string().required(),
-            description: Joi.string(),
-            inventory: {
-                qty: Joi.string().required()
-            },
-            listPrice: Joi.string().required()
-        })
-    }
-), (req, res, next) => {
+routes.post('/create', async (req, res, next) => {
     const newProd = new Product(req.body);
+
+    try {
+        newProd.cod = await getNextSequence(newProd.categoria);
+    } catch (error) {
+        return next(err);
+    }
 
     newProd.save((err, prod) => {
         if (err) return next(err);
         res.send(prod);
     });
 });
+
+const getNextSequence = (categoria) => {
+
+    query = Counters.findOneAndUpdate(
+        {
+            'desc': categoria
+        },
+        {
+            $inc: { seq: 1 },
+            new: true
+        }
+    );
+
+    return query.exec()
+        .then(x => {
+            cod = x.prefix + x.seq
+            return cod;
+        })
+        .catch(err => { return err });
+}
 
 module.exports = routes;

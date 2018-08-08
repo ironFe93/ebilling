@@ -1,0 +1,12 @@
+<div class="containerColumn" fxLayout="column">
+<mat-card>
+    <mat-card-title>Consulta de Ventas</mat-card-title>
+    <form>
+      <mat-form-field>
+        <input type="search" #term matInput placeholder="Venta" (keyup.enter)="onEnter(term.value)">
+      </mat-form-field>
+    </form>
+  </mat-card>
+  
+  <app-billing-search-results [billing]='billing'></app-billing-search-results>
+  </div>

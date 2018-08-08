@@ -5,23 +5,31 @@ const http = require('http');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const app = express();
+const cors = require('cors');
 
-// Conect MongoDB
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://admin:PPEKCJ4236702+@universalcluster0-shard-00-00-dlslo.mongodb.net:27017,' +
+DB_URI = 'mongodb://admin@universalcluster0-shard-00-00-dlslo.mongodb.net:27017,' +
   'universalcluster0-shard-00-01-dlslo.mongodb.net:27018,' +
   'universalcluster0-shard-00-02-dlslo.mongodb.net:27019,' +
-  '/db_universal?authSource=admin&replicaSet=universalCluster0-shard-0&ssl=true',
-  { useMongoClient: true },
-  function(error){
-    console.error.bind(console, 'connection error:');
-  });
+  '/db_universal?authSource=admin&replicaSet=universalCluster0-shard-0&ssl=true';
+
+DB_URI2 = 'mongodb://localhost:27017/slick'
+
+// Conect MongoDB
+mongoose.connect(DB_URI2, {
+ useNewUrlParser: true
+})
+  .then(() => console.log('connection successful'))
+  .catch((err) => console.error(err));
+
+// cors
+const corsOptions = {
+  origin: 'http://localhost:4200'
+}
+app.use(cors(corsOptions))
 
 // passport
 passport = require('./server/config/passport-config');
-// import {passport} from './server/config/passport-config';
 app.use(passport.initialize());
-///////
 
 // Parsers for POST data
 app.use(bodyParser.json());
@@ -85,7 +93,7 @@ app.set('socketio', io);
  */
 server.listen(port, () => {
   console.log(`API running on localhost:${port}`);
-  
+
 
 });
 

@@ -10,33 +10,36 @@ import { ProductsService } from '../products.service';
   templateUrl: './products-create.component.html',
   styleUrls: ['./products-create.component.css']
 })
+
 export class ProductsCreateComponent implements OnInit {
 
+  categorias: any[];
   productForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private productsService: ProductsService) { // <--- inject FormBuilder
+  constructor(private fb: FormBuilder, private productsService: ProductsService) {
     this.createForm();
   }
 
   createForm() {
     this.productForm = this.fb.group({
-      title: ['test', Validators.required], // <--- the FormControl called "title"
-      sku: ['',Validators.required],
-      listPrice:['2000', Validators.required],
-      inventory : this.fb.group({
-        qty: ['50', Validators.required]
+      descripcion: ['', Validators.required],
+      categoria: ['', Validators.required],
+      cod_medida: ['', Validators.required],
+      ref_price: [0],
+      inventario : this.fb.group({
+        cantidad: [0, Validators.required]
       }),
-      description: ['']
     });
   }
 
-  onSubmit(){
+  onSubmit() {
     console.log(this.productForm.value);
     const product: Product = this.productForm.value;
-    this.productsService.createProduct(product).subscribe(resp => console.log(resp));
+    this.productsService.createProduct(product).subscribe();
   }
 
   ngOnInit() {
+    this.productsService.getCategories().subscribe(x => this.categorias = x);
   }
 
 }
