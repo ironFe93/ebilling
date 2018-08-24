@@ -1,12 +1,23 @@
 <div class="containerColumn" fxLayout="column">
 <mat-card>
-    <mat-card-title>Consulta de Ventas</mat-card-title>
-    <form>
-      <mat-form-field>
-        <input type="search" #term matInput placeholder="Venta" (keyup.enter)="onEnter(term.value)">
-      </mat-form-field>
-    </form>
+    <mat-card-content>
+      <form class="example-form" [formGroup]='billForm'>
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Buscar Facturas" [matAutocomplete]="auto" formControlName='userInput'>
+        </mat-form-field>
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onSelectionChanged($event)">
+          <mat-option *ngIf="isLoading" class="is-loading">
+            <mat-spinner diameter="50"></mat-spinner>
+          </mat-option>
+          <ng-container *ngIf="!isLoading">
+            <mat-option *ngFor="let bill of filteredBills" [value]="bill">
+              <span>{{ bill.AccountingCustomerParty.Party.PartyTaxScheme.RegistrationName }}</span>
+              <small> | ID: {{bill.ID}}</small>
+            </mat-option>
+          </ng-container>
+        </mat-autocomplete>
+      </form>
+    </mat-card-content>
   </mat-card>
-  
-  <app-billing-search-results [billing]='billing'></app-billing-search-results>
+
   </div>

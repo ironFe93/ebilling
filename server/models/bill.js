@@ -1,116 +1,206 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const ObjectId = Schema.ObjectId;
 
+const invoiceInlineSchema = require('../models/bill-invoice-inline').schema;
+const taxSubTotalSchema = require('../models/tax-subtotal').schema;
 //  http:// www.sunat.gob.pe/legislacion/superin/2017/anexoVII-117-2017.pdf
 
 const billSchema = new Schema({
-  fecha_emision: Date, // 1
-  firma: { // 2
-    ds_signature: String,
-    cac_signature: String,
+  UBLExtensions: {
+    ds_signature: String
   },
-  emisor: ObjectId, // 3-6
-  tipo_documento: {type: Number, default: 1},  // 7
-  bill_id: String,
-  cliente: {
-    ruc: {
-      number: Number,
-      type: Number
+  UBLVersionID: { type: Number, default: 2.1 },
+  CustomizationID: { type: Number, default: 2.0 },
+  ProfileID: {
+    att: {
+      schemeName: { type: String, default: "SUNAT:Identificador de Tipo de Operación" },
+      schemeAgencyName: { type: String, default: "PE:SUNAT" },
+      schemeURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo17" }
     },
-    registration_name: String,
-    email: String
+    val: { type: String, default: "0101" }
   },
-  items: [{
-    cod_medida: String, // 11
-    cantidad: Number, // 12
-    descripcion: String, // 13
-    valor_unitario: Number, // 14
-    precio_unitario: {  // 15
-      monto: Number,
-      type_code: {type: Number, default: 1}
+  ID: String,
+  IssueDate: Date,
+  cond_pago: Number,
+  IssueTime: Date,
+  DueDate: Date,
+  InvoiceTypeCode: {
+    att: {
+      listAgencyName: { type: String, default: "PE:SUNAT" },
+      listName: { type: String, default: "SUNAT:Identificador de Tipo de Documento" },
+      listURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01" },
     },
-    IGV: { // 16
-      tax_linea: Number, // 16.1, 16.2
-      afectacion_tipo: Number, // 16.3 tax excemption reason code
-      cod_trib:  {type: Number, default: 1000},  // 16.4 ID
-      nombre_trib:  {type: String, default: 'IGV'}, // 16.5 taxName
-      cod_intl:  {type: String, default: 'VAT'} // 16.6 taxTypeCode
+    val: { type: Number, default: 1 }
+  },
+  Note: {
+    att: {
+      languageLocaleID: { type: String, default: "1000" }
     },
-    isc: Number, // 17
-    valor_venta_bruto: Number,
-    valor_venta: Number, // 21 valor venta
-    cod: String, // 34
-    product_id: ObjectId, 
-    valor_ref_unitario: { // 35
-      monto: Number,
-      type_code: {type: Number, default: 2}
+    val: String
+  },
+  DocumentCurrencyCode: {
+    att: {
+      listID: { type: String, default: "ISO 4217 Alpha" },
+      listName: { type: String, default: "Currency" },
+      listAgencyName: { type: String, default: "United Nations Economic Commission for Europe" },
     },
-    descuento: { // 51
-      factor: {type: Number, min:0, max: 1},
-      monto: Number
+    val: { type: String, enum: ["PEN", "USD"] }
+  },
+  ////////
+  DespatchDocumentReference: {
+    ID: String,
+    DocumentTypeCode: {
+      att: {
+        listAgencyName: { type: String, default: "PE:SUNAT" },
+        listName: { type: String, default: "Identificador de guía relacionada" },
+        listURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01" },
+      },
+      val: { type: Number, enum: [9] }
     }
-  }],
-  total_valor_venta: {
-    op_gravadas: Number, // 18
-    op_inafectas: Number, // 19
-    op_exoneradas: Number, // 20
-    op_gratuitas: Number // 49
   },
-  sum_IGV: { // 22
-    monto: Number,
-    cod_tributo: Number,
-    nombre_tributo: String,
-    cod_internacional: String
+  AdditionalDocumentReference: {
+    ID: String,
+    DocumentTypeCode: {
+      att: {
+        listAgencyName: { type: String, default: "PE:SUNAT" },
+        listName: { type: String, default: "Identificador de documento relacionado" },
+        listURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo12" },
+      },
+      val: Number
+    }
   },
-  sum_ISC: {}, // 23
-  sum_otros_trib: { // 24
-    monto: Number,
-    cod_tributo: Number,
-    nombre_tributo: String,
-    cod_internacional: String
+  AccountingSupplierParty: {
+    Party: {
+      PartyName: {
+        Name: String // nombre comercial
+      },
+      PartyTaxScheme: {
+        RegistrationName: String, // razon social
+        CompanyID: {
+          att: {
+            schemeID: { type: Number, default: 6 },
+            schemeName: { type: String, default: "SUNAT:Identificador de Documento de Identidad" },
+            schemeAgencyName: { type: String, default: "PE:SUNAT" },
+            schemeURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" }
+          },
+          val: Number // RUC
+        },
+        TaxScheme: {
+          ID: { type: String, default: "-" }
+        },
+        RegistrationAddress: {
+          AddressTypeCode: { type: String, default: "0001" }
+        }
+      }
+    }
   },
-  sum_otros: Number, // 25
-  total_descuentos: { // 26
-    tipo: String,
-    monto: Number
+  AccountingCustomerParty: {
+    Party: {
+      PartyTaxScheme: {
+        RegistrationName: String, // razon social
+        CompanyID: {
+          att: {
+            schemeID: { type: Number, default: 6 },
+            schemeName: { type: String, default: "SUNAT:Identificador de Documento de Identidad" },
+            schemeAgencyName: { type: String, default: "PE:SUNAT" },
+            schemeURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" }
+          },
+          val: Number // RUC
+        },
+        TaxScheme: {
+          ID: { type: String, default: "-" }
+        }
+      }
+    }
   },
-  importe_total_venta: Number, // 27
-  moneda: {type: String, default: 'PEN'}, // 28
-  guia_remision: { // 29 referncia a la guía de remisión
-    id: String,
-    cod_tipo_doc: Number //siempre es 31
+  DeliveryTerms: {
+    DeliveryLocation: {
+      Address: {
+        StreetName: String,
+        CitySubDivisionName: String,
+        CityName: String,
+        CountrySubentity: String,
+        CountrySubentityCode: Number, // ZIp code
+        District: String,
+        Country: {
+          IdentificationCode: {
+            att: {
+              listID: { type: String, default: "ISO3166-1" },
+              listAgencyName: { type: String, default: "United Nations Economic Commission for Europe" },
+              listName: { type: String, default: "Country" }
+            },
+            val: { type: String, default: "PE" }
+          }
+        }
+      }
+    }
   },
-  otro_doc_referencia: { // 30
-    id: String,
-    cod_tipo_doc: Number
+  AllowanceCharge: {
+    ChargeIndicator: Boolean,
+    AllowanceChargeReasonCode: Number,
+    MultiplierFactorNumeric: Number,
+    Amount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] },
+      },
+      val: Number
+    },
+    BaseAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] },
+      },
+      val: Number
+    }
   },
-  leyendas: { // 31
-    cod_leyenda: String,
-    descripcion: String
+  TaxTotal: {
+    TaxAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] },
+      },
+      val: Number
+    }, TaxSubTotal: [taxSubTotalSchema]
   },
-  importe_percepcion: { // 32
-    cod_tipo_monto: Number,
-    base_imponible: Number,
-    monto: Number,
-    total_incluido_percepcion: Number
+  LegalMonetaryTotal: {
+    LineExtensionAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] }
+      },
+      val: Number
+    },
+    TaxInclusiveAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] }
+      },
+      val: Number
+    },
+    AllowanceTotalAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] }
+      },
+      val: Number
+    },
+    ChargeTotalAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] }
+      },
+      val: Number
+    },
+    PrepaidAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] }
+      },
+      val: Number
+    },
+    PayableAmount: {
+      att: {
+        currencyID: { type: String, enum: ["PEN", "USD"] }
+      },
+      val: Number
+    },
   },
-  adicionales: Number, // 38-46
-  valor_ref_prelim: { // 47
-    id: Number,
-    nombre: String,
-    valor: Number
-  },
-  fecha_consumo: { // 48
-    id: Number,
-    value: Date
-  },
-  descuento_global: {
-    factor: {type: Number, min:0, max: 1, default: 0},
-    monto: {type: Number, default:0 }
-  } // 50
+  InvoiceInline: [invoiceInlineSchema],
+  sumValues: {}
 });
 
-const Bill = mongoose.model('Bill', billSchema);
-
+const Bill = mongoose.model("Bill", billSchema);
 module.exports = Bill;

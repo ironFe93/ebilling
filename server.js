@@ -13,11 +13,13 @@ DB_URI = 'mongodb://admin@universalcluster0-shard-00-00-dlslo.mongodb.net:27017,
   '/db_universal?authSource=admin&replicaSet=universalCluster0-shard-0&ssl=true';
 
 DB_URI2 = 'mongodb://localhost:27017/slick'
-
+mongoose_options = {
+  useNewUrlParser: true,
+  reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+  reconnectInterval: 500, // Reconnect every 500ms
+}
 // Conect MongoDB
-mongoose.connect(DB_URI2, {
- useNewUrlParser: true
-})
+mongoose.connect(DB_URI2, mongoose_options)
   .then(() => console.log('connection successful'))
   .catch((err) => console.error(err));
 

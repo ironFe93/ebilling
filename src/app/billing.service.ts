@@ -18,29 +18,60 @@ export class BillsService {
 
 
   private BillsUrl = environment.apiUrl + '/api/bill';
-
-  private bill$ = new BehaviorSubject(new Bill);
+  private bill$: BehaviorSubject<Bill>;
+  private billDetail$: BehaviorSubject<Bill>;
 
   constructor(private http: HttpClient,
     private messageService: MessageService, public snackbar: MatSnackBar) {
+    const bill = this.newBill();
+    this.bill$ = new BehaviorSubject(bill);
+    this.billDetail$ = new BehaviorSubject(bill);
+
+  }
+
+  newBill() {
+    const items = [];
+
+    const bill: Bill = {
+      items: items,
+      fecha_emision: new Date(),
+      cliente: {
+        ruc: 0,
+        email: '',
+        registration_name: ''
+      },
+      moneda: '',
+      cond_pago: 0
+    };
+
+    return bill;
   }
 
   public getObservableBill() {
     return this.bill$.asObservable();
   }
 
-  public getBills(terms: string) {
-    return this.http.get<Bill[]>(this.BillsUrl + '/get/' + terms)
-      .pipe(tap(resp => {
-        console.log(resp);
-        if (resp.length === 0) this.messageService.add('No Results');
-      }));
+  public getObservableDetailBill() {
+    return this.billDetail$.asObservable();
+  }
+
+  // Get all bills by search terms
+  getByTerms(term: string) {
+
+    const options = term ?
+      { params: new HttpParams().set('term', term) } : {};
+
+    return this.http.get<Bill[]>(this.BillsUrl + '/find', options)
+      .pipe(
+        catchError(err => throwError('something went wrong'))
+      );
   }
 
   public getBillDetail(id) {
     return this.http.get<Bill>(this.BillsUrl + '/getDetail/' + id)
       .pipe(tap(resp => {
-        this.bill$.next(resp);
+        this.billDetail$.next(resp);
+        console.log(this.billDetail$.value);
       }));
   }
 
@@ -74,6 +105,7 @@ export class BillsService {
         ruc: formdata.ruc,
         registration_name: formdata.razonSocial
       },
+      cond_pago: formdata.cond_pago,
       moneda: formdata.moneda,
       fecha_emision: formdata.fecha_e,
       items: items,
@@ -85,16 +117,29 @@ export class BillsService {
   }
 
   public saveBillDraft() {
-    console.log(this.bill$.getValue());
-    return this.http.post<Bill>(this.BillsUrl + '/saveDraft',
+    return this.http.post<any>(this.BillsUrl + '/saveDraft',
       this.bill$.getValue()
-    ).pipe(tap(resp => {
-      if (resp) {
-        this.messageService.add('Borrador factura creado: ' + resp.cod);
-        this.bill$.next(new Bill);
-        this.bill$.next(resp);
-      }
-    }));
+    ).pipe(
+      tap(resp => {
+        if (resp) {
+          this.messageService.add('Borrador factura creado: ' + resp.ID);
+          this.billDetail$.next(resp);
+          this.bill$.next(resp);
+        }
+      }),
+      catchError((err, caught) => of(err))
+    );
+  }
+
+  public sunat() {
+    return this.http.post<any>(this.BillsUrl + '/sunat', this.bill$.getValue()._id);
+  }
+
+  public getPDF(_id: string) {
+    const options = _id ?
+      { params: new HttpParams().set('_id', _id) } : {};
+
+    return this.http.get<any>(this.BillsUrl + '/donwload', options);
   }
 
   productToItem(product: Product): Item {
@@ -114,7 +159,7 @@ export class BillsService {
       descuento: {
         factor: 0
       },
-      IGV : {
+      IGV: {
         afectacion_tipo: 10
       },
       _id: product._id,
@@ -122,6 +167,10 @@ export class BillsService {
     };
     //
     return item;
+  }
+
+  clear() {
+    this.bill$.next(this.newBill());
   }
 
 

@@ -1,0 +1,14 @@
+<div class="containerColumn">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        {{(bill$ | async).cod}}
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <button mat-button (click)="sunat()">A SUNAT</button>
+        <button mat-button (click)="email()">A Cliente</button>
+        <button mat-button (click)="download()">Descargar</button>
+    </mat-card-content>
+  </mat-card>
+</div>

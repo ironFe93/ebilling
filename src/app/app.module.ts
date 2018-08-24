@@ -3,30 +3,31 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import {CdkTableModule} from '@angular/cdk/table';
+import { CdkTableModule } from '@angular/cdk/table';
 
 // Material
 import { MatSidenavModule, MatButtonModule, MatIconModule, MatListModule } from '@angular/material';
-import { MatRadioModule} from '@angular/material/radio';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import {MatTabsModule} from '@angular/material/tabs';
-import {MatDatepickerModule} from '@angular/material/datepicker';
-import {MatNativeDateModule} from '@angular/material';
-import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatTooltipModule} from '@angular/material/tooltip';
-import {MatTableModule} from '@angular/material/table';
-import {MatSelectModule} from '@angular/material/select';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatStepperModule } from '@angular/material/stepper';
 
 
 // Components & Services
@@ -59,13 +60,15 @@ import { DashProdDialogComponent } from './dashboard/dash-prod-dialog/dash-prod-
 import { ErrorHandlerService } from './error-handler.service';
 import { HttpInterceptorService } from './http-interceptor.service';
 import { MessageService } from './message.service';
+import { BillingSendComponent } from './billing-send/billing-send.component';
 
 const appRoutes = [
-  { path: 'billing', component: BillingComponent , canActivate: [AuthGuard] },
-  { path: 'products', component: ProductsComponent, canActivate: [AuthGuard]},
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard]},
+  {
+    path: 'billing', component: BillingComponent, canActivate: [AuthGuard] },
+  { path: 'products', component: ProductsComponent, canActivate: [AuthGuard] },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'home', component: NavComponent },
-  { path: 'unauthorized', component: UnauthorizedComponent , canActivate: [AuthGuard]}
+  { path: 'unauthorized', component: UnauthorizedComponent, canActivate: [AuthGuard] }
 ];
 
 /*const appRoutes: Routes = [
@@ -88,10 +91,11 @@ const appRoutes = [
     ProductsComponent,
     ProductsCreateComponent,
     ProductDetailsComponent,
-    LoginComponent ,
+    LoginComponent,
     UnauthorizedComponent,
     DashboardComponent,
     DashProdDialogComponent,
+    BillingSendComponent,
   ],
   imports: [
     BrowserModule,
@@ -121,15 +125,16 @@ const appRoutes = [
     MatSelectModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule,
+    MatStepperModule,
     RouterModule.forRoot(appRoutes),
     JwtModule.forRoot({
       config: {
         tokenGetter: () => {
           if (!localStorage.getItem('token')) {
             localStorage.setItem('token',
-            'jwt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
-            '.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0' +
-            '.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f75773');
+              'jwt eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
+              '.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0' +
+              '.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f75773');
           }
           return localStorage.getItem('token');
           // missing scenario token is null in C:\...\angular-jwt\bundles\core.umd.js

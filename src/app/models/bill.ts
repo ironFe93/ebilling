@@ -1,18 +1,19 @@
 import { Item } from './item';
-export class Bill {
+export interface Bill {
+  _id?: string;
   cod?: string;
-  items: Item[] = [];
+  items: Item[];
   fecha_emision: Date;
+  cond_pago: number;
   cliente: {
-    ruc: {
-      number: number;
-      type: number;
-    };
+    ruc: number;
     registration_name: string;
     email?: string;
   };
   descuento_global?: {
     factor: {type: number, min: 0 , max: 1 }
   };
+  guia_remision?: string;
+  otro_doc?: string;
   moneda: string;
 }

@@ -1,4 +1,4 @@
-<div class="containerColumn" fxLayout="column">
+<div class="containerColumn">
   <mat-card>
     <mat-card-title>Items</mat-card-title>
     <mat-card-content>
@@ -20,6 +20,7 @@
       </form>
     </mat-card-content>
     <mat-card-content>
+      <mat-card-title>{{(bill$ | async).cod}}</mat-card-title>
       <mat-card-subtitle>Detalle</mat-card-subtitle>
       <mat-table #table [dataSource]="dataSource">
 
@@ -54,7 +55,7 @@
         <ng-container matColumnDef="descripcion">
           <mat-header-cell *matHeaderCellDef> Descripcion </mat-header-cell>
           <mat-cell *matCellDef="let item">
-<!--             <mat-form-field floatLabel="never">
+            <!--             <mat-form-field floatLabel="never">
               <input matInput placeholder="Desc" [value]="item.descripcion" [(ngModel)]="item.descripcion">
             </mat-form-field> -->
             {{item.descripcion}}
@@ -85,15 +86,27 @@
           </mat-cell>
         </ng-container>
 
+        <!-- IGV Column -->
+        <ng-container matColumnDef="IGV">
+          <mat-header-cell *matHeaderCellDef>IGV</mat-header-cell>
+          <mat-cell *matCellDef="let item">{{(item.precio_unitario.monto/1.18)*0.18 | number}}</mat-cell>
+        </ng-container>
+
+        <!-- Total IGV Column -->
+        <ng-container matColumnDef="sum IGV">
+          <mat-header-cell *matHeaderCellDef>Σ IGV</mat-header-cell>
+          <mat-cell *matCellDef="let item">{{(item.precio_unitario.monto/1.18)*0.18*item.cantidad | number}}</mat-cell>
+        </ng-container>
+
         <!-- Valor Venta Column -->
         <ng-container matColumnDef="valor_v">
-          <mat-header-cell *matHeaderCellDef> Valor Venta Unit. </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef> Valor Venta </mat-header-cell>
           <mat-cell *matCellDef="let item"> {{item.precio_unitario.monto/1.18 | number}} </mat-cell>
         </ng-container>
 
         <!-- Valor_V total Column -->
         <ng-container matColumnDef="valor_v_total">
-          <mat-header-cell *matHeaderCellDef> Valor Venta Total </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Σ Valor Venta </mat-header-cell>
           <mat-cell *matCellDef="let item"> {{(item.precio_unitario.monto/1.18)*item.cantidad | number}} </mat-cell>
         </ng-container>
 
@@ -107,7 +120,7 @@
       <mat-card-content>
         <div fxLayout="row" fxLayoutGap="10px">
           <mat-form-field fxFlex="40%">
-            <input type="text" matInput placeholder="RUC" formControlName='ruc'>
+            <input type="number" matInput placeholder="RUC" formControlName='ruc'>
           </mat-form-field>
 
           <mat-form-field fxFlex="60%">
@@ -118,28 +131,21 @@
 
         <div fxLayout="row" fxLayoutGap="10px">
           <mat-form-field>
-            <input matInput [matDatepicker]="picker1" placeholder="F. Vencimiento" formControlName='fecha_v'>
-            <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
-            <mat-datepicker #picker1></mat-datepicker>
-          </mat-form-field>
-
-          <mat-form-field>
             <input matInput [matDatepicker]="picker2" placeholder="F. Emisión" formControlName='fecha_e'>
             <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
             <mat-datepicker #picker2></mat-datepicker>
           </mat-form-field>
           <mat-form-field>
+              <input matInput type="number" placeholder="Cond. Pago" formControlName='cond_pago'>
+          </mat-form-field>
+          <mat-form-field>
             <mat-select placeholder="Moneda" formControlName='moneda'>
-              <mat-option value="PEN" selected>Sol</mat-option>
+              <mat-option value="PEN">Sol</mat-option>
               <mat-option value="USD">Dólar</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
       </mat-card-content>
-      <mat-card-actions>
-        <button type="submit" mat-raised-button>Test</button>
-        <!-- <button mat-raised-button (click)="openCheckoutDialog(ruc.value, RS.value)">Checkout</button> -->
-      </mat-card-actions>
     </form>
   </mat-card>
 </div>

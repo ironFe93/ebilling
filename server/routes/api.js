@@ -1,7 +1,7 @@
 const routes = require('express').Router();
 
 const product = require('./product');
-const sale = require('./sale');
+const billing = require('./billing');
 const purchase = require('./purchase');
 const dashboard = require('./dashboard');
 const auth = require('./auth');
@@ -14,7 +14,8 @@ routes.get('/',  (req, res, next) => {
   });
 
 routes.use('/product', passport.authenticate('jwt', { session: false }), product);
-routes.use('/bill', passport.authenticate('jwt', { session: false }), sale);
+//routes.use('/bill', passport.authenticate('jwt', { session: false }), billing);
+routes.use('/bill', billing);
 routes.use('/purchase', passport.authenticate('jwt', { session: false }), purchase );
 routes.use('/dashboard', dashboard ); //must have auth control. 
 routes.use('/soap', soap);

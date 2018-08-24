@@ -60,23 +60,4 @@ export class ProductsService {
     ).pipe(tap(x => this.messageService.add('Producto creado: ' + x.cod + ' ' + x.descripcion)));
   }
 
-  findReqs(queryObject) {
-    let queryString = new HttpParams();
-
-    const string = queryObject.string;
-    const _id = queryObject._id;
-    const date1 = queryObject.date1;
-    const date2 = queryObject.date2;
-    const status = queryObject.status;
-
-    console.log(date1);
-
-    if (string) queryString = queryString.append('string', string);
-    if (_id) queryString = queryString.append('_id', _id);
-    if (date1) queryString = queryString.append('date1', date1);
-    if (date2) queryString = queryString.append('date2', date2);
-    if (status) queryString = queryString.append('status', status);
-
-    // return this.http.get<ProductReq[]>(this.productsUrl + '/findReq', { params: queryString });
-  }
 }

@@ -1,0 +1,32 @@
+<mat-tab-group [(selectedIndex)]="selectedTab">
+    <mat-tab label="Factura">
+        <mat-horizontal-stepper [linear]='isLinear' #stepper>
+            <mat-step [completed]="step1Completed">
+                <ng-template matStepLabel>Añadir datos</ng-template>
+                <app-billing-create-bill></app-billing-create-bill>
+                <button mat-button matStepperNext (click)="submitFirst()">Next</button>
+            </mat-step>
+            <mat-step [completed]="step2Completed">
+                <ng-template matStepLabel>Confirmar datos</ng-template>
+                <app-billing-detail></app-billing-detail>
+                <button mat-button matStepperPrevious (click)="editPrevious()">Back</button>
+                <button mat-button matStepperNext (click)="submitSecond()">Next</button>
+            </mat-step>
+            <mat-step>
+                <ng-template matStepLabel>Emitir</ng-template>
+                <ng-template matStepLabel>Enviar</ng-template>
+                <app-billing-send></app-billing-send>
+                <div>
+                    <button mat-button matStepperPrevious>Back</button>
+                    <button mat-button (click)="finish()">Terminar</button>
+                </div>
+
+            </mat-step>
+        </mat-horizontal-stepper>
+    </mat-tab>
+    <mat-tab label="Consultas">
+        <app-billing-search fxFlex="auto"></app-billing-search>
+        <app-billing-detail fxFlex="auto"></app-billing-detail>
+
+    </mat-tab>
+</mat-tab-group>

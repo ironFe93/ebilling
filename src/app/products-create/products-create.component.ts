@@ -33,7 +33,6 @@ export class ProductsCreateComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.productForm.value);
     const product: Product = this.productForm.value;
     this.productsService.createProduct(product).subscribe();
   }

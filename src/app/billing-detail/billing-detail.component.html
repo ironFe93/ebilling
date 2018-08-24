@@ -1,17 +1,165 @@
-<div class="containerColumn">
-<mat-card>
-  <mat-card-title>Venta:</mat-card-title>
-  <mat-card-subtitle>{{(bill | async)._id}}</mat-card-subtitle>
-  <mat-card-subtitle>
-    Sub Total ({{(bill | async).itemsTotal}} items):
-    <span class="text--red text--bold js-cart-total">{{(sale | async).grossTotal}}</span>
-  </mat-card-subtitle>
-  
+<div id="print" class="containerColumn" fxLayout="column">
+  <mat-card>
+    <div fxLayout="row" fxLayoutAlign="space-between">
+      <div>
+        <mat-card-title>
+          Slick Printing Products S.R.L
+        </mat-card-title>
+        <mat-card-subtitle>
+          Av. Los Libertadores 140 - San Martín De Porres - Lima
+        </mat-card-subtitle>
+      </div>
+      <div>
+        <mat-card-title>{{(bill$ | async).ID}}</mat-card-title>
+        <mat-card-subtitle>RUC: 20537793016</mat-card-subtitle>
+        <mat-card-subtitle>Factura Electrónica</mat-card-subtitle>
+      </div>
 
-  <mat-card-title>Detalle</mat-card-title>
-  <mat-card-subtitle *ngFor="let item of (bill | async).items">
-    {{item.title}} : {{item.listPrice}} x {{item.qty}}
-  </mat-card-subtitle>
+    </div>
 
+    <mat-card-content>
+      <mat-card-subtitle>Detalle</mat-card-subtitle>
+      <mat-table #table [dataSource]="dataSource">
+
+        <!-- Code Column -->
+        <ng-container matColumnDef="codigo">
+          <mat-header-cell *matHeaderCellDef> Código </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.cod}} </mat-cell>
+        </ng-container>
+
+        <!-- cantidad Column -->
+        <ng-container matColumnDef="cantidad">
+          <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.cantidad}} </mat-cell>
+        </ng-container>
+
+        <!-- Unit Measure Column -->
+        <ng-container matColumnDef="medida">
+          <mat-header-cell *matHeaderCellDef> UM </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.medida}} </mat-cell>
+        </ng-container>
+
+        <!-- Desc Column -->
+        <ng-container matColumnDef="descripcion">
+          <mat-header-cell *matHeaderCellDef> Descripcion </mat-header-cell>
+          <mat-cell *matCellDef="let item">{{item.descripcion}}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Unit Price Column -->
+        <ng-container matColumnDef="precio_unit">
+          <mat-header-cell *matHeaderCellDef> Precio Unit. </mat-header-cell>
+          <mat-cell *matCellDef="let item">{{item.precio_unitario}}</mat-cell>
+        </ng-container>
+
+        <!-- IGV Column -->
+        <ng-container matColumnDef="IGV">
+          <mat-header-cell *matHeaderCellDef>IGV</mat-header-cell>
+          <mat-cell *matCellDef="let item">{{item.IGV | number}}</mat-cell>
+        </ng-container>
+
+        <!-- Total IGV Column -->
+        <ng-container matColumnDef="sum IGV">
+          <mat-header-cell *matHeaderCellDef>Σ IGV</mat-header-cell>
+          <mat-cell *matCellDef="let item">{{(item.IGV * item.cantidad) | number}}</mat-cell>
+        </ng-container>
+
+        <!-- Valor Venta Column -->
+        <ng-container matColumnDef="valor_v">
+          <mat-header-cell *matHeaderCellDef>Valor Venta</mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{(item.precio_unitario/1.18) | number}} </mat-cell>
+        </ng-container>
+
+        <!-- Valor_V total Column -->
+        <ng-container matColumnDef="valor_v_total">
+          <mat-header-cell *matHeaderCellDef>Σ Valor Venta </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{(item.precio_unitario/1.18) * item.cantidad | number}} </mat-cell>
+        </ng-container>
+
+        <!-- Valor_V total Column -->
+        <ng-container matColumnDef="total">
+          <mat-header-cell *matHeaderCellDef>Total </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.cantidad * item.precio_unitario | number}} </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </mat-card-content>
+
+    <mat-card-content>
+      <div fxLayout="row">
+        <div fxLayoutGap="10px" fxFlex="50%">
+
+          <mat-card-title>Cliente</mat-card-title>
+
+          <div fxLayout="row" fxLayoutGap="10px">
+            <mat-form-field fxFlex="40%">
+              <input type="text" matInput readonly placeholder="RUC" value="{{(bill$ | async).cliente.ruc}}">
+            </mat-form-field>
+
+            <mat-form-field fxFlex="60%">
+              <input type="text" matInput readonly placeholder="Razón Social" value="{{(bill$ | async).cliente.registrationName}}">
+            </mat-form-field>
+          </div>
+          <mat-card-title>Datos del Comprobante</mat-card-title>
+
+          <div fxLayout="column">
+            <div fxLayout="row" fxLayoutGap="10px">
+              <mat-form-field>
+                <input matInput readonly type="text" placeholder="F. Emisión" value="{{(bill$ | async).issueDate | date:'dd/MM/yy'}}">
+              </mat-form-field>
+              <mat-form-field>
+                <input matInput readonly type="number" placeholder="Cond. Pago" value="{{(bill$ | async).cond_pago}}">
+              </mat-form-field>
+            </div>
+            
+            <div fxLayout="row" fxLayoutGap="10px">
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="F. Vencimiento" value="{{(bill$ | async).dueDate | date: 'dd/MM/yy'}}">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="Moneda" value="{{(bill$ | async).moneda}}">
+            </mat-form-field>
+          </div>
+        </div>
+
+
+      </div>
+      <div fxLayout="row" fxLayoutGap="10px" fxFlex="50%" fxLayoutAlign="end">
+        <div fxLayout="column">
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Op.Gravadas" value="{{(bill$ | async)?.op_gravadas | number}}">
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Op.Inafectas" value="{{(bill$ | async)?.op_inafectas | number }}">
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Op.Exoneradas" value="{{(bill$ | async).op_exoneradas | number}}">
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Op.Gratuitas" value="{{(bill$ | async).op_gratuitas | number}}">
+          </mat-form-field>
+        </div>
+        <div fxLayout="column">
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Otros Tributos" value="{{(bill$ | async).otros_trib | number}}">
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Descuento" value="{{(bill$ | async).total_descuentos | number}}">
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="IGV 18%" value="{{(bill$ | async).IGV | number}}">
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput readonly type="text" placeholder="Total" value="{{(bill$ | async)?.importe_total | number}}">
+          </mat-form-field>
+        </div>
+      </div>
+</div>
+
+</mat-card-content>
 </mat-card>
 </div>
+
+<button (click)="downloadPdf()">Download PDF</button>

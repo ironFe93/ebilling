@@ -1,15 +1,17 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-
+import { Router } from '@angular/router';
 import { BillsService } from '../billing.service';
 
 import { MatDialog } from '@angular/material/dialog';
 import { Product } from '../models/product';
-import { FormGroup, FormBuilder } from '@angular/forms';
-import { debounceTime, tap, switchMap, finalize } from 'rxjs/operators';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { debounceTime, tap, switchMap, finalize, catchError } from 'rxjs/operators';
 import { ProductsService } from '../products.service';
 
 import { MatAutocompleteSelectedEvent, MatTableDataSource } from '@angular/material';
 import { Item } from '../models/item';
+import { MessageService } from '../message.service';
+import {  of, Observable } from '../../../node_modules/rxjs';
 
 @Component({
   selector: 'app-billing-create-bill',
@@ -23,14 +25,14 @@ export class CreateBillComponent implements OnInit {
   isLoading = false;
 
   displayedColumns = ['codigo', 'cantidad', 'medida',
-    'descripcion', 'precio_unit', 'afectacion', 'valor_v', 'valor_v_total'];
+    'descripcion', 'precio_unit', 'afectacion', 'IGV', 'sum IGV', 'valor_v', 'valor_v_total'];
   dataSource = new MatTableDataSource<Item>();
 
-  billForm: FormGroup;
-  bill$ =  this.billsService.getObservableBill();
+  private billForm: FormGroup;
+  bill$ = this.billsService.getObservableBill();
 
   constructor(private billsService: BillsService, private productsService: ProductsService,
-    private changeDet: ChangeDetectorRef, public dialog: MatDialog, private fb: FormBuilder) {
+    private changeDet: ChangeDetectorRef, private messageService: MessageService, private fb: FormBuilder) {
   }
 
   ngOnInit() {
@@ -79,22 +81,33 @@ export class CreateBillComponent implements OnInit {
   onSelectionChanged(event: MatAutocompleteSelectedEvent) {
     const product: Product = event.option.value;
     this.billsService.addItem(product);
+    this.prodForm.get('userInput').setValue('');
   }
 
   buildBillForm() {
     this.billForm = this.fb.group({
-      ruc: '',
-      razonSocial: '',
-      fecha_v: '',
-      fecha_e: new Date(),
-      moneda: 'PEN',
-      descuento_global: 0
+      ruc: ['', Validators.required],
+      razonSocial: ['', Validators.required],
+      cond_pago: [30, Validators.required],
+      fecha_e: [new Date(), Validators.required],
+      moneda: ['PEN', Validators.required],
+      descuento_global: [0, Validators.required]
     });
   }
 
-  onSubmit() {
-    this.billsService.composeBillDraft(this.billForm.value, this.dataSource.data);
-    this.billsService.saveBillDraft().subscribe();
+  onSubmit(): Observable<any> {
+    if (this.billForm.valid) {
+      this.billsService.composeBillDraft(this.billForm.value, this.dataSource.data);
+      return this.billsService.saveBillDraft();
+    } else {
+      this.messageService.add('invalid data');
+      return of(new Error('invalid data'));
+    }
+
+  }
+
+  getBillForm() {
+    return this.billForm;
   }
 
 }
