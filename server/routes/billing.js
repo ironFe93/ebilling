@@ -183,7 +183,7 @@ routes.get('/download', async (req, res, next) => {
         .catch(err => next(err));
 });
 
-routes.post('/test', async (req, res, next) => {
+routes.post('/sendBill', async (req, res, next) => {
     const xmlBuilder = require('../methods/xmlBuilder');
     const soapClient = require('../methods/soap-client');
     const _id = req.body._id;
@@ -194,12 +194,12 @@ routes.post('/test', async (req, res, next) => {
         const billID = bill.ID;
         const fileName = ruc + '-01-' + billID + '.zip';
         const base64String = await xmlBuilder.buildXml(bill.toObject());
-        soapClient.sendBill(fileName, base64String);
+        result = await soapClient.sendBill(fileName, base64String);
+        res.send(result);
 
     } catch (error) {
         next(error)
     }
-    
 });
 
 const getNextSequence = (name) => {

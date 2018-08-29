@@ -1,8 +1,7 @@
 const soap = require('soap');
 const url = 'https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService?wsdl';
-// const url = 'https://www.sunat.gob.pe/ol-ti-itcpgem-sqa/billService?wsdl'
 
-const wsdlOptions = { 
+const wsdlOptions = {
     envelopeKey: 'soapenv'
 };
 
@@ -27,10 +26,10 @@ exports.getStatus = (ticket) => {
 
         return client.getStatusAsync(args);
     }).then(result => {
-    // result is a javascript array containing result, raw and soapheader
-    // result is a javascript object
-    // raw is the raw response
-    // soapHeader is the response soap header as a javascript object
+        // result is a javascript array containing result, raw and soapheader
+        // result is a javascript object
+        // raw is the raw response
+        // soapHeader is the response soap header as a javascript object
         return result[0];
     });
 };
@@ -40,10 +39,10 @@ exports.sendBill = (fileName, contentFile) => {
         if (err) return next(err);
 
         const args = {
-            _xml: '<ser:sendBill>' + 
-            '<fileName>' + fileName + '</fileName>' + 
-            '<contentFile>' + contentFile + '</contentFile>' + 
-            '</ser:sendBill>'
+            _xml: '<ser:sendBill>' +
+                '<fileName>' + fileName + '</fileName>' +
+                '<contentFile>' + contentFile + '</contentFile>' +
+                '</ser:sendBill>'
         };
 
         client.wsdl.xmlnsInEnvelope = 'xmlns:ser="http://service.sunat.gob.pe"';
@@ -51,14 +50,15 @@ exports.sendBill = (fileName, contentFile) => {
 
         return client.sendBillAsync(args);
     }).then(result => {
-    // result is a javascript array containing result, raw and soapheader
-    // result is a javascript object
-    // raw is the raw response
-    // soapHeader is the response soap header as a javascript object
-    console.log(result);
+        // result is a javascript array containing result, raw and soapheader
+        // result is a javascript object
+        // raw is the raw response
+        // soapHeader is the response soap header as a javascript object
+        console.log(result);
         return result[0];
     }).catch(err => {
         console.error(err);
+        return err;
     });
 };
 
