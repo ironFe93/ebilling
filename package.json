@@ -53,6 +53,7 @@
     "xml": "^1.0.1",
     "xml-crypto": "^0.10.1",
     "xml-formatter": "^1.0.1",
+    "xmlbuilder": "^10.0.0",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {

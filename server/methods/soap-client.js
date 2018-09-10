@@ -1,5 +1,6 @@
 const soap = require('soap');
-const url = 'https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService?wsdl';
+const url = 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl';
+
 
 const wsdlOptions = {
     envelopeKey: 'soapenv'

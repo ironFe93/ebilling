@@ -1,9 +1,102 @@
 const Product = require('../models/product');
+const Bill = require('../models/bill');
+const Company = require('../models/company');
 const InvoiceInline = require('../models/bill-invoice-inline');
 const TaxSubTotal = require('../models/tax-subtotal');
 const SimpleBill = require('../models/bill-simple');
 
-exports.setDespatch = (bill, reference) => {
+exports.buildBill = async (body) => {
+    try {
+        bill = new Bill({});
+        const query = Company.findOne({ type: 'owner' });
+        const company = await query.exec()
+        // set the id number and series
+        bill.ID = await getNextSequence('bill_id');
+
+
+        //set Dates
+        bill = setDates(bill, body);
+
+        //set DocumentCurrencyCode
+        bill.DocumentCurrencyCode.val = body.moneda;
+
+        // set DespatchDocReference
+        if (body.guia_remision) {
+            bill = setDespatch(bill, body.despatchID);
+        }
+
+        // set AdditionalDocReference
+        if (body.otro_doc) {
+            bill = setAdditionalDoc(bill, body.additionalDocID);
+        }
+
+        // set AccountingSupplierParty
+        bill = setAccountingSupplierParty(bill, company);
+
+        // set AccountingCustomerParty
+        bill = setAccountingCustomerParty(bill, body.cliente)
+
+        // set DeliveryTerms
+        if (body.address) {
+            bill.DeliveryTerms.DeliveryLocation.Address = body.address
+        } else {
+            bill.DeliveryTerms.DeliveryLocation.Address = company.address
+        }
+
+        let sumValues = {
+            sumValorVentaBruto: 0,
+            sumDescuentosPorItem: 0,
+            sumValorVentaPorItem: 0,
+            descuentoGlobal: 0,
+            totalDescuentos: 0,
+            totalOperacionesGravadas: 0,
+            totalOperacionesExoneradas: 0,
+            totalOperacionesInafectas: 0,
+            sumIGV: 0,
+            total: 0
+        };
+
+        bill.InvoiceInline = await calculate_invoice_inlines(body);
+        sumValues = calculate_totals(bill, sumValues, body.descuento_global);
+
+        bill.sumValues = sumValues;
+
+        // set AllowanceCharge
+        if (body.descuento_global) {
+            bill = setAllowanceCharge(bill, body.descuento_global.factor);
+        }
+
+        // set TaxTotals
+        bill = setTaxSubTotals(bill, sumValues);
+
+        // set legalMonetaryTotal
+        bill = setLegalMonetaryTotal(bill, sumValues);
+
+        // set Note
+        bill = getLetterTotalValue(bill, body);
+
+        return bill;
+
+    } catch (error) {
+        return (error);
+    }
+}
+
+const setDates = (bill, body) => {
+
+    const fullIssueDate = new Date(body.fecha_emision);
+    bill.IssueDate = fullIssueDate;
+    bill.IssueTime = fullIssueDate;
+    bill.cond_pago = req.body.cond_pago;
+
+    const dueDate = new Date();
+    dueDate.setDate(fullIssueDate.getDate() + req.body.cond_pago);
+    bill.DueDate = dueDate;
+
+    return bill;
+}
+
+setDespatch = (bill, reference) => {
 
     bill.DespatchDocumentReference.ID = reference;
     bill.DespatchDocumentReference.DocumentTypeCode = 9;
@@ -11,7 +104,7 @@ exports.setDespatch = (bill, reference) => {
     return bill;
 }
 
-exports.setAdditionalDoc = (bill, reference) => {
+setAdditionalDoc = (bill, reference) => {
 
     bill.AdditionalDocumentReference.ID = reference;
     bill.AdditionalDocumentReference.DocumentTypeCode = 9;
@@ -19,7 +112,7 @@ exports.setAdditionalDoc = (bill, reference) => {
     return bill;
 }
 
-exports.setAccountingSupplierParty = (bill, company) => {
+setAccountingSupplierParty = (bill, company) => {
 
     bill.AccountingSupplierParty.Party.PartyName.Name = company.registration_name;
     bill.AccountingSupplierParty.Party.PartyTaxScheme.RegistrationName = company.registration_name;
@@ -28,7 +121,7 @@ exports.setAccountingSupplierParty = (bill, company) => {
     return bill;
 }
 
-exports.setAccountingCustomerParty = (bill, cliente) => {
+setAccountingCustomerParty = (bill, cliente) => {
 
     bill.AccountingCustomerParty.Party.PartyTaxScheme.RegistrationName = cliente.registration_name;
     bill.AccountingCustomerParty.Party.PartyTaxScheme.CompanyID.val = cliente.ruc
@@ -36,7 +129,7 @@ exports.setAccountingCustomerParty = (bill, cliente) => {
     return bill;
 }
 
-exports.calculate_invoice_inlines = async (reqBody) => {
+calculate_invoice_inlines = async (reqBody) => {
 
     let ID = 1;
 
@@ -182,13 +275,13 @@ calculate_taxes_IGV = (valor_venta) => {
     return valor_venta * 0.18;
 }
 
-exports.calculate_totals = (bill, sumValues, descuentoGlobal) => {
+calculate_totals = (bill, sumValues, descuentoGlobal) => {
 
     let factor = 0;
-    if(descuentoGlobal.factor){
+    if (descuentoGlobal.factor) {
         factor = descuentoGlobal.factor;
     }
-    
+
     let totalItemsGravados = 0;
     let totalItemsExonerados = 0;
     let totalItemsInafectos = 0;
@@ -225,7 +318,29 @@ exports.calculate_totals = (bill, sumValues, descuentoGlobal) => {
 
 }
 
-exports.setTaxSubTotals = (bill, sumValues) => {
+setAllowanceCharge = (bill, factor) => {
+    bill.AllowanceCharge = {
+        ChargeIndicator: false,
+        AllowanceChargeReasonCode: 0,
+        MultiplierFactorNumeric: factor,
+        Amount: {
+            att: {
+                currencyID: bill.DocumentCurrencyCode.val,
+            },
+            val: sumValues.descuentoGlobal
+        },
+        BaseAmount: {
+            att: {
+                currencyID: bill.DocumentCurrencyCode.val,
+            },
+            val: sumValues.sumValorVentaPorItem
+        }
+    }
+
+    return bill
+}
+
+setTaxSubTotals = (bill, sumValues) => {
 
     bill.TaxTotal.TaxAmount.val = sumValues.sumIGV;
     currency = bill.DocumentCurrencyCode.val;
@@ -293,7 +408,7 @@ setTaxCategory = (taxCategory, id, taxSchemeID, name, typecode) => {
     return taxCategory;
 }
 
-exports.setLegalMonetaryTotal = (bill, sumValues) => {
+setLegalMonetaryTotal = (bill, sumValues) => {
     currency = bill.DocumentCurrencyCode.val;
 
     bill.LegalMonetaryTotal = {
@@ -302,17 +417,17 @@ exports.setLegalMonetaryTotal = (bill, sumValues) => {
                 currencyID: currency
             },
             val: sumValues.sumValorVentaBruto
-        }, TaxInclusiveAmount : {
+        }, TaxInclusiveAmount: {
             att: {
                 currencyID: currency
             },
             val: sumValues.total
-        }, AllowanceTotalAmount : {
+        }, AllowanceTotalAmount: {
             att: {
                 currencyID: currency
             },
             val: sumValues.totalDescuentos
-        }, PayableAmount : {
+        }, PayableAmount: {
             att: {
                 currencyID: currency
             },
@@ -366,4 +481,39 @@ exports.simplify = (bill) => {
     });
 
     return simpleBill;
+}
+
+const getNextSequence = async (name) => {
+
+    query = Counters.findOneAndUpdate(
+        { prefix: name },
+        {
+            $inc: { seq: 1 },
+            new: true
+        }
+    );
+
+    try {
+        counter = await query.exec();
+        //control overflow of values
+        if (counter.seq === 99999999) {
+            Counters.findOneAndUpdate(
+                { _id: name },
+                { $inc: { ser: 1 }, seq: 0 },
+            );
+        }
+        return counter.letter + counter.ser + '-' + counter.seq;
+
+    } catch (error) {
+        return error;
+    }
+}
+
+calculate_expiration_date = (bill) => {
+    bill.fecha_bill.fecha_emision + bill.cond_pago;
+
+}
+
+getLetterTotalValue = (bill) => {
+    bill.Note.val = 'placeholder'
 }

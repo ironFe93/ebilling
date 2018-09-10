@@ -5,9 +5,7 @@ const invoiceInlineSchema = new Schema({
     ID: Number,
     InvoicedQuantity: {
         att: {
-            unitCode: String,
-            unitCodeListID: {type: String, default: "UN/ECE rec 20"},
-            unitCodeListAgencyName: {type: String, default: "United Nations Economic Commission for Europe"}
+            unitCode: String
         },
         val: Number
     },
@@ -31,7 +29,7 @@ const invoiceInlineSchema = new Schema({
                     listAgencyName: {type: String, default: "PE:SUNAT"},
                     listURI: {type: String, default:"urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo16"}
                 },
-                val: {type: Number, enum:[1, 2]}
+                val: {type: String, enum:["01", "02"]}
             }
         }
     },
@@ -59,7 +57,7 @@ const invoiceInlineSchema = new Schema({
             },
             val: Number
         },
-        TaxSubTotal: {
+        TaxSubtotal: {
             TaxableAmount: {
                 att: {
                     currencyID: {type: String, enum:["PEN", "USD"]}
@@ -81,7 +79,6 @@ const invoiceInlineSchema = new Schema({
                     },
                     val: {type: String, enum:["S", "E", "O"]}
                 },
-                Percent: {type: Number, enum:[18, 0]},
                 TaxExemptionReasonCode: {
                     att: {
                         listAgencyName: {type: String, default:"PE:SUNAT"},
@@ -109,16 +106,6 @@ const invoiceInlineSchema = new Schema({
         Description: String,
         SellersItemIdentification: {
             ID: String
-        },
-        CommodityClassification: {
-            ItemClassificationCode: {
-                att: {
-                    listID: {type: String, default:"UNSPSC"},
-                    listAgencyName: {type: String, default:"GS1 US"},
-                    listName: {type: String, default:"Item Classification"}
-                },
-                val: Number
-            }
         }
     },
     Price: {

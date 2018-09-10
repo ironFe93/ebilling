@@ -2,15 +2,21 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const invoiceInlineSchema = require('../models/bill-invoice-inline').schema;
-const taxSubTotalSchema = require('../models/tax-subtotal').schema;
+const taxSubtotalSchema = require('../models/tax-subtotal').schema;
 //  http:// www.sunat.gob.pe/legislacion/superin/2017/anexoVII-117-2017.pdf
 
 const billSchema = new Schema({
   UBLExtensions: {
     ds_signature: String
   },
-  UBLVersionID: { type: Number, default: 2.1 },
-  CustomizationID: { type: Number, default: 2.0 },
+  UBLVersionID: { type: String, default: "2.1" },
+  CustomizationID: {
+    att: {
+      schemeAgencyName: { type: String, default: "PE:SUNAT" }
+    },
+    val: { type: String, default: "2.1" },
+  },
+
   ProfileID: {
     att: {
       schemeName: { type: String, default: "SUNAT:Identificador de Tipo de Operación" },
@@ -22,7 +28,6 @@ const billSchema = new Schema({
   ID: String,
   IssueDate: Date,
   cond_pago: Number,
-  IssueTime: Date,
   DueDate: Date,
   InvoiceTypeCode: {
     att: {
@@ -30,11 +35,11 @@ const billSchema = new Schema({
       listName: { type: String, default: "SUNAT:Identificador de Tipo de Documento" },
       listURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01" },
     },
-    val: { type: Number, default: 1 }
+    val: { type: String, default: "01" }
   },
   Note: {
     att: {
-      languageLocaleID: { type: String, default: "1000" }
+      // languageLocaleID: { type: String, default: "1000" }
     },
     val: String
   },
@@ -71,45 +76,62 @@ const billSchema = new Schema({
   },
   AccountingSupplierParty: {
     Party: {
-      PartyName: {
-        Name: String // nombre comercial
-      },
-      PartyTaxScheme: {
-        RegistrationName: String, // razon social
-        CompanyID: {
+      PartyIdentification: {
+        ID: {
           att: {
             schemeID: { type: Number, default: 6 },
-            schemeName: { type: String, default: "SUNAT:Identificador de Documento de Identidad" },
+            schemeName: { type: String, default: "Documento de Identidad" },
             schemeAgencyName: { type: String, default: "PE:SUNAT" },
             schemeURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" }
           },
           val: Number // RUC
-        },
-        TaxScheme: {
-          ID: { type: String, default: "-" }
-        },
+        }
+      }, PartyName: {
+        Name: String // nombre comercial
+      }, PartyLegalEntity: {
+        RegistrationName: String,
         RegistrationAddress: {
-          AddressTypeCode: { type: String, default: "0001" }
+          AddressLine: {
+            Line: String
+          },
+          CitySubdivisionName: String,
+          CityName: String,
+          ID: {
+            att: {
+              schemeAgencyName: { type: String, default: "PE:INEI" },
+              schemeName: { type: String, default: "Ubigeos" }
+            },
+            val: String
+          },
+          CountrySubentity: String,
+          Country: {
+            IdentificationCode: {
+              att: {
+                listID: { type: String, default: "ISO 3166-1" },
+                listAgencyName: { type: String, default: "United Nations Economic Comission for Europe" },
+                listName: { type: String, default: "Country" }
+              },
+              val: { type: String, default: "PE" }
+            }
+          }
         }
       }
     }
   },
   AccountingCustomerParty: {
     Party: {
-      PartyTaxScheme: {
-        RegistrationName: String, // razon social
-        CompanyID: {
+      PartyIdentification: {
+        ID: {
           att: {
             schemeID: { type: Number, default: 6 },
-            schemeName: { type: String, default: "SUNAT:Identificador de Documento de Identidad" },
+            schemeName: { type: String, default: "Documento de Identidad" },
             schemeAgencyName: { type: String, default: "PE:SUNAT" },
             schemeURI: { type: String, default: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" }
           },
           val: Number // RUC
-        },
-        TaxScheme: {
-          ID: { type: String, default: "-" }
         }
+      }, PartyName: {
+        Name: String // nombre comercial
       }
     }
   },
@@ -158,7 +180,7 @@ const billSchema = new Schema({
         currencyID: { type: String, enum: ["PEN", "USD"] },
       },
       val: Number
-    }, TaxSubTotal: [taxSubTotalSchema]
+    }, TaxSubtotal: [taxSubtotalSchema]
   },
   LegalMonetaryTotal: {
     LineExtensionAmount: {
@@ -198,7 +220,7 @@ const billSchema = new Schema({
       val: Number
     },
   },
-  InvoiceInline: [invoiceInlineSchema],
+  InvoiceLine: [invoiceInlineSchema],
   sumValues: {}
 });
 
