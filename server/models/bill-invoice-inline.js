@@ -35,7 +35,7 @@ const invoiceInlineSchema = new Schema({
     },
     AllowanceCharge: {
         ChargeIndicator: Boolean,
-        AllowanceChargeReasonCode: Number,
+        AllowanceChargeReasonCode: String,
         MultiplierFactorNumeric: Number,
         Amount: {
             att: {

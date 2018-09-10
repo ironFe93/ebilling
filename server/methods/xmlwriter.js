@@ -1,5 +1,10 @@
 const builder = require('xmlbuilder');
+
+let currencyID = {}
+
 exports.buildXML = (jsonBill) => {
+
+    currencyID = {currencyID: jsonBill.DocumentCurrencyCode.val}
 
     const namespaces = {
         "xmlns": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
@@ -48,8 +53,6 @@ exports.buildXML = (jsonBill) => {
     .ele('cac:PartyLegalEntity')
     .ele('cbc:RegistrationName', jsonBill.AccountingCustomerParty.Party.PartyLegalEntity.RegistrationName)
 
-    const currencyID = {currencyID: jsonBill.DocumentCurrencyCode.val}
-
     taxCategoryIDAtt = {
         schemeID:"Codigo de tributos",
         schemeName:"PE:SUNAT",
@@ -61,7 +64,7 @@ exports.buildXML = (jsonBill) => {
 
     jsonBill.TaxTotal.TaxSubtotal.forEach(subtotal => {
         TaxTotal.ele('cac:TaxSubtotal')
-        .ele('cbcTaxableAmount', currencyID, subtotal.TaxableAmount.val).up()
+        .ele('cbc:TaxableAmount', currencyID, subtotal.TaxableAmount.val).up()
         .ele('cbc:TaxAmount', currencyID, subtotal.TaxAmount.val).up()
         .ele('cac:TaxCategory')
         .ele('cac:TaxScheme')
@@ -100,52 +103,19 @@ exports.buildXML = (jsonBill) => {
     var InvoiceLine = builder.create('cac:InvoiceLine', { headless: true })
 
     jsonBill.InvoiceLine.forEach(line => {
-        InvoiceLine.ele('cbc:ID', line.ID).up()
-        .ele('cbc:InvoicedQuantity', {unitCode: 'KG'}, line.InvoicedQuantity.val).up()
-        .ele('cac:Item')
-        .ele('cac:SellersItemIdentification')
-        .ele('cbc:ID', line.Item.SellersItemIdentification.ID).up()
-        .up()
-        .ele('cbc:description', line.Item.description).up()
-        .up()
-        .ele('cac:Price')
-        .ele('cbc:PriceAmount', currencyID, line.Price.PriceAmount.val).up()
-        .up()
-        .ele('cac:PricingReference')
-        .ele('cac:AlternativeConditionPrice')
-        .ele('cbc:PriceAmount', currencyID, line.PricingReference.AlternativeConditionPrice.PriceAmount.val).up()
-        .ele('cbc:PriceTypeCode', priceTypeCodeAtt, line.PricingReference.AlternativeConditionPrice.PriceTypeCode.val).up()
-        .up()
-        .up()
-        .ele('cac:TaxTotal')
-        .ele('cbc:TaxAmount', currencyID,  line.TaxTotal.TaxAmount.val).up()
-        .ele('cac:TaxSubtotal')
-        .ele('cbcTaxableAmount', currencyID, line.TaxTotal.TaxSubtotal.TaxableAmount.val).up()
-        .ele('cbc:TaxAmount', currencyID, line.TaxTotal.TaxSubtotal.TaxAmount.val).up()
-        .ele('cac:TaxCategory')
-        .ele('cbc:Percent', line.TaxTotal.TaxSubtotal.TaxCategory.Percent).up()
-        .ele('cbc:TaxExemptionReasonCode', taxExemptionAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode.val).up()
-        .ele('cac:TaxScheme')
-        .ele('cbc:ID', taxCategoryIDAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.ID.val).up()
-        .ele('cbc:Name', line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.Name).up()
-        .ele('cbc:TaxTypeCode', line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.TaxTypeCode).up()
-        .up()
-        .up()
-        .up()
-        .up()
-        .ele('cbc:LineExtensionAmount', currencyID, line.LineExtensionAmount.val).up()
-        .ele('cac:Allowancecharge')
-        .ele('cbc:ChargeIndicator', line.AllowanceCharge.ChargeIndicator).up()
-        .ele('cbc:AllowanceChargeReasonCode', AllowanceChargeAtt ,line.AllowanceChargeReasonCode).up()
-        .ele('cbc:MultiplierFactorNumeric', line.AllowanceCharge.MultiplierFactorNumeric).up()
-        .ele('cbc:Amount', currencyID, line.AllowanceCharge.Amount.val).up()
-        .ele('cbc:BaseAmount', currencyID, line.AllowanceCharge.BaseAmount.val).up()
-        
+        InvoiceLine.ele('cbc:ID', line.ID)
+        InvoiceLine.ele('cbc:InvoicedQuantity', {unitCode: 'NIU'}, line.InvoicedQuantity.val);
+        InvoiceLine.ele('cbc:LineExtensionAmount', currencyID, line.LineExtensionAmount.val);
+        InvoiceLine = addLinePricingReference(InvoiceLine, line);
+        InvoiceLine = addLineAllowance(InvoiceLine, line);
+        InvoiceLine = addLineTax(InvoiceLine, line);
+        InvoiceLine = addLineItem(InvoiceLine, line);
+        InvoiceLine = addLinePrice(InvoiceLine, line);
     });
 
     const AllowanceCharge = builder.create('cac:AllowanceCharge', { headless: true })
     .ele('cbc:ChargeIndicator', false).up()
-    .ele('cbc:AllowanceChargeReasonCode', AllowanceChargeAtt , 0).up()
+    .ele('cbc:AllowanceChargeReasonCode', AllowanceChargeAtt , '00').up()
     .ele('cbc:MultiplierFactorNumeric', 0).up()
     .ele('cbc:Amount', currencyID, 0).up()
     .ele('cbc:BaseAmount', currencyID, 25.42).up()
@@ -153,20 +123,20 @@ exports.buildXML = (jsonBill) => {
 
     //end complex types
 
-    var Invoice = builder.create('Invoice', { encoding: 'utf-8', standalone: false })
+    var Invoice = builder.create('Invoice', { encoding: 'UTF-8'})
         .att(namespaces)
 
     Invoice.importDocument(UBLExtension);
 
-    Invoice.ele('cbc:UBLVersionID', 2.1);
-    Invoice.ele('cbc:CustomizationID', '2.0');
+    Invoice.ele('cbc:UBLVersionID', '2.1');
+    Invoice.ele('cbc:CustomizationID', {schemeAgencyName: 'PE:SUNAT'}, '2.0');
 
     profileIDAtts = {
         schemeName:"SUNAT:Identificador de Tipo de Operación", 
         schemeAgencyName:"PE:SUNAT", 
         schemeURI:"urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo17"
     }
-    Invoice.ele('cbc:ProfileID', profileIDAtts , "0101");
+    //Invoice.ele('cbc:ProfileID', profileIDAtts , "0101");
     Invoice.ele('cbc:ID', jsonBill.ID);
     Invoice.ele('cbc:IssueDate', jsonBill.IssueDate);
     Invoice.ele('cbc:IssueTime', jsonBill.IssueTime);
@@ -191,12 +161,71 @@ exports.buildXML = (jsonBill) => {
 
     Invoice.importDocument(AccountingSupplierParty);
     Invoice.importDocument(AccountingCustomerParty);
-    Invoice.importDocument(InvoiceLine);
-    Invoice.importDocument(TaxTotal);
     Invoice.importDocument(AllowanceCharge);
+    Invoice.importDocument(TaxTotal);
     Invoice.importDocument(LegalMonetaryTotal);
+    Invoice.importDocument(InvoiceLine);
     
-    string = Invoice.end();
+    string = Invoice.end({pretty: true});
     return string;
 
+}
+
+addLineItem = (InvoiceLine, line) => {
+    InvoiceLine.ele('cac:Item')
+    .ele('cbc:Description', line.Item.Description).up()
+    .ele('cac:SellersItemIdentification')
+    .ele('cbc:ID', line.Item.SellersItemIdentification.ID).up()
+    .up()
+
+    return InvoiceLine;
+}
+
+addLinePrice = (InvoiceLine, line) => {
+    InvoiceLine.ele('cac:Price').ele('cbc:PriceAmount', currencyID, line.Price.PriceAmount.val);
+
+    return InvoiceLine;
+} 
+
+addLinePricingReference = (InvoiceLine, line) => {
+    
+    InvoiceLine.ele('cac:PricingReference')
+        .ele('cac:AlternativeConditionPrice')
+        .ele('cbc:PriceAmount', currencyID, line.PricingReference.AlternativeConditionPrice.PriceAmount.val).up()
+        .ele('cbc:PriceTypeCode', priceTypeCodeAtt, line.PricingReference.AlternativeConditionPrice.PriceTypeCode.val);
+
+    return InvoiceLine;
+}
+
+addLineTax = (InvoiceLine, line) => {
+    InvoiceLine.ele('cac:TaxTotal')
+    .ele('cbc:TaxAmount', currencyID,  line.TaxTotal.TaxAmount.val).up()
+    .ele('cac:TaxSubtotal')
+    .ele('cbc:TaxableAmount', currencyID, line.TaxTotal.TaxSubtotal.TaxableAmount.val).up()
+    .ele('cbc:TaxAmount', currencyID, line.TaxTotal.TaxSubtotal.TaxAmount.val).up()
+    .ele('cac:TaxCategory')
+    .ele('cbc:Percent', line.TaxTotal.TaxSubtotal.TaxCategory.Percent).up()
+    .ele('cbc:TaxExemptionReasonCode', taxExemptionAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode.val).up()
+    .ele('cac:TaxScheme')
+    .ele('cbc:ID', taxCategoryIDAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.ID.val).up()
+    .ele('cbc:Name', line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.Name).up()
+    .ele('cbc:TaxTypeCode', line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.TaxTypeCode).up()
+    .up()
+    .up()
+    .up()
+    .up()
+
+    return InvoiceLine;
+}
+
+addLineAllowance = (InvoiceLine, line) => {
+    InvoiceLine.ele('cac:AllowanceCharge')
+    .ele('cbc:ChargeIndicator', line.AllowanceCharge.ChargeIndicator).up()
+    .ele('cbc:AllowanceChargeReasonCode', AllowanceChargeAtt ,line.AllowanceCharge.AllowanceChargeReasonCode).up()
+    .ele('cbc:MultiplierFactorNumeric', line.AllowanceCharge.MultiplierFactorNumeric).up()
+    .ele('cbc:Amount', currencyID, line.AllowanceCharge.Amount.val).up()
+    .ele('cbc:BaseAmount', currencyID, line.AllowanceCharge.BaseAmount.val).up()
+    .up();
+
+    return InvoiceLine;
 }
