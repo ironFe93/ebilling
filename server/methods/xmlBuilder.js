@@ -13,7 +13,7 @@ exports.buildXml = async (jsonObject, ruc) => {
 
         //order matters
 
-        const xml = xmlwriter.buildXML(jsonObject);
+        const xml = await xmlwriter.buildXML(jsonObject);
         const signedXML = await signXML(xml);
         const base64Zip = await prepareZipAsBase64(signedXML, ruc, billID);
         return base64Zip;

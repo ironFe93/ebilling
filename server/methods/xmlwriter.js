@@ -1,9 +1,11 @@
 const builder = require('xmlbuilder');
+const mongoose = require("mongoose");
 let atts;
+let catalog05;
 
-exports.buildXML = (jsonBill) => {
+exports.buildXML = async (jsonBill) => {
     atts = attributes(jsonBill); //Initialize attributes
-
+    catalog05 = cat05(); //load up catalog05
     //begin complex types
 
     const UBLExtension = builder.create('ext:UBLExtensions', { headless: true })
@@ -41,9 +43,9 @@ exports.buildXML = (jsonBill) => {
             .ele('cbc:TaxAmount', atts.currencyID, subtotal.TaxAmount).up()
             .ele('cac:TaxCategory')
             .ele('cac:TaxScheme')
-            .ele('cbc:ID', atts.taxCategoryIDAtt, subtotal.TaxCategory.TaxScheme.ID).up()
-            .ele('cbc:Name', subtotal.TaxCategory.TaxScheme.Name).up()
-            .ele('cbc:TaxTypeCode', subtotal.TaxCategory.TaxScheme.TaxTypeCode).up()
+            .ele('cbc:ID', atts.taxCategoryIDAtt, subtotal.TaxCategory.TaxSchemeID).up()
+            .ele('cbc:Name', catalog05.datos[subtotal.TaxCategory.TaxSchemeID].nombre).up()
+            .ele('cbc:TaxTypeCode', catalog05.datos[subtotal.TaxCategory.TaxSchemeID].codigo_internacional).up()
             .up()
             .up()
             .up()
@@ -147,9 +149,9 @@ addLineTax = (InvoiceLine, line) => {
         .ele('cbc:Percent', line.TaxTotal.TaxSubtotal.TaxCategory.Percent).up()
         .ele('cbc:TaxExemptionReasonCode', atts.taxExemptionAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode).up()
         .ele('cac:TaxScheme')
-        .ele('cbc:ID', atts.taxCategoryIDAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.ID).up()
-        .ele('cbc:Name', line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.Name).up()
-        .ele('cbc:TaxTypeCode', line.TaxTotal.TaxSubtotal.TaxCategory.TaxScheme.TaxTypeCode).up()
+        .ele('cbc:ID', atts.taxCategoryIDAtt, line.TaxTotal.TaxSubtotal.TaxCategory.TaxSchemeID).up()
+        .ele('cbc:Name', catalog05.datos[line.TaxTotal.TaxSubtotal.TaxCategory.TaxSchemeID].nombre).up()
+        .ele('cbc:TaxTypeCode', catalog05.datos[line.TaxTotal.TaxSubtotal.TaxCategory.TaxSchemeID].codigo_internacional).up()
         .up()
         .up()
         .up()
@@ -243,4 +245,15 @@ const attributes = (jsonBill) => {
             "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
         }
     }
+}
+
+cat05 = () =>{
+
+    // load up catalog05
+    const catalogSchema = new mongoose.Schema({}, { strict: false });
+    const Catalog = mongoose.model("catalogs", catalogSchema);
+    const catalog05 = await Catalog.find({'No.': '05'});
+
+    return catalog05;
+
 }

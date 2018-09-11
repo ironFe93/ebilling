@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const invoiceInlineSchema = require('../models/bill-invoice-inline').schema;
+const invoiceLineSchema = require('../models/bill-invoice-inline').schema;
 const taxSubtotalSchema = require('../models/tax-subtotal').schema;
-//  http:// www.sunat.gob.pe/legislacion/superin/2017/anexoVII-117-2017.pdf
 
 const billSchema = new Schema({
   ID: String,
@@ -75,7 +74,7 @@ const billSchema = new Schema({
     PrepaidAmount: Number,
     PayableAmount: Number
   },
-  InvoiceLine: [invoiceInlineSchema],
+  InvoiceLine: [invoiceLineSchema],
   sumValues: {}
 });
 

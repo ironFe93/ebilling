@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const invoiceInlineSchema = new Schema({
+const invoiceLineSchema = new Schema({
     ID: Number,
     InvoicedQuantity: {
         unitCode: String,
@@ -27,13 +27,8 @@ const invoiceInlineSchema = new Schema({
             TaxableAmount: Number,
             TaxAmount: Number,
             TaxCategory: {
-                ID: { type: String, enum: ["S", "E", "O"] },
-                TaxExemptionReasonCode: { type: Number, enum: [10, 20, 30] },
-                TaxScheme: {
-                    ID: { type: Number, enum: [1000, 9996, 9997, 9998] },
-                    Name: { type: String, enum: ["IGV", "EXONERADO", "INAFECTO", "GRATUITO"] },
-                    TaxTypeCode: { type: String, enum: ["VAT", "FRE"] }
-                }
+                TaxExemptionReasonCode: Number,
+                TaxSchemeID: Number
             }
         }
     },
@@ -48,6 +43,6 @@ const invoiceInlineSchema = new Schema({
     }
 });
 
-const InvoiceInline = mongoose.model("InvoiceInline", invoiceInlineSchema);
-module.exports = InvoiceInline;
+const InvoiceLine = mongoose.model("InvoiceLine", invoiceLineSchema);
+module.exports = InvoiceLine;
 

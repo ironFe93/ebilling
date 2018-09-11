@@ -69,8 +69,7 @@ routes.post('/saveDraft', async (req, res, next) => {
         // next(new Error('just testing lol'));
         const bill = await billHelper.buildBill(req.body)
         const savedBill = await bill.save();
-        const simpleBill = billHelper.simplify(savedBill);
-        res.send(simpleBill);
+        res.send(savedBill);
     } catch (error) {
         next(error);
     }
