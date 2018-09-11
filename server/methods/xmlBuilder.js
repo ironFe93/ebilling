@@ -1,6 +1,6 @@
 const xmlwriter = require('./xmlwriter');
 
-exports.buildXml = async (jsonObject) => {
+exports.buildXml = async (jsonObject, ruc) => {
     try {
 
         const dateIssued = new Date(jsonObject.IssueDate);
@@ -9,7 +9,6 @@ exports.buildXml = async (jsonObject) => {
         jsonObject.IssueTime = getHourMinuteSecond(dateIssued);
         jsonObject.DueDate = getYearMonthDay(dateExpired);
 
-        const ruc = jsonObject.AccountingSupplierParty.Party.PartyIdentification.ID.val;
         const billID = jsonObject.ID;
 
         //order matters

@@ -93,10 +93,10 @@ routes.post('/sendBill', async (req, res, next) => {
 
     try {
         const bill = await Bill.findById(_id).exec();
-        const ruc = bill.AccountingSupplierParty.Party.PartyIdentification.ID.val;
+        const ruc = bill.AccountingSupplierParty.PartyIdentification.ID;
         const billID = bill.ID;
         const fileName = ruc + '-01-' + billID + '.zip';
-        const base64String = await xmlBuilder.buildXml(bill.toObject());
+        const base64String = await xmlBuilder.buildXml(bill.toObject(), ruc);
         result = await soapClient.sendBill(fileName, base64String);
         res.send(result);
 

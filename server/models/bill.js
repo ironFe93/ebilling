@@ -10,56 +10,35 @@ const billSchema = new Schema({
   IssueDate: Date,
   cond_pago: Number,
   DueDate: Date,
-  InvoiceTypeCode: {
-    val: String
-  },
-  Note: {
-    val: String
-  },
-  DocumentCurrencyCode: {
-    val: { type: String, enum: ["PEN", "USD"] }
-  },
+  InvoiceTypeCode: String,
+  Note: String,
+  DocumentCurrencyCode: { type: String, enum: ["PEN", "USD"] },
   ////////
   DespatchDocumentReference: {
     ID: String,
-    DocumentTypeCode: {
-      val: { type: Number, enum: [9] }
-    }
+    DocumentTypeCode: { type: Number, enum: [9] }
   },
   AdditionalDocumentReference: {
     ID: String,
-    DocumentTypeCode: {
-      val: Number
-    }
+    DocumentTypeCode: Number
   },
   AccountingSupplierParty: {
-    Party: {
-      PartyIdentification: {
-        ID: {
-          att: {
-            schemeID: Number
-          },
-          val: Number // RUC
-        }
-      }, PartyName: {
-        Name: String // nombre comercial
-      }, PartyLegalEntity: {
-        RegistrationName: String
-      }
+    PartyIdentification: {
+      ID: String,
+      schemeID: String,
+    },
+    PartyName:  String // nombre comercial
+    , PartyLegalEntity: {
+      RegistrationName: String
     }
   },
   AccountingCustomerParty: {
-    Party: {
-      PartyIdentification: {
-        ID: {
-          att: {
-            schemeID: Number,
-          },
-          val: Number // RUC
-        }
-      }, PartyLegalEntity: {
-        RegistrationName: String // nombre legal
-      }
+    PartyIdentification: {
+      ID: String,
+      schemeID: String,
+    },
+    PartyLegalEntity: {
+      RegistrationName: String // nombre legal
     }
   },
   DeliveryTerms: {
@@ -72,14 +51,7 @@ const billSchema = new Schema({
         CountrySubentityCode: Number, // ZIp code
         District: String,
         Country: {
-          IdentificationCode: {
-            att: {
-              listID: { type: String, default: "ISO3166-1" },
-              listAgencyName: { type: String, default: "United Nations Economic Commission for Europe" },
-              listName: { type: String, default: "Country" }
-            },
-            val: { type: String, default: "PE" }
-          }
+          IdentificationCode: { type: String, default: "PE" }
         }
       }
     }
@@ -88,37 +60,20 @@ const billSchema = new Schema({
     ChargeIndicator: Boolean,
     AllowanceChargeReasonCode: String,
     MultiplierFactorNumeric: Number,
-    Amount: {
-      val: Number
-    },
-    BaseAmount: {
-      val: Number
-    }
+    Amount: Number,
+    BaseAmount: Number
   },
   TaxTotal: {
-    TaxAmount: {
-      val: Number
-    }, TaxSubtotal: [taxSubtotalSchema]
+    TaxAmount: Number, 
+    TaxSubtotal: [taxSubtotalSchema]
   },
   LegalMonetaryTotal: {
-    LineExtensionAmount: {
-      val: Number
-    },
-    TaxInclusiveAmount: {
-      val: Number
-    },
-    AllowanceTotalAmount: {
-      val: Number
-    },
-    ChargeTotalAmount: {
-      val: Number
-    },
-    PrepaidAmount: {
-      val: Number
-    },
-    PayableAmount: {
-      val: Number
-    },
+    LineExtensionAmount: Number,
+    TaxInclusiveAmount: Number,
+    AllowanceTotalAmount: Number,
+    ChargeTotalAmount: Number,
+    PrepaidAmount: Number,
+    PayableAmount: Number
   },
   InvoiceLine: [invoiceInlineSchema],
   sumValues: {}

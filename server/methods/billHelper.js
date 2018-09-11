@@ -87,10 +87,10 @@ const setDates = (bill, body) => {
     const fullIssueDate = new Date(body.fecha_emision);
     bill.IssueDate = fullIssueDate;
     bill.IssueTime = fullIssueDate;
-    bill.cond_pago = req.body.cond_pago;
+    bill.cond_pago = body.cond_pago;
 
     const dueDate = new Date();
-    dueDate.setDate(fullIssueDate.getDate() + req.body.cond_pago);
+    dueDate.setDate(fullIssueDate.getDate() + body.cond_pago);
     bill.DueDate = dueDate;
 
     return bill;
@@ -165,17 +165,11 @@ calculate_invoice_inlines = async (reqBody) => {
 
         // set LineExtensionAmount
         invoiceInline.LineExtensionAmount = {
-            att: {
-                currencyID: reqBody.moneda
-            },
             val: valor_venta
         }
 
         // set PricingReference
         invoiceInline.PricingReference.AlternativeConditionPrice.PriceAmount = {
-            att: {
-                currencyID: reqBody.moneda
-            },
             val: item.precio_unitario.monto
         }
         invoiceInline.PricingReference.AlternativeConditionPrice.PriceTypeCode.val = 1;
@@ -187,15 +181,9 @@ calculate_invoice_inlines = async (reqBody) => {
                 AllowanceChargeReasonCode: 0,
                 MultiplierFactorNumeric: item.descuento.factor,
                 Amount: {
-                    att: {
-                        currencyID: reqBody.moneda
-                    },
                     val: descuento //3
                 },
                 BaseAmount: {
-                    att: {
-                        currencyID: reqBody.moneda
-                    },
                     val: valor_venta_bruto
                 }
 
