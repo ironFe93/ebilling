@@ -24,62 +24,78 @@
         <!-- Code Column -->
         <ng-container matColumnDef="codigo">
           <mat-header-cell *matHeaderCellDef> Código </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.cod}} </mat-cell>
+          <mat-cell *matCellDef="let line"> {{line.Item.SellersItemIdentification.ID}} </mat-cell>
         </ng-container>
 
         <!-- cantidad Column -->
         <ng-container matColumnDef="cantidad">
           <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.cantidad}} </mat-cell>
+          <mat-cell *matCellDef="let line"> {{line.InvoicedQuantity.val}} </mat-cell>
         </ng-container>
 
         <!-- Unit Measure Column -->
         <ng-container matColumnDef="medida">
           <mat-header-cell *matHeaderCellDef> UM </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.medida}} </mat-cell>
+          <mat-cell *matCellDef="let line"> {{line.InvoicedQuantity.unitCode}} </mat-cell>
         </ng-container>
 
         <!-- Desc Column -->
         <ng-container matColumnDef="descripcion">
           <mat-header-cell *matHeaderCellDef> Descripcion </mat-header-cell>
-          <mat-cell *matCellDef="let item">{{item.descripcion}}
+          <mat-cell *matCellDef="let line">{{line.Item.Description}}
           </mat-cell>
         </ng-container>
 
         <!-- Unit Price Column -->
         <ng-container matColumnDef="precio_unit">
           <mat-header-cell *matHeaderCellDef> Precio Unit. </mat-header-cell>
-          <mat-cell *matCellDef="let item">{{item.precio_unitario}}</mat-cell>
+          <mat-cell *matCellDef="let line">{{line.PricingReference.AlternativeConditionPrice.PriceAmount | number:'1.2-2'}}</mat-cell>
         </ng-container>
 
         <!-- IGV Column -->
         <ng-container matColumnDef="IGV">
           <mat-header-cell *matHeaderCellDef>IGV</mat-header-cell>
-          <mat-cell *matCellDef="let item">{{item.IGV | number}}</mat-cell>
+          <mat-cell *matCellDef="let line">
+            <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax">
+              {{(line.PricingReference.AlternativeConditionPrice.PriceAmount/1.18)*0.18 | number:'1.2-2'}}
+            </div>
+            <ng-template #noTax>
+              0
+            </ng-template>
+          </mat-cell>
         </ng-container>
 
         <!-- Total IGV Column -->
         <ng-container matColumnDef="sum IGV">
           <mat-header-cell *matHeaderCellDef>Σ IGV</mat-header-cell>
-          <mat-cell *matCellDef="let item">{{(item.IGV * item.cantidad) | number}}</mat-cell>
+          <mat-cell *matCellDef="let line">{{line.TaxTotal.TaxAmount | number:'1.2-2'}}</mat-cell>
         </ng-container>
 
         <!-- Valor Venta Column -->
         <ng-container matColumnDef="valor_v">
           <mat-header-cell *matHeaderCellDef>Valor Venta</mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{(item.precio_unitario/1.18) | number}} </mat-cell>
+          <mat-cell *matCellDef="let line">
+            <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_unit_v">
+              {{(line.PricingReference.AlternativeConditionPrice.PriceAmount/1.18) | number:'1.2-2'}}
+            </div>
+            <ng-template #noTax_unit_v>
+              {{line.PricingReference?.AlternativeConditionPrice.PriceAmount * line.InvoicedQuantity.val}}
+            </ng-template>
+          </mat-cell>
         </ng-container>
 
         <!-- Valor_V total Column -->
         <ng-container matColumnDef="valor_v_total">
           <mat-header-cell *matHeaderCellDef>Σ Valor Venta </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{(item.precio_unitario/1.18) * item.cantidad | number}} </mat-cell>
+          <mat-cell *matCellDef="let line"> {{line.LineExtensionAmount | number:'1.2-2'}} </mat-cell>
         </ng-container>
 
-        <!-- Valor_V total Column -->
+        <!-- total linea -->
         <ng-container matColumnDef="total">
           <mat-header-cell *matHeaderCellDef>Total </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.cantidad * item.precio_unitario | number}} </mat-cell>
+          <mat-cell *matCellDef="let line">
+            {{line.LineExtensionAmount + line.TaxTotal.TaxAmount | number:'1.2-2'}}
+          </mat-cell>
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
@@ -95,11 +111,11 @@
 
           <div fxLayout="row" fxLayoutGap="10px">
             <mat-form-field fxFlex="40%">
-              <input type="text" matInput readonly placeholder="RUC" value="{{(bill$ | async).cliente.ruc}}">
+              <input type="text" matInput readonly placeholder="RUC" value="{{(bill$ | async)?.AccountingCustomerParty?.PartyIdentification.ID}}">
             </mat-form-field>
 
             <mat-form-field fxFlex="60%">
-              <input type="text" matInput readonly placeholder="Razón Social" value="{{(bill$ | async).cliente.registrationName}}">
+              <input type="text" matInput readonly placeholder="Razón Social" value="{{(bill$ | async)?.AccountingCustomerParty?.PartyLegalEntity.RegistrationName}}">
             </mat-form-field>
           </div>
           <mat-card-title>Datos del Comprobante</mat-card-title>
@@ -107,59 +123,62 @@
           <div fxLayout="column">
             <div fxLayout="row" fxLayoutGap="10px">
               <mat-form-field>
-                <input matInput readonly type="text" placeholder="F. Emisión" value="{{(bill$ | async).issueDate | date:'dd/MM/yy'}}">
+                <input matInput readonly type="text" placeholder="F. Emisión" value="{{(bill$ | async).IssueDate | date:'dd/MM/yy'}}">
               </mat-form-field>
               <mat-form-field>
                 <input matInput readonly type="number" placeholder="Cond. Pago" value="{{(bill$ | async).cond_pago}}">
               </mat-form-field>
             </div>
-            
+
             <div fxLayout="row" fxLayoutGap="10px">
+              <mat-form-field>
+                <input matInput readonly type="text" placeholder="F. Vencimiento" value="{{(bill$ | async).DueDate | date: 'dd/MM/yy'}}">
+              </mat-form-field>
+              <mat-form-field>
+                <input matInput readonly type="text" placeholder="Moneda" value="{{(bill$ | async).DocumentCurrencyCode}}">
+              </mat-form-field>
+              <mat-form-field>
+                <input matInput type="number" placeholder="Descuento %" value="{{(bill$ | async).AllowanceCharge?.MultiplierFactorNumeric}}">
+              </mat-form-field>
+            </div>
+          </div>
+
+
+        </div>
+        <div fxLayout="row" fxLayoutGap="10px" fxFlex="50%" fxLayoutAlign="end">
+          <div fxLayout="column">
             <mat-form-field>
-              <input matInput readonly type="text" placeholder="F. Vencimiento" value="{{(bill$ | async).dueDate | date: 'dd/MM/yy'}}">
+              <input matInput readonly type="text" placeholder="Op.Gravadas" value="{{(bill$ | async)?.sumValues?.totalOperacionesGravadas | number:'1.2-2'}}">
             </mat-form-field>
             <mat-form-field>
-              <input matInput readonly type="text" placeholder="Moneda" value="{{(bill$ | async).moneda}}">
+              <input matInput readonly type="text" placeholder="Op.Inafectas" value="{{(bill$ | async)?.sumValues?.totalOperacionesInafectas | number:'1.2-2' }}">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="Op.Exoneradas" value="{{(bill$ | async).sumValues?.totalOperacionesExoneradas | number:'1.2-2'}}">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="Op.Gratuitas" value="{{(bill$ | async).sumValues?.totalOperacionesGratuitas | number:'1.2-2'}}">
+            </mat-form-field>
+          </div>
+          <div fxLayout="column">
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="Otros Tributos" value="{{(bill$ | async)?.otros_trib | number:'1.2-2'}}">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="Descuento" value="{{(bill$ | async)?.sumValues?.totalDescuentos | number:'1.2-2'}}">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="IGV 18%" value="{{(bill$ | async).sumValues?.sumIGV | number:'1.2-2'}}">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput readonly type="text" placeholder="Total" value="{{(bill$ | async)?.sumValues?.total | number:'1.2-2'}}">
             </mat-form-field>
           </div>
         </div>
-
-
       </div>
-      <div fxLayout="row" fxLayoutGap="10px" fxFlex="50%" fxLayoutAlign="end">
-        <div fxLayout="column">
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Op.Gravadas" value="{{(bill$ | async)?.op_gravadas | number}}">
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Op.Inafectas" value="{{(bill$ | async)?.op_inafectas | number }}">
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Op.Exoneradas" value="{{(bill$ | async).op_exoneradas | number}}">
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Op.Gratuitas" value="{{(bill$ | async).op_gratuitas | number}}">
-          </mat-form-field>
-        </div>
-        <div fxLayout="column">
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Otros Tributos" value="{{(bill$ | async).otros_trib | number}}">
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Descuento" value="{{(bill$ | async).total_descuentos | number}}">
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="IGV 18%" value="{{(bill$ | async).IGV | number}}">
-          </mat-form-field>
-          <mat-form-field>
-            <input matInput readonly type="text" placeholder="Total" value="{{(bill$ | async)?.importe_total | number}}">
-          </mat-form-field>
-        </div>
-      </div>
-</div>
 
-</mat-card-content>
-</mat-card>
+    </mat-card-content>
+  </mat-card>
 </div>
 
 <button (click)="downloadPdf()">Download PDF</button>

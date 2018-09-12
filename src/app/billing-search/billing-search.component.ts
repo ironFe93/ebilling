@@ -49,10 +49,13 @@ export class BillingSearchComponent implements OnInit {
   }
 
   displayFn(bill: any) {
-    if (bill) { return bill.AccountingCustomerParty.Party.PartyTaxScheme.RegistrationName; }
+    if (bill) {
+      return bill.AccountingCustomerParty.PartyLegalEntity.RegistrationName;
+    }
   }
 
   onSelectionChanged(event: MatAutocompleteSelectedEvent) {
+    console.log('here');
     const bill: Bill = event.option.value;
     this.billsService.getBillDetail(bill._id).subscribe();
     this.billForm.get('userInput').setValue('');

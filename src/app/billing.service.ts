@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
 
 import { Bill } from './models/bill';
-import { Item } from './models/item';
+import { InvoiceLine } from './models/invoiceLine';
 import { Product } from './models/product';
 
 import { MessageService } from './message.service';
@@ -16,35 +16,12 @@ import { environment } from '../environments/environment';
 @Injectable()
 export class BillsService {
 
-
   private BillsUrl = environment.apiUrl + '/api/bill';
-  private bill$: BehaviorSubject<Bill>;
-  private billDetail$: BehaviorSubject<Bill>;
+  private bill$ = new BehaviorSubject(new Bill());
+  private billDetail$ = new BehaviorSubject(new Bill());
 
   constructor(private http: HttpClient,
     private messageService: MessageService, public snackbar: MatSnackBar) {
-    const bill = this.newBill();
-    this.bill$ = new BehaviorSubject(bill);
-    this.billDetail$ = new BehaviorSubject(bill);
-
-  }
-
-  newBill() {
-    const items = [];
-
-    const bill: Bill = {
-      items: items,
-      fecha_emision: new Date(),
-      cliente: {
-        ruc: 0,
-        email: '',
-        registration_name: ''
-      },
-      moneda: '',
-      cond_pago: 0
-    };
-
-    return bill;
   }
 
   public getObservableBill() {
@@ -76,8 +53,44 @@ export class BillsService {
   }
 
   public addItem(product: Product) {
-    const item = this.productToItem(product);
-    const repeated = this.bill$.getValue().items.find(x => x.cod === item.cod);
+    const invoiceLine: InvoiceLine = {
+      tipo: 'Producto',
+      Item: {
+        Description: product.descripcion,
+        SellersItemIdentification: {
+          ID: product.cod
+        }
+      },
+      InvoicedQuantity : {
+        unitCode: product.cod_medida
+      },
+      PricingReference: {
+        AlternativeConditionPrice: {
+          PriceAmount: 0,
+          PriceTypeCode: '00'
+        }
+      },
+      TaxTotal : {
+        TaxAmount: 0,
+        TaxSubtotal : {
+          TaxableAmount: 0 ,
+          TaxAmount: 0,
+          TaxCategory : {
+            TaxExemptionReasonCode: 10,
+            Percent: 18
+          }
+        }
+      },
+      AllowanceCharge: {
+        MultiplierFactorNumeric: 0,
+        ChargeIndicator: false,
+        AllowanceChargeReasonCode: '00'
+      }
+    };
+
+    const repeated = this.bill$.getValue().InvoiceLine.find(line => {
+      return line.Item.SellersItemIdentification.ID === invoiceLine.Item.SellersItemIdentification.ID;
+    });
 
     if (repeated) {
       this.messageService.add('Item ya existe en la factura');
@@ -85,34 +98,44 @@ export class BillsService {
       // return of(this.pOrder);
     } else {
       const invoice = this.bill$.getValue();
-      invoice.items.push(item);
+      invoice.InvoiceLine.push(invoiceLine);
       this.bill$.next(invoice);
     }
   }
 
-  public removeItem(_id: String) {
+  public removeItem(id: String) {
     const bill = this.bill$.getValue();
-    const isProduct = (item) => item._id !== _id;
-    const modifiedItems = bill.items.filter(isProduct);
+    const isProduct = (line: InvoiceLine) => line.Item.SellersItemIdentification.ID !== id;
+    const modifiedLines = bill.InvoiceLine.filter(isProduct);
 
-    bill.items = modifiedItems;
+    bill.InvoiceLine = modifiedLines;
     this.bill$.next(bill);
   }
 
-  composeBillDraft(formdata: any, items: Item[]) {
+  composeBillDraft(formdata: any, invoiceLine: InvoiceLine[]) {
+
     const bill: Bill = {
-      cliente: {
-        ruc: formdata.ruc,
-        registration_name: formdata.razonSocial
+      InvoiceTypeCode: '01',
+      IssueDate: formdata.fecha_e,
+      AccountingCustomerParty: {
+        PartyIdentification: {
+          ID: formdata.ruc,
+          schemeID: '6'
+        },
+        PartyLegalEntity: {
+          RegistrationName: formdata.razonSocial
+        }
       },
-      cond_pago: formdata.cond_pago,
-      moneda: formdata.moneda,
-      fecha_emision: formdata.fecha_e,
-      items: items,
-      descuento_global: {
-        factor: formdata.descuento
-      }
+      cond_pago : formdata.cond_pago,
+      DocumentCurrencyCode : formdata.moneda,
+      AllowanceCharge: {
+        AllowanceChargeReasonCode: '02',
+        ChargeIndicator: false,
+        MultiplierFactorNumeric: formdata.descuento_global
+      },
+      InvoiceLine: invoiceLine
     };
+
     this.bill$.next(bill);
   }
 
@@ -132,46 +155,17 @@ export class BillsService {
   }
 
   public sunat() {
-    return this.http.post<any>(this.BillsUrl + '/sunat', this.bill$.getValue()._id);
+    return this.http.post<any>(this.BillsUrl + '/sunat', this.bill$.getValue().ID);
   }
 
   public getPDF(_id: string) {
     const options = _id ?
       { params: new HttpParams().set('_id', _id) } : {};
 
-    return this.http.get<any>(this.BillsUrl + '/donwload', options);
-  }
-
-  productToItem(product: Product): Item {
-    const item: Item = {
-      cantidad: 0,
-      cod: product.cod,
-      descripcion: product.descripcion,
-      medida: product.cod_medida,
-      precio_unitario: {
-        monto: 0,
-        type_code: 1
-      },
-      valor_ref_unitario: {
-        monto: 0,
-        type_code: 2
-      },
-      descuento: {
-        factor: 0
-      },
-      IGV: {
-        afectacion_tipo: 10
-      },
-      _id: product._id,
-      tipo: 'Bien'
-    };
-    //
-    return item;
+    return this.http.get<any>(this.BillsUrl + '/download', options);
   }
 
   clear() {
-    this.bill$.next(this.newBill());
+    this.bill$.next(new Bill());
   }
-
-
 }

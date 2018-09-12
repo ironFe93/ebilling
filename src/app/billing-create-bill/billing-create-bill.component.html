@@ -20,26 +20,26 @@
       </form>
     </mat-card-content>
     <mat-card-content>
-      <mat-card-title>{{(bill$ | async).cod}}</mat-card-title>
+      <mat-card-title>{{(bill$ | async).ID}}</mat-card-title>
       <mat-card-subtitle>Detalle</mat-card-subtitle>
       <mat-table #table [dataSource]="dataSource">
 
         <!-- Code Column -->
         <ng-container matColumnDef="codigo">
           <mat-header-cell *matHeaderCellDef> Código </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.cod}} </mat-cell>
+          <mat-cell *matCellDef="let line"> {{line.Item.SellersItemIdentification.ID}} </mat-cell>
         </ng-container>
 
         <!-- cantidad Column -->
         <ng-container matColumnDef="cantidad">
           <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
-          <mat-cell *matCellDef="let item">
-            <div *ngIf="item.tipo=='Bien'; else servicio">
+          <mat-cell *matCellDef="let line">
+            <div *ngIf="line.tipo=='Producto'; else Servicio">
               <mat-form-field floatLabel="never">
-                <input matInput type="number" placeholder="cantidad" [value]="item.cantidad" [(ngModel)]="item.cantidad">
+                <input matInput type="number" placeholder="cantidad" [value]="line.InvoicedQuantity.val" [(ngModel)]="line.InvoicedQuantity.val">
               </mat-form-field>
             </div>
-            <ng-template #servicio>
+            <ng-template #Servicio>
               1
             </ng-template>
           </mat-cell>
@@ -48,26 +48,27 @@
         <!-- Unit Measure Column -->
         <ng-container matColumnDef="medida">
           <mat-header-cell *matHeaderCellDef> UM </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.medida}} </mat-cell>
+          <mat-cell *matCellDef="let line"> {{line.InvoicedQuantity.unitCode}} </mat-cell>
         </ng-container>
 
         <!-- Desc Column -->
         <ng-container matColumnDef="descripcion">
           <mat-header-cell *matHeaderCellDef> Descripcion </mat-header-cell>
-          <mat-cell *matCellDef="let item">
+          <mat-cell *matCellDef="let line">
             <!--             <mat-form-field floatLabel="never">
-              <input matInput placeholder="Desc" [value]="item.descripcion" [(ngModel)]="item.descripcion">
+              <input matInput placeholder="Desc" [value]="line.Item.Description" [(ngModel)]="line.Item.Description">
             </mat-form-field> -->
-            {{item.descripcion}}
+            {{line.Item.Description}}
           </mat-cell>
         </ng-container>
 
         <!-- Unit Price Column -->
         <ng-container matColumnDef="precio_unit">
           <mat-header-cell *matHeaderCellDef> Precio Unit. </mat-header-cell>
-          <mat-cell *matCellDef="let item">
+          <mat-cell *matCellDef="let line">
             <mat-form-field floatLabel="never">
-              <input matInput placeholder="precio" [value]="item.precio_unitario.monto" [(ngModel)]="item.precio_unitario.monto">
+              <input matInput placeholder="precio" [value]="line.PricingReference?.AlternativeConditionPrice.PriceAmount"
+                [(ngModel)]="line.PricingReference?.AlternativeConditionPrice.PriceAmount">
             </mat-form-field>
           </mat-cell>
         </ng-container>
@@ -75,9 +76,9 @@
         <!-- Afectacion Column -->
         <ng-container matColumnDef="afectacion">
           <mat-header-cell *matHeaderCellDef> IGV </mat-header-cell>
-          <mat-cell *matCellDef="let item">
+          <mat-cell *matCellDef="let line">
             <mat-form-field floatLabel="never">
-              <mat-select [(value)]="item.IGV.afectacion_tipo" placeholder="Gravado">
+              <mat-select [(value)]="line.TaxTotal?.TaxSubtotal.TaxCategory.TaxExemptionReasonCode" placeholder="Gravado">
                 <mat-option value=10>Gravado</mat-option>
                 <mat-option value=20>Exonerado</mat-option>
                 <mat-option value=30>Inafecto</mat-option>
@@ -89,25 +90,67 @@
         <!-- IGV Column -->
         <ng-container matColumnDef="IGV">
           <mat-header-cell *matHeaderCellDef>IGV</mat-header-cell>
-          <mat-cell *matCellDef="let item">{{(item.precio_unitario.monto/1.18)*0.18 | number}}</mat-cell>
+          <mat-cell *matCellDef="let line">
+            <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax">
+              {{(line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18)*0.18 | number:'1.2-2'}}
+            </div>
+            <ng-template #noTax>
+              0
+            </ng-template>
+          </mat-cell>
+
         </ng-container>
 
         <!-- Total IGV Column -->
         <ng-container matColumnDef="sum IGV">
           <mat-header-cell *matHeaderCellDef>Σ IGV</mat-header-cell>
-          <mat-cell *matCellDef="let item">{{(item.precio_unitario.monto/1.18)*0.18*item.cantidad | number}}</mat-cell>
+          <mat-cell *matCellDef="let line">
+              <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_sumIGV">
+            {{(line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18)*0.18*line.InvoicedQuantity.val |
+            number:'1.2-2'}}
+          </div>
+          <ng-template #noTax_sumIGV>
+            0
+          </ng-template>
+          </mat-cell>
         </ng-container>
 
         <!-- Valor Venta Column -->
         <ng-container matColumnDef="valor_v">
-          <mat-header-cell *matHeaderCellDef> Valor Venta </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{item.precio_unitario.monto/1.18 | number}} </mat-cell>
+          <mat-header-cell *matHeaderCellDef> Valor Unit. </mat-header-cell>
+          <mat-cell *matCellDef="let line">
+              <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_unit_v">
+            {{line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18 | number:'1.2-2'}}
+          </div>
+          <ng-template #noTax_unit_v>
+            {{line.PricingReference?.AlternativeConditionPrice.PriceAmount}}
+          </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Descuento Column -->
+        <ng-container matColumnDef="descuento">
+          <mat-header-cell *matHeaderCellDef> % Desc </mat-header-cell>
+          <mat-cell *matCellDef="let line">
+            <mat-form-field floatLabel="never">
+              <input matInput placeholder="0" [value]="line.AllowanceCharge.MultiplierFactorNumeric" [(ngModel)]="line.AllowanceCharge.MultiplierFactorNumeric">
+            </mat-form-field>
+          </mat-cell>
         </ng-container>
 
         <!-- Valor_V total Column -->
         <ng-container matColumnDef="valor_v_total">
           <mat-header-cell *matHeaderCellDef>Σ Valor Venta </mat-header-cell>
-          <mat-cell *matCellDef="let item"> {{(item.precio_unitario.monto/1.18)*item.cantidad | number}} </mat-cell>
+          <mat-cell *matCellDef="let line">
+              <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_v_total">
+            {{(((line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18) * line.InvoicedQuantity.val) -
+            (((line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18) * line.InvoicedQuantity.val)
+            * line.AllowanceCharge.MultiplierFactorNumeric/100)) | number:'1.2-2'}}
+          </div>
+          <ng-template #noTax_v_total>
+            {{line.PricingReference?.AlternativeConditionPrice.PriceAmount * line.InvoicedQuantity.val | number:'1.2-2'}}
+          </ng-template>
+          </mat-cell>
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
@@ -136,13 +179,16 @@
             <mat-datepicker #picker2></mat-datepicker>
           </mat-form-field>
           <mat-form-field>
-              <input matInput type="number" placeholder="Cond. Pago" formControlName='cond_pago'>
+            <input matInput type="number" placeholder="Cond. Pago" formControlName='cond_pago'>
           </mat-form-field>
           <mat-form-field>
             <mat-select placeholder="Moneda" formControlName='moneda'>
               <mat-option value="PEN">Sol</mat-option>
               <mat-option value="USD">Dólar</mat-option>
             </mat-select>
+          </mat-form-field>
+          <mat-form-field>
+            <input matInput type="number" placeholder="Descuento %" formControlName='descuento_global'>
           </mat-form-field>
         </div>
       </mat-card-content>

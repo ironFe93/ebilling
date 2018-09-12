@@ -1,7 +1,8 @@
 const Product = require('../models/product');
 const Company = require('../models/company');
 const TaxSubTotal = require('../models/tax-subtotal');
-const SimpleBill = require('../models/bill-simple');
+const Counters = require('../models/counters');
+const Catalogs = require('../models/catalogs');
 
 exports.buildBill = async (bill) => {
     try {
@@ -27,7 +28,7 @@ exports.buildBill = async (bill) => {
         };
 
         bill.InvoiceLine = await calculate_invoice_lines(bill);
-        sumValues = calculate_totals(bill, sumValues);
+        sumValues = await calculate_totals(bill, sumValues);
 
         bill.sumValues = sumValues;
 
@@ -35,13 +36,10 @@ exports.buildBill = async (bill) => {
         bill = setAllowanceCharge(bill);
 
         // set TaxTotals
-        bill = setTaxTotal(bill, sumValues);
+        bill = setTaxTotal(bill);
 
         // set legalMonetaryTotal
-        bill = setLegalMonetaryTotal(bill, sumValues);
-
-        // set Note
-        bill = getLetterTotalValue(bill);
+        bill = setLegalMonetaryTotal(bill);
 
         return bill;
 
@@ -60,20 +58,31 @@ setAccountingSupplierParty = (bill, company) => {
 }
 
 calculate_invoice_lines = async (reqBody) => {
+    try {
+        let ID = 1;
+        const invoiceLines = await reqBody.InvoiceLine.map(async line => {
 
-    let ID = 1;
+            let unitValue; 
+            let valor_venta_bruto;
+            let descuento;
+            let valor_venta;
+            let IGV;
 
-    const invoiceLines = await reqBody.InvoiceLine.map(async line => {
+            if (line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode == 20){
+                unitValue = line.PricingReference.AlternativeConditionPrice.PriceAmount;
+                valor_venta_bruto = calculate_valor_v_bruto(unitValue, line.InvoicedQuantity.val);
+                descuento = 0;
+                valor_venta = calculate_valor_venta(valor_venta_bruto, descuento);
+                IGV = 0;
+            }else{
+                unitValue = calculate_unit_value(line.PricingReference.AlternativeConditionPrice.PriceAmount);
+                valor_venta_bruto = calculate_valor_v_bruto(unitValue, line.InvoicedQuantity.val);
+                descuento = calculate_discount(valor_venta_bruto, line.AllowanceCharge.MultiplierFactorNumeric);
+                valor_venta = calculate_valor_venta(valor_venta_bruto, descuento);
+                IGV = calculate_taxes_IGV(valor_venta);
+            }
 
-        try {
-
-            const unitValue = calculate_unit_value(line.AlternativeConditionPrice.PriceAmount);
-            const valor_venta_bruto = calculate_valor_v_bruto(unitValue, line.InvoicedQuantity.val);
-            const descuento = calculate_discount(valor_venta_bruto, line.AllowanceCharge.MultiplierFactorNumeric);
-            const valor_venta = calculate_valor_venta(valor_venta_bruto, descuento);
-            const IGV = calculate_taxes_IGV(valor_venta);
-
-            const query = Product.findOne({ cod: line.cod });
+            const query = Product.findOne({ cod: line.Item.SellersItemIdentification.ID });
 
             product = await query.exec()
 
@@ -81,15 +90,14 @@ calculate_invoice_lines = async (reqBody) => {
             line.ID = ID;
             ID++;
 
-            // set InvoicedQuantity
+            // set InvoicedQuantity unitcode
             line.InvoicedQuantity.unitCode = product.cod_medida;
 
             // set LineExtensionAmount
             line.LineExtensionAmount = valor_venta;
 
             // set PricingReference
-            line.PricingReference.AlternativeConditionPrice.PriceAmount = line.precio_unitario.monto;
-            line.PricingReference.AlternativeConditionPrice.PriceTypeCode = 1  ///this should come from frontend;
+            line.PricingReference.AlternativeConditionPrice.PriceTypeCode = '01'  ///this should come from frontend;
 
             // Set AllowanceCharge
             line.AllowanceCharge.Amount = descuento;
@@ -97,9 +105,9 @@ calculate_invoice_lines = async (reqBody) => {
 
             // set TaxTotal
             line.TaxTotal.TaxAmount = IGV;
-            line.TaxTotal.TaxSubTotal.TaxableAmount = valor_venta;
+            line.TaxTotal.TaxSubtotal.TaxableAmount = valor_venta;
 
-            line.TaxTotal.TaxSubTotal.TaxAmount = IGV;
+            line.TaxTotal.TaxSubtotal.TaxAmount = IGV;
 
             // set Item
             line.Item.Description = product.descripcion;
@@ -109,12 +117,12 @@ calculate_invoice_lines = async (reqBody) => {
             line.Price.PriceAmount = unitValue;
 
             return line;
+        });
+        return Promise.all(invoiceLines).then(lines => { return lines });
 
-        } catch (err) {
-            return err;
-        }
-    });
-    return Promise.all(invoiceLines).then(lines => { return lines });
+    } catch (err) {
+        return err;
+    }
 }
 
 calculate_unit_value = (precio_unit) => {
@@ -126,7 +134,7 @@ calculate_valor_v_bruto = (valor_unitario, cantidad) => {
 }
 
 calculate_discount = (valor_venta_bruto, factor) => {
-    return valor_venta_bruto * factor
+    return valor_venta_bruto * (factor / 100)
 }
 
 calculate_valor_venta = (valor_venta_bruto, descuento) => {
@@ -137,111 +145,114 @@ calculate_taxes_IGV = (valor_venta) => {
     return valor_venta * 0.18;
 }
 
-calculate_totals = (bill, sumValues) => {
+calculate_totals = async (bill, sumValues) => {
+    try {
+        const factor = bill.AllowanceCharge.MultiplierFactorNumeric;
 
-    const factor = bill.AllowanceCharge.MultiplierFactorNumeric; 
+        let totalItemsGravados = 0;
+        let totalItemsExonerados = 0;
+        let totalItemsInafectos = 0;
+        //totalItemsGratuitos = 0;
 
-    let totalItemsGravados = 0;
-    let totalItemsExonerados = 0;
-    let totalItemsInafectos = 0;
-    //totalItemsGratuitos = 0;
+        catalog07 = await Catalogs.findById("5b992fee3369e7514123bc91").exec();
 
-    bill.InvoiceLine.forEach(Line => {
-        taxSchemeID = Line.TaxTotal.TaxSubTotal.TaxCategory.TaxScheme.ID;
-        taxableAmount = Line.TaxTotal.TaxSubTotal.TaxableAmount;
+        bill.InvoiceLine.forEach(Line => {
+            taxSchemeID = catalog07._doc.datos[Line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode].codigo_tributo;
+            taxableAmount = Line.TaxTotal.TaxSubtotal.TaxableAmount;
 
-        sumValues.sumValorVentaBruto += Line.AllowanceCharge.BaseAmount;
-        sumValues.sumDescuentosPorItem += Line.AllowanceCharge.Amount;
-        sumValues.sumValorVentaPorItem += Line.TaxTotal.TaxSubTotal.TaxableAmount;
-        sumValues.sumIGV += Line.TaxTotal.TaxAmount;
-        if (taxSchemeID === 1000) {
-            totalItemsGravados += taxableAmount;
-        } else if (taxSchemeID === 9997) {
-            totalItemsExonerados += taxableAmount;
-        } else if (taxSchemeID === 9998) {
-            totalItemsInafectos += Line.InvoicedQuantity.val * Line.PricingRefernce.AlternativeConditionPrice.PriceAmount;
-            // la sunat codifica el 9998 como INAFECTO, sin embargo este valor
-            // aparece en la factura como el VALOR DE VENTA OPERACIONES GRATUITAS
-        }
-    });
+            sumValues.sumValorVentaBruto += Line.AllowanceCharge.BaseAmount;
+            sumValues.sumDescuentosPorItem += Line.AllowanceCharge.Amount;
+            sumValues.sumValorVentaPorItem += Line.TaxTotal.TaxSubtotal.TaxableAmount;
+            sumValues.sumIGV += Line.TaxTotal.TaxAmount;
+            Line.TaxTotal.TaxSubtotal.TaxCategory.TaxSchemeID = taxSchemeID;
+            if (taxSchemeID == 1000) {
+                Line.TaxTotal.TaxSubtotal.TaxCategory.Percent = 18;
+                totalItemsGravados += taxableAmount;
+            } else if (taxSchemeID == 9997) {
+                Line.TaxTotal.TaxSubtotal.TaxCategory.Percent = 0;
+                totalItemsExonerados += taxableAmount;
+            } else if (taxSchemeID == 9998) {
+                totalItemsInafectos += Line.InvoicedQuantity.val * Line.PricingRefernce.AlternativeConditionPrice.PriceAmount;
+                // la sunat codifica el 9998 como INAFECTO, sin embargo este valor
+                // aparece en la factura como el VALOR DE VENTA OPERACIONES GRATUITAS
+            }
+        });
 
-    sumValues.descuentoGlobal = sumValues.sumValorVentaPorItem * factor;
-    sumValues.totalDescuentos = sumValues.descuentoGlobal + sumValues.sumDescuentosPorItem;
-    sumValues.totalOperacionesGravadas = totalItemsGravados * (1 - factor);
-    sumValues.totalOperacionesExoneradas = totalItemsExonerados * (1 - factor);
-    sumValues.totalOperacionesInafectas = totalItemsInafectos;
-    sumValues.sumIGV = sumValues.totalOperacionesGravadas * 0.18;
-    sumValues.total = sumValues.totalOperacionesGravadas + sumValues.totalOperacionesExoneradas + sumValues.sumIGV;
+        sumValues.descuentoGlobal = sumValues.sumValorVentaPorItem * (factor / 100);
+        sumValues.totalDescuentos = sumValues.descuentoGlobal + sumValues.sumDescuentosPorItem;
+        sumValues.totalOperacionesGravadas = totalItemsGravados * (1 - (factor / 100));
+        sumValues.totalOperacionesExoneradas = totalItemsExonerados * (1 - (factor / 100));
+        sumValues.totalOperacionesInafectas = totalItemsInafectos;
+        sumValues.sumIGV = sumValues.totalOperacionesGravadas * 0.18;
+        sumValues.total = sumValues.totalOperacionesGravadas + sumValues.totalOperacionesExoneradas + sumValues.sumIGV;
 
-    return sumValues;
+        return sumValues;
 
+    } catch (error) {
+        return error;
+    }
 }
 
 setAllowanceCharge = (bill) => {
-    bill.AllowanceCharge.Amount = sumValues.descuentoGlobal;
-    bill.AllowanceCharge.BaseAmount = sumValues.sumValorVentaPorItem;
+    bill.AllowanceCharge.Amount = bill.sumValues.descuentoGlobal;
+    bill.AllowanceCharge.BaseAmount = bill.sumValues.sumValorVentaPorItem;
 
     return bill
 }
 
-setTaxTotal = (bill, sumValues) => {
+setTaxTotal = (bill) => {
 
-    bill.TaxTotal.TaxAmount.val = sumValues.sumIGV;
-    currency = bill.DocumentCurrencyCode.val;
-    taxSubTotalArray = [];
-    if (sumValues.totalOperacionesGravadas > 0) {
-        taxSubTotal = new TaxSubTotal();
+    bill.TaxTotal.TaxAmount = bill.sumValues.sumIGV;
+    currency = bill.DocumentCurrencyCode;
+    taxSubtotalArray = [];
+    if (bill.sumValues.totalOperacionesGravadas > 0) {
+        taxSubtotal = new TaxSubTotal();
 
-        taxSubTotal.TaxableAmount = setTaxableAmount(currency, sumValues.totalOperacionesGravadas);
-        taxSubTotal.TaxAmount = setTaxAmount(currency, sumValues.sumIGV);
-        taxSubTotal.TaxCategory = setTaxCategory(taxSubTotal.TaxCategory, "S", 1000, "IGV", "VAT");
-
-        taxSubTotalArray.push(taxSubTotal);
+        taxSubtotal.TaxableAmount = bill.sumValues.totalOperacionesGravadas;
+        taxSubtotal.TaxAmount = bill.sumValues.sumIGV;
+        taxSubtotal.TaxCategory = {
+            TaxSchemeID: 1000 
+        } //MAKE BETTER
+        taxSubtotalArray.push(taxSubtotal);
     };
 
-    if (sumValues.totalOperacionesExoneradas > 0) {
-        taxSubTotal = new TaxSubTotal();
+    if (bill.sumValues.totalOperacionesExoneradas > 0) {
+        taxSubtotal = new TaxSubTotal();
 
-        taxSubTotal.TaxableAmount = setTaxableAmount(currency, sumValues.totalOperacionesExoneradas);
-        taxSubTotal.TaxAmount = setTaxAmount(currency, 0);
-        taxSubTotal.TaxCategory = setTaxCategory(taxSubtotal.TaxCategory, "E", 9997, "EXONERADO", "VAT");
+        taxSubtotal.TaxableAmount = bill.sumValues.totalOperacionesExoneradas;
+        taxSubtotal.TaxAmount = 0;
+        taxSubtotal.TaxCategory = {
+            TaxSchemeID: 9997
+        }
 
-        taxSubTotalArray.push(taxSubTotal);
+        taxSubtotalArray.push(taxSubtotal);
     };
 
-    if (sumValues.totalOperacionesInafectas > 0) {
-        taxSubTotal = new TaxSubTotal();
+    if (bill.sumValues.totalOperacionesInafectas > 0) {
+        taxSubtotal = new TaxSubTotal();
 
-        taxSubTotal.TaxableAmount = setTaxableAmount(currency, sumValues.totalOperacionesInafectas);
-        taxSubTotal.TaxAmount = setTaxAmount(currency, 0);
-        taxSubTotal.TaxCategory = setTaxCategory(taxSubtotal.TaxCategory, "O", 9998, "INAFECTO", "FRE");
+        taxSubtotal.TaxableAmount = bill.sumValues.totalOperacionesInafectas;
+        taxSubtotal.TaxAmount = 0;
+        taxSubtotal.TaxCategory = {
+            TaxSchemeID: 9996 ////??????????????????
+        }
 
-        taxSubTotalArray.push(taxSubTotal);
+        taxSubtotalArray.push(taxSubtotal);
     };
 
-    bill.TaxTotal.TaxSubTotal = taxSubTotalArray;
+    bill.TaxTotal.TaxSubtotal = taxSubtotalArray;
 
     return bill;
 }
 
 
-setTaxCategory = (taxCategory, id, taxSchemeID, name, typecode) => {
-
-    taxCategory.ID.val = id;
-    taxCategory.TaxScheme.ID.val = taxSchemeID;
-    taxCategory.TaxScheme.Name = name;
-    taxCategory.TaxScheme.TaxTypeCode = typecode;
-
-    return taxCategory;
-}
-
-setLegalMonetaryTotal = (bill, sumValues) => {
+setLegalMonetaryTotal = (bill) => {
 
     bill.LegalMonetaryTotal = {
-        LineExtensionAmount: sumValues.sumValorVentaBruto,
-        TaxInclusiveAmount: sumValues.total,
-        AllowanceTotalAmount: sumValues.totalDescuentos,
-        PayableAmount: sumValues.total   
+        LineExtensionAmount: bill.sumValues.sumValorVentaBruto,
+        TaxInclusiveAmount: bill.sumValues.total,
+        AllowanceTotalAmount: bill.sumValues.totalDescuentos,
+        PayableAmount: bill.sumValues.total
     }
 
     return bill;
@@ -271,12 +282,4 @@ const getNextSequence = async (name) => {
     } catch (error) {
         return error;
     }
-}
-
-calculate_expiration_date = (bill) => {
-    bill.fecha_bill.fecha_emision + bill.cond_pago;
-}
-
-getLetterTotalValue = (bill) => {
-    bill.Note.val = 'placeholder'
 }

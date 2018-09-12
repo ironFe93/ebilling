@@ -1,6 +1,8 @@
 const express = require('express');
 const routes = express.Router();
 const { celebrate, Joi, errors } = require('celebrate');
+const processBill = require('../methods/processBill');
+const soapClient = require('../methods/soap-client');
 
 const Bill = require('../models/bill');
 
@@ -32,7 +34,7 @@ routes.get('/find', async (req, res, next) => {
     projection = {
         '_id': true,
         'ID': true,
-        'AccountingCustomerParty.Party.PartyTaxScheme.RegistrationName': true
+        'AccountingCustomerParty.PartyLegalEntity.RegistrationName': true
     }
 
     if (req.query.term) {
@@ -56,8 +58,7 @@ routes.get('/getDetail/:_id', async (req, res, next) => {
 
     try {
         const bill = await Bill.findById(req.params._id).exec();
-        const simpleBill = billHelper.simplify(bill);
-        res.send(simpleBill);
+        res.send(bill);
     } catch (error) {
         next(error);
     }
@@ -66,9 +67,9 @@ routes.get('/getDetail/:_id', async (req, res, next) => {
 
 routes.post('/saveDraft', async (req, res, next) => {
     try {
-        // next(new Error('just testing lol'));
-        const bill = await billHelper.buildBill(req.body)
-        const savedBill = await bill.save();
+        const bill = new Bill(req.body);
+        const completeBill = await billHelper.buildBill(bill)
+        const savedBill = await completeBill.save();
         res.send(savedBill);
     } catch (error) {
         next(error);
@@ -86,16 +87,13 @@ routes.get('/download', async (req, res, next) => {
 });
 
 routes.post('/sendBill', async (req, res, next) => {
-    const xmlBuilder = require('../methods/xmlBuilder');
-    const soapClient = require('../methods/soap-client');
-    const _id = req.body._id;
-
     try {
+        const _id = req.body._id;
         const bill = await Bill.findById(_id).exec();
         const ruc = bill.AccountingSupplierParty.PartyIdentification.ID;
         const billID = bill.ID;
         const fileName = ruc + '-01-' + billID + '.zip';
-        const base64String = await xmlBuilder.buildXml(bill.toObject(), ruc);
+        const base64String = await processBill.getBase64Zip(bill.toObject(), ruc);
         result = await soapClient.sendBill(fileName, base64String);
         res.send(result);
 

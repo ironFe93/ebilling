@@ -50,7 +50,7 @@ const billSchema = new Schema({
         CountrySubentityCode: Number, // ZIp code
         District: String,
         Country: {
-          IdentificationCode: { type: String, default: "PE" }
+          IdentificationCode: String
         }
       }
     }
@@ -59,20 +59,20 @@ const billSchema = new Schema({
     ChargeIndicator: Boolean,
     AllowanceChargeReasonCode: String,
     MultiplierFactorNumeric: Number,
-    Amount: Number,
-    BaseAmount: Number
+    Amount: {type: Number, set: v => v.toFixed(2)},
+    BaseAmount: {type: Number, set: v => v.toFixed(2)}
   },
   TaxTotal: {
-    TaxAmount: Number, 
+    TaxAmount: {type: Number, set: v => v.toFixed(2)}, 
     TaxSubtotal: [taxSubtotalSchema]
   },
   LegalMonetaryTotal: {
-    LineExtensionAmount: Number,
-    TaxInclusiveAmount: Number,
-    AllowanceTotalAmount: Number,
-    ChargeTotalAmount: Number,
-    PrepaidAmount: Number,
-    PayableAmount: Number
+    LineExtensionAmount: {type: Number, set: v => v.toFixed(2)},
+    TaxInclusiveAmount: {type: Number, set: v => v.toFixed(2)},
+    AllowanceTotalAmount: {type: Number, set: v => v.toFixed(2)},
+    ChargeTotalAmount: {type: Number, set: v => v.toFixed(2)},
+    PrepaidAmount: {type: Number, set: v => v.toFixed(2)},
+    PayableAmount: {type: Number, set: v => v.toFixed(2)}
   },
   InvoiceLine: [invoiceLineSchema],
   sumValues: {}

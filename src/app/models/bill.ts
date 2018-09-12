@@ -1,19 +1,76 @@
-import { Item } from './item';
-export interface Bill {
+import { InvoiceLine } from './invoiceLine';
+import { TaxSubTotal } from './taxSubTotal';
+export class Bill {
   _id?: string;
-  cod?: string;
-  items: Item[];
-  fecha_emision: Date;
+  ID?: string;
+  IssueDate: Date;
   cond_pago: number;
-  cliente: {
-    ruc: number;
-    registration_name: string;
-    email?: string;
+  DueDate?: Date;
+  InvoiceTypeCode: string;
+  Note?: string;
+  DocumentCurrencyCode: string;
+  ////////
+  DespatchDocumentReference?: {
+    ID: string;
+    DocumentTypeCode: number
   };
-  descuento_global?: {
-    factor: {type: number, min: 0 , max: 1 }
+  AdditionalDocumentReference?: {
+    ID: string;
+    DocumentTypeCode: number
   };
-  guia_remision?: string;
-  otro_doc?: string;
-  moneda: string;
+  AccountingSupplierParty?: {
+    PartyIdentification: {
+      ID: string;
+      schemeID: string;
+    };
+    PartyName: string;
+    PartyLegalEntity: {
+      RegistrationName: string
+    }
+  };
+  AccountingCustomerParty?: {
+    PartyIdentification: {
+      ID: string; // documento de identidad
+      schemeID: string; // tipo de documento
+    };
+    PartyLegalEntity: {
+      RegistrationName: string // nombre legal
+    }
+  };
+  DeliveryTerms?: {
+    DeliveryLocation: {
+      Address: {
+        StreetName: string;
+        CitySubDivisionName: string;
+        CityName: string;
+        CountrySubentity: string;
+        CountrySubentityCode: number; // ZIp code
+        District: string;
+        Country: {
+          IdentificationCode: string
+        }
+      }
+    }
+  };
+  AllowanceCharge: {
+    ChargeIndicator: Boolean;
+    AllowanceChargeReasonCode: string;
+    MultiplierFactorNumeric: number;
+    Amount?: number;
+    BaseAmount?: number
+  };
+  TaxTotal?: {
+    TaxAmount: number;
+    TaxSubtotal: TaxSubTotal[];
+  };
+  LegalMonetaryTotal?: {
+    LineExtensionAmount: number;
+    TaxInclusiveAmount: number;
+    AllowanceTotalAmount: number;
+    ChargeTotalAmount: number;
+    PrepaidAmount: number;
+    PayableAmount: number
+  };
+  InvoiceLine: InvoiceLine[] = [];
+  sumValues?: {};
 }

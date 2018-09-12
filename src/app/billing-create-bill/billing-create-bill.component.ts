@@ -1,15 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
 import { BillsService } from '../billing.service';
 
-import { MatDialog } from '@angular/material/dialog';
 import { Product } from '../models/product';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { debounceTime, tap, switchMap, finalize, catchError } from 'rxjs/operators';
 import { ProductsService } from '../products.service';
 
 import { MatAutocompleteSelectedEvent, MatTableDataSource } from '@angular/material';
-import { Item } from '../models/item';
+import { InvoiceLine } from '../models/invoiceLine';
 import { MessageService } from '../message.service';
 import {  of, Observable } from '../../../node_modules/rxjs';
 
@@ -24,9 +22,11 @@ export class CreateBillComponent implements OnInit {
   prodForm: FormGroup;
   isLoading = false;
 
-  displayedColumns = ['codigo', 'cantidad', 'medida',
-    'descripcion', 'precio_unit', 'afectacion', 'IGV', 'sum IGV', 'valor_v', 'valor_v_total'];
-  dataSource = new MatTableDataSource<Item>();
+  displayedColumns = ['codigo',
+    'descripcion', 'medida',  'cantidad',
+    'afectacion', 'precio_unit', 'descuento', 'valor_v',
+    'IGV', /*'sum IGV',*/ 'valor_v_total'];
+  dataSource = new MatTableDataSource<InvoiceLine>();
 
   private billForm: FormGroup;
   bill$ = this.billsService.getObservableBill();
@@ -42,8 +42,9 @@ export class CreateBillComponent implements OnInit {
     this.buildBillForm();
 
     this.bill$.subscribe(bill => {
-      this.dataSource.data = bill.items;
+      this.dataSource.data = bill.InvoiceLine;
       this.changeDet.detectChanges();
+      console.log(this.dataSource.data);
     });
   }
 
@@ -103,7 +104,6 @@ export class CreateBillComponent implements OnInit {
       this.messageService.add('invalid data');
       return of(new Error('invalid data'));
     }
-
   }
 
   getBillForm() {

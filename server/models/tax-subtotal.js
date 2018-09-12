@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const taxSubTotalSchema = new Schema({
-    TaxableAmount:  Number,
-    TaxAmount:  Number,
+    TaxableAmount:  {type: Number, set: v => v.toFixed(2)},
+    TaxAmount: {type: Number, set: v => v.toFixed(2)},
     TaxCategory: {
-        TaxSchemeID: Number 
+        TaxSchemeID: Number
     }
 });
 

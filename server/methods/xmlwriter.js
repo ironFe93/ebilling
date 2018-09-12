@@ -1,115 +1,124 @@
 const builder = require('xmlbuilder');
-const mongoose = require("mongoose");
+const Catalog = require('../models/catalogs');
 let atts;
 let catalog05;
 
 exports.buildXML = async (jsonBill) => {
-    atts = attributes(jsonBill); //Initialize attributes
-    catalog05 = cat05(); //load up catalog05
-    //begin complex types
+    try {
 
-    const UBLExtension = builder.create('ext:UBLExtensions', { headless: true })
-        .ele('ext:UBLExtension')
-        .ele('ext:ExtensionContent')
 
-    const AccountingSupplierParty = builder.create('cac:AccountingSupplierParty', { headless: true })
-        .ele('cac:Party')
-        .ele('cac:PartyIdentification')
-        .ele('cbc:ID', atts.rucIDSupplierAtts, jsonBill.AccountingSupplierParty.PartyIdentification.ID)
-        .up()
-        .up()
-        .ele('cac:PartyName')
-        .ele('cbc:Name', jsonBill.AccountingSupplierParty.PartyName)
-        .up()
-        .up()
-        .ele('cac:PartyLegalEntity')
-        .ele('cbc:RegistrationName', jsonBill.AccountingSupplierParty.PartyLegalEntity.RegistrationName)
+        atts = attributes(jsonBill); //Initialize attributes
+        catalog05 = await cat05(); //load up catalog05
+        //begin complex types
 
-    const AccountingCustomerParty = builder.create('cac:AccountingCustomerParty', { headless: true })
-        .ele('cac:Party')
-        .ele('cac:PartyIdentification')
-        .ele('cbc:ID', atts.rucIDCustomerAtts, jsonBill.AccountingCustomerParty.PartyIdentification.ID)
-        .up()
-        .up()
-        .ele('cac:PartyLegalEntity')
-        .ele('cbc:RegistrationName', jsonBill.AccountingCustomerParty.PartyLegalEntity.RegistrationName)
+        const UBLExtension = builder.create('ext:UBLExtensions', { headless: true })
+            .ele('ext:UBLExtension')
+            .ele('ext:ExtensionContent')
 
-    const TaxTotal = builder.create('cac:TaxTotal', { headless: true })
-        .ele('cbc:TaxAmount', atts.currencyID, jsonBill.TaxTotal.TaxAmount).up()
-
-    jsonBill.TaxTotal.TaxSubtotal.forEach(subtotal => {
-        TaxTotal.ele('cac:TaxSubtotal')
-            .ele('cbc:TaxableAmount', atts.currencyID, subtotal.TaxableAmount).up()
-            .ele('cbc:TaxAmount', atts.currencyID, subtotal.TaxAmount).up()
-            .ele('cac:TaxCategory')
-            .ele('cac:TaxScheme')
-            .ele('cbc:ID', atts.taxCategoryIDAtt, subtotal.TaxCategory.TaxSchemeID).up()
-            .ele('cbc:Name', catalog05.datos[subtotal.TaxCategory.TaxSchemeID].nombre).up()
-            .ele('cbc:TaxTypeCode', catalog05.datos[subtotal.TaxCategory.TaxSchemeID].codigo_internacional).up()
+        const AccountingSupplierParty = builder.create('cac:AccountingSupplierParty', { headless: true })
+            .ele('cac:Party')
+            .ele('cac:PartyIdentification')
+            .ele('cbc:ID', atts.rucIDSupplierAtts, jsonBill.AccountingSupplierParty.PartyIdentification.ID)
             .up()
             .up()
+            .ele('cac:PartyName')
+            .ele('cbc:Name', jsonBill.AccountingSupplierParty.PartyName)
             .up()
-    });
+            .up()
+            .ele('cac:PartyLegalEntity')
+            .ele('cbc:RegistrationName', jsonBill.AccountingSupplierParty.PartyLegalEntity.RegistrationName)
 
-    const LegalMonetaryTotal = builder.create('cac:LegalMonetaryTotal', { headless: true })
-        .ele('cbc:LineExtensionAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.LineExtensionAmount).up()
-        .ele('cbc:TaxInclusiveAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.TaxInclusiveAmount).up()
-        .ele('cbc:AllowanceTotalAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.AllowanceTotalAmount).up()
-        .ele('cbc:PayableAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.PayableAmount).up()
+        const AccountingCustomerParty = builder.create('cac:AccountingCustomerParty', { headless: true })
+            .ele('cac:Party')
+            .ele('cac:PartyIdentification')
+            .ele('cbc:ID', atts.rucIDCustomerAtts, jsonBill.AccountingCustomerParty.PartyIdentification.ID)
+            .up()
+            .up()
+            .ele('cac:PartyLegalEntity')
+            .ele('cbc:RegistrationName', jsonBill.AccountingCustomerParty.PartyLegalEntity.RegistrationName)
 
-    var InvoiceLine = builder.create('cac:InvoiceLine', { headless: true })
+        const TaxTotal = builder.create('cac:TaxTotal', { headless: true })
+            .ele('cbc:TaxAmount', atts.currencyID, jsonBill.TaxTotal.TaxAmount).up()
 
-    jsonBill.InvoiceLine.forEach(line => {
-        InvoiceLine.ele('cbc:ID', line.ID)
-        InvoiceLine.ele('cbc:InvoicedQuantity', { unitCode: line.InvoicedQuantity.unitCode }, line.InvoicedQuantity.val);
-        InvoiceLine.ele('cbc:LineExtensionAmount', atts.currencyID, line.LineExtensionAmount);
-        InvoiceLine = addLinePricingReference(InvoiceLine, line);
-        InvoiceLine = addLineAllowance(InvoiceLine, line);
-        InvoiceLine = addLineTax(InvoiceLine, line);
-        InvoiceLine = addLineItem(InvoiceLine, line);
-        InvoiceLine = addLinePrice(InvoiceLine, line);
-    });
+        jsonBill.TaxTotal.TaxSubtotal.forEach(subtotal => {
+            TaxTotal.ele('cac:TaxSubtotal')
+                .ele('cbc:TaxableAmount', atts.currencyID, subtotal.TaxableAmount).up()
+                .ele('cbc:TaxAmount', atts.currencyID, subtotal.TaxAmount).up()
+                .ele('cac:TaxCategory')
+                .ele('cac:TaxScheme')
+                .ele('cbc:ID', atts.taxCategoryIDAtt, subtotal.TaxCategory.TaxSchemeID).up()
+                .ele('cbc:Name', catalog05.datos[subtotal.TaxCategory.TaxSchemeID].nombre).up()
+                .ele('cbc:TaxTypeCode', catalog05.datos[subtotal.TaxCategory.TaxSchemeID].codigo_internacional).up()
+                .up()
+                .up()
+                .up()
+        });
 
-    const AllowanceCharge = builder.create('cac:AllowanceCharge', { headless: true })
-        .ele('cbc:ChargeIndicator', false).up()
-        .ele('cbc:AllowanceChargeReasonCode', atts.AllowanceChargeAtt, '00').up()
-        .ele('cbc:MultiplierFactorNumeric', 0).up()
-        .ele('cbc:Amount', atts.currencyID, 0).up()
-        .ele('cbc:BaseAmount', atts.currencyID, 25.42).up()
+        const LegalMonetaryTotal = builder.create('cac:LegalMonetaryTotal', { headless: true })
+            .ele('cbc:LineExtensionAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.LineExtensionAmount).up()
+            .ele('cbc:TaxInclusiveAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.TaxInclusiveAmount).up()
+            .ele('cbc:AllowanceTotalAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.AllowanceTotalAmount).up()
+            .ele('cbc:PayableAmount', atts.currencyID, jsonBill.LegalMonetaryTotal.PayableAmount).up()
 
-
-    //end complex types
-
-    var Invoice = builder.create('Invoice', { encoding: 'UTF-8' })
-        .att(atts.namespaces)
-
-    Invoice.importDocument(UBLExtension);
-
-    Invoice.ele('cbc:UBLVersionID', '2.1');
-    Invoice.ele('cbc:CustomizationID', { schemeAgencyName: 'PE:SUNAT' }, '2.0');
-
-
-    //Invoice.ele('cbc:ProfileID', profileIDAtts , "0101");
-    Invoice.ele('cbc:ID', jsonBill.ID);
-    Invoice.ele('cbc:IssueDate', jsonBill.IssueDate);
-    Invoice.ele('cbc:IssueTime', jsonBill.IssueTime);
-    Invoice.ele('cbc:DueDate', jsonBill.DueDate);
+        const AllowanceCharge = builder.create('cac:AllowanceCharge', { headless: true })
+            .ele('cbc:ChargeIndicator', false).up()
+            .ele('cbc:AllowanceChargeReasonCode', atts.AllowanceChargeAtt, '00').up()
+            .ele('cbc:MultiplierFactorNumeric', 0).up()
+            .ele('cbc:Amount', atts.currencyID, 0).up()
+            .ele('cbc:BaseAmount', atts.currencyID, 25.42).up()
 
 
-    Invoice.ele('cbc:InvoiceTypeCode', atts.InvoiceTypeCodeAtts, "01");
-    Invoice.ele('cbc:Note', { languageLocaleID: '1000' }, jsonBill.Note);
+        //end complex types
 
-    Invoice.ele('cbc:DocumentCurrencyCode', atts.DocCurrencyCodeAtts, jsonBill.DocumentCurrencyCode);
+        var Invoice = builder.create('Invoice', { encoding: 'UTF-8' })
+            .att(atts.namespaces)
 
-    Invoice.importDocument(AccountingSupplierParty);
-    Invoice.importDocument(AccountingCustomerParty);
-    Invoice.importDocument(AllowanceCharge);
-    Invoice.importDocument(TaxTotal);
-    Invoice.importDocument(LegalMonetaryTotal);
-    Invoice.importDocument(InvoiceLine);
+        Invoice.importDocument(UBLExtension);
 
-    string = Invoice.end({ pretty: true });
-    return string;
+        Invoice.ele('cbc:UBLVersionID', '2.1');
+        Invoice.ele('cbc:CustomizationID', { schemeAgencyName: 'PE:SUNAT' }, '2.0');
+
+
+        //Invoice.ele('cbc:ProfileID', profileIDAtts , "0101");
+        Invoice.ele('cbc:ID', jsonBill.ID);
+        Invoice.ele('cbc:IssueDate', jsonBill.IssueDate);
+        Invoice.ele('cbc:IssueTime', jsonBill.IssueTime);
+        Invoice.ele('cbc:DueDate', jsonBill.DueDate);
+
+
+        Invoice.ele('cbc:InvoiceTypeCode', atts.InvoiceTypeCodeAtts, "01");
+        Invoice.ele('cbc:Note', { languageLocaleID: '1000' }, 'PLACEHOLDER'); // make better!!
+
+        Invoice.ele('cbc:DocumentCurrencyCode', atts.DocCurrencyCodeAtts, jsonBill.DocumentCurrencyCode);
+
+        Invoice.importDocument(AccountingSupplierParty);
+        Invoice.importDocument(AccountingCustomerParty);
+        Invoice.importDocument(AllowanceCharge);
+        Invoice.importDocument(TaxTotal);
+        Invoice.importDocument(LegalMonetaryTotal);
+
+
+
+        jsonBill.InvoiceLine.forEach(line => {
+            var InvoiceLine = builder.create('cac:InvoiceLine', { headless: true })
+            InvoiceLine.ele('cbc:ID', line.ID)
+            InvoiceLine.ele('cbc:InvoicedQuantity', { unitCode: line.InvoicedQuantity.unitCode }, line.InvoicedQuantity.val);
+            InvoiceLine.ele('cbc:LineExtensionAmount', atts.currencyID, line.LineExtensionAmount);
+            InvoiceLine = addLinePricingReference(InvoiceLine, line);
+            InvoiceLine = addLineAllowance(InvoiceLine, line);
+            InvoiceLine = addLineTax(InvoiceLine, line);
+            InvoiceLine = addLineItem(InvoiceLine, line);
+            InvoiceLine = addLinePrice(InvoiceLine, line);
+
+            Invoice.importDocument(InvoiceLine);
+        });
+
+        const string = Invoice.end({ pretty: true });
+        return string;
+
+    } catch (error) {
+        return error;
+    }
 
 }
 
@@ -247,13 +256,12 @@ const attributes = (jsonBill) => {
     }
 }
 
-cat05 = () =>{
-
-    // load up catalog05
-    const catalogSchema = new mongoose.Schema({}, { strict: false });
-    const Catalog = mongoose.model("catalogs", catalogSchema);
-    const catalog05 = await Catalog.find({'No.': '05'});
-
-    return catalog05;
-
+cat05 = async () => {
+    try {
+        // load up catalog05
+        const catalog05 = await Catalog.findById("5b9808a83369e7514123a068").exec();
+        return catalog05._doc;
+    } catch (error) {
+        return error;
+    }
 }

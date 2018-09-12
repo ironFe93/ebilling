@@ -7,25 +7,25 @@ const invoiceLineSchema = new Schema({
         unitCode: String,
         val: Number
     },
-    LineExtensionAmount: Number,
+    LineExtensionAmount: {type: Number, set: v => v.toFixed(2)},
     PricingReference: {
         AlternativeConditionPrice: {
             PriceAmount: Number,
-            PriceTypeCode: { type: String, enum: ["01", "02"] }
+            PriceTypeCode: { type: String, enum: ['01', '02'] }
         }
     },
     AllowanceCharge: {
         ChargeIndicator: Boolean,
         AllowanceChargeReasonCode: String,
         MultiplierFactorNumeric: Number,
-        Amount: Number,
-        BaseAmount: Number
+        Amount: {type: Number, set: v => v.toFixed(2)},
+        BaseAmount: {type: Number, set: v => v.toFixed(2)}
     },
     TaxTotal: {
-        TaxAmount: Number,
+        TaxAmount: {type: Number, set: v => v.toFixed(2)},
         TaxSubtotal: {
-            TaxableAmount: Number,
-            TaxAmount: Number,
+            TaxableAmount: {type: Number, set: v => v.toFixed(2)},
+            TaxAmount: {type: Number, set: v => v.toFixed(2)},
             TaxCategory: {
                 TaxExemptionReasonCode: Number,
                 TaxSchemeID: Number
@@ -39,7 +39,7 @@ const invoiceLineSchema = new Schema({
         }
     },
     Price: {
-        PriceAmount: Number
+        PriceAmount: {type: Number, set: v => v.toFixed(2)}
     }
 });
 

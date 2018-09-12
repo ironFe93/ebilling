@@ -1,10 +1,10 @@
 const xmlwriter = require('./xmlwriter');
 
-exports.buildXml = async (jsonObject, ruc) => {
+exports.getBase64Zip = async (jsonObject, ruc) => {
     try {
 
         const dateIssued = new Date(jsonObject.IssueDate);
-        const dateExpired = new Date(jsonObject.DueDate);
+        const dateExpired = calculate_due_date(dateIssued, jsonObject.cond_pago);
         jsonObject.IssueDate = getYearMonthDay(dateIssued);
         jsonObject.IssueTime = getHourMinuteSecond(dateIssued);
         jsonObject.DueDate = getYearMonthDay(dateExpired);
@@ -110,3 +110,8 @@ const signXML = async (xml) => {
     return sig.getSignedXml();
 }
 
+calculate_due_date = (IssueDate, days) => {
+    var result = new Date(IssueDate);
+    result.setDate(result.getDate() + days);
+    return result;
+}

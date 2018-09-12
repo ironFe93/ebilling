@@ -2,7 +2,6 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Product } from '../models/product';
-import { Item } from '../models/item';
 import { BillsService } from '../billing.service';
 import { ProductsService } from '../products.service';
 
@@ -12,8 +11,6 @@ import { ProductsService } from '../products.service';
   styleUrls: ['./products-search-results.component.css']
 })
 export class ProductsSearchResultsComponent implements OnInit {
-
-  private item: Item;
 
   constructor(private billService: BillsService,
     private productsService: ProductsService,

@@ -31,7 +31,7 @@ export class BillingDetailComponent implements OnInit {
 
   ngOnInit() {
     this.bill$.subscribe(bill => {
-      this.dataSource.data = bill.items;
+      this.dataSource.data = bill.InvoiceLine;
       this.changeDet.detectChanges();
     });
   }
