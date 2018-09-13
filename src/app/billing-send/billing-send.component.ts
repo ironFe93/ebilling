@@ -20,7 +20,7 @@ export class BillingSendComponent implements OnInit {
   }
 
   sunat() {
-    this.billService.sunat().subscribe();
+    this.billService.sendSunat().subscribe();
   }
 
   email() {

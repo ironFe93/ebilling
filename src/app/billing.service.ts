@@ -8,7 +8,7 @@ import { Product } from './models/product';
 import { MessageService } from './message.service';
 
 import { Observable, Observer, BehaviorSubject, of, throwError } from 'rxjs';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { map, tap, catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 
@@ -150,12 +150,15 @@ export class BillsService {
           this.bill$.next(resp);
         }
       }),
-      catchError((err, caught) => of(err))
+      catchError((err: HttpErrorResponse, caught) => {
+        this.messageService.add(err.message);
+        return of(err);
+      })
     );
   }
 
-  public sunat() {
-    return this.http.post<any>(this.BillsUrl + '/sunat', this.bill$.getValue().ID);
+  public sendSunat() {
+    return this.http.post<any>(this.BillsUrl + '/sendSunat', this.bill$.getValue().ID);
   }
 
   public getPDF(_id: string) {

@@ -86,7 +86,7 @@ routes.get('/download', async (req, res, next) => {
 
 });
 
-routes.post('/sendBill', async (req, res, next) => {
+routes.post('/sendSunat', async (req, res, next) => {
     try {
         const _id = req.body._id;
         const bill = await Bill.findById(_id).exec();
