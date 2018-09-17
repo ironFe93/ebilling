@@ -1,4 +1,4 @@
-<div id="print" class="containerColumn" fxLayout="column">
+<div id="print">
   <mat-card>
     <div fxLayout="row" fxLayoutAlign="space-between">
       <div>
@@ -13,12 +13,6 @@
         <mat-card-subtitle>
           {{(bill$ | async).Status?.Description}}
         </mat-card-subtitle>
-        <div *ngIf="showSend">
-            <button (click)="retrySunat()">Reenviar</button>
-        </div>
-        <div *ngIf="isDraft">
-            <button (click)="sendSunat()">Enviar a Sunat</button>
-        </div>
       </div>
       <div>
         <mat-card-title>{{(bill$ | async).ID}}</mat-card-title>
@@ -191,5 +185,3 @@
     </mat-card-content>
   </mat-card>
 </div>
-
-<button (click)="downloadPdf()">Download PDF</button>

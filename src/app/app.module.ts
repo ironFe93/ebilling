@@ -61,6 +61,7 @@ import { ErrorHandlerService } from './error-handler.service';
 import { HttpInterceptorService } from './http-interceptor.service';
 import { MessageService } from './message.service';
 import { BillingSendComponent } from './billing-send/billing-send.component';
+import { BillingOptionsComponent } from './billing-options/billing-options.component';
 
 const appRoutes = [
   {
@@ -96,6 +97,7 @@ const appRoutes = [
     DashboardComponent,
     DashProdDialogComponent,
     BillingSendComponent,
+    BillingOptionsComponent,
   ],
   imports: [
     BrowserModule,

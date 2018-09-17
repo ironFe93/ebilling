@@ -23,10 +23,10 @@ export class BillingComponent implements AfterViewInit {
   step1Completed = false;
   step2Completed = false;
   ratio: number;
-  canvasPromise;
+  canvas;
 
   constructor(private changeDet: ChangeDetectorRef, private downloadService: DownloadService,
-  private billService: BillsService) { }
+    private billService: BillsService) { }
 
   firstFormGroup: FormGroup;
   secondFormGroup: FormGroup;
@@ -54,12 +54,11 @@ export class BillingComponent implements AfterViewInit {
     );
   }
 
-  submitSecond() {
-    this.downloadService.saveCanvas().then(() => {
-      this.step2Completed = true;
-      this.changeDet.detectChanges();
-      this.stepper.next();
-    });
+  async submitSecond() {
+    this.canvas = await this.downloadService.saveCanvas();
+    this.step2Completed = true;
+    this.changeDet.detectChanges();
+    this.stepper.next();
   }
 
   editPrevious() {

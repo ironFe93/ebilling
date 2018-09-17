@@ -1,28 +1,25 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BillsService } from '../billing.service';
-
-import * as jsPDF from 'jspdf';
 import { DownloadService } from '../download.service';
-import { Bill } from '../models/bill';
 
 @Component({
-  selector: 'app-billing-send',
-  templateUrl: './billing-send.component.html',
-  styleUrls: ['./billing-send.component.css']
+  selector: 'app-billing-options',
+  templateUrl: './billing-options.component.html',
+  styleUrls: ['./billing-options.component.css']
 })
-export class BillingSendComponent implements OnInit {
+export class BillingOptionsComponent implements OnInit {
 
-  @Input() canvas;
-  private bill$;
+  private bill$ = this.billService.getObservableDetailBill();
   isDraft = false;
   isRejected = false;
+  billDetailLoaded = false;
   bill_id;
 
   constructor(private billService: BillsService, private downloadService: DownloadService) { }
 
   ngOnInit() {
-    this.bill$ = this.billService.getObservableBill();
-    this.bill$.subscribe((bill: Bill) => {
+    this.bill$.subscribe(bill => {
+      if (bill._id) this.billDetailLoaded = true;
       if (bill.Status) {
         this.isRejected = bill.Status.Rejected;
         this.isDraft = bill.Status.Draft;
@@ -34,8 +31,9 @@ export class BillingSendComponent implements OnInit {
   email() {
   }
 
-  download() {
-    this.downloadService.pdf(this.canvas);
+  async download() {
+    const canvas = await this.downloadService.saveCanvas();
+    this.downloadService.pdf(canvas);
   }
 
   retrySunat() {
@@ -45,5 +43,6 @@ export class BillingSendComponent implements OnInit {
   sendSunat() {
     this.billService.sendSunat(this.bill_id).subscribe();
   }
+
 
 }

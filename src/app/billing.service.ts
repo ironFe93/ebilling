@@ -45,11 +45,16 @@ export class BillsService {
   }
 
   public getBillDetail(id) {
-    return this.http.get<Bill>(this.BillsUrl + '/getDetail/' + id)
+    if (id === this.bill$.getValue()._id) {
+      this.messageService.add('El documento ' + this.bill$.getValue().ID + ' está siendo creado o modificado');
+      return this.billDetail$;
+    }else {
+      return this.http.get<Bill>(this.BillsUrl + '/getDetail/' + id)
       .pipe(tap(resp => {
         this.billDetail$.next(resp);
-        console.log(this.billDetail$.value);
       }));
+    }
+
   }
 
   public addItem(product: Product) {
@@ -150,7 +155,6 @@ export class BillsService {
       tap(resp => {
         if (resp) {
           this.messageService.add('Borrador factura creado: ' + resp.ID);
-          this.billDetail$.next(resp);
           this.bill$.next(resp);
         }
       }),
@@ -161,11 +165,12 @@ export class BillsService {
     );
   }
 
-  public sendSunat() {
-    return this.http.post<any>(this.BillsUrl + '/sendSunat', {id: this.billDetail$.getValue()._id})
+  public sendSunat(id: String) {
+    return this.http.post<any>(this.BillsUrl + '/sendSunat', {id: id})
     .pipe(tap(bill => {
       this.messageService.add(bill.Status.Description);
       this.billDetail$.next(bill);
+      this.bill$.next(bill);
     }));
   }
 

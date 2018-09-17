@@ -35,7 +35,7 @@ export class DownloadService {
     return printDiv;
   }
 
-  saveCanvas() {
+  async saveCanvas() {
 
     let printDiv = document.getElementById('print');
     printDiv = this.darkenMatTable(printDiv);
@@ -44,24 +44,21 @@ export class DownloadService {
     const divWidth = printDiv.scrollWidth;
     this.ratio = divHeight / divWidth;
 
-    this.canvas = html2canvas(printDiv,
+    const canvas = await html2canvas(printDiv,
       {
         scale: 3,
         height: divHeight,
         width: divWidth
       });
-    return this.canvas;
+    return canvas;
   }
 
-  pdf() {
+  pdf(canvas) {
     const doc = new jsPDF('l', 'mm', 'a4');
-
-    this.canvas.then(canvas => {
-      const image = canvas.toDataURL('image/png');
-      const width = doc.internal.pageSize.getWidth();
-      const height = this.ratio * width;
-      doc.addImage(image, 'PNG', 10, 10, width - 20, height - 10);
-      doc.save('test.pdf');
-    });
+    const image = canvas.toDataURL('image/png');
+    const width = doc.internal.pageSize.getWidth();
+    const height = this.ratio * width;
+    doc.addImage(image, 'PNG', 10, 10, width - 20, height - 10);
+    doc.save('bill.pdf');
   }
 }

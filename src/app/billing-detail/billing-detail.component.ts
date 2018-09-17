@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 
 import { BillsService } from '../billing.service';
 
@@ -17,31 +17,26 @@ export class BillingDetailComponent implements OnInit {
     'descripcion', 'precio_unit', 'IGV', 'sum IGV', 'valor_v', 'valor_v_total', 'total'];
 
   displayedColumnsSum = ['sum', 'val'];
-
   dataSource = new MatTableDataSource<any>();
-
   bill$ = this.billsService.getObservableDetailBill();
 
   igvNames = { 10: 'gravado', 20: 'exonerado', 30: 'inafecto' };
+  @Input() stepper = false;
 
   constructor(private billsService: BillsService,
     private changeDet: ChangeDetectorRef, private downloadService: DownloadService) {
   }
 
   ngOnInit() {
+    if (!this.stepper) {
+      this.bill$ = this.billsService.getObservableDetailBill();
+    }else {
+      this.bill$ = this.billsService.getObservableBill();
+    }
     this.bill$.subscribe(bill => {
       this.dataSource.data = bill.InvoiceLine;
       this.changeDet.detectChanges();
     });
-  }
-
-  downloadPdf() {
-    this.downloadService.saveCanvas();
-    this.downloadService.pdf();
-  }
-
-  sendSunat() {
-    this.billsService.sendSunat().subscribe();
   }
 
 }
