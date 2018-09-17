@@ -19,7 +19,6 @@ export class BillingDetailComponent implements OnInit {
   displayedColumnsSum = ['sum', 'val'];
 
   dataSource = new MatTableDataSource<any>();
-  dataSourceSum = new MatTableDataSource<any>();
 
   bill$ = this.billsService.getObservableDetailBill();
 
@@ -39,6 +38,10 @@ export class BillingDetailComponent implements OnInit {
   downloadPdf() {
     this.downloadService.saveCanvas();
     this.downloadService.pdf();
+  }
+
+  sendSunat() {
+    this.billsService.sendSunat().subscribe();
   }
 
 }

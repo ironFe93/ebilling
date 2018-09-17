@@ -12,11 +12,21 @@ import { DownloadService } from '../download.service';
 export class BillingSendComponent implements OnInit {
 
   canvasPromise;
-  private bill$;
+  private bill$ = this.billService.getObservableDetailBill();
+  isDraft = false;
+  isRejected = false;
+  billDetailLoaded = false;
+
   constructor(private billService: BillsService, private downloadService: DownloadService) { }
 
   ngOnInit() {
-    this.bill$ = this.billService.getObservableBill();
+    this.bill$.subscribe(bill => {
+      if (bill._id) this.billDetailLoaded = true;
+      if (bill.Status) {
+        this.isRejected = bill.Status.Rejected;
+        this.isDraft = bill.Status.Draft;
+      }
+    });
   }
 
   sunat() {
@@ -28,6 +38,14 @@ export class BillingSendComponent implements OnInit {
 
   download() {
     this.downloadService.pdf();
+  }
+
+  retrySunat() {
+
+  }
+
+  sendSunat() {
+    this.billService.sendSunat().subscribe();
   }
 
 }

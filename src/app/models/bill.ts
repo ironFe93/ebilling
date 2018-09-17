@@ -73,4 +73,11 @@ export class Bill {
   };
   InvoiceLine: InvoiceLine[] = [];
   sumValues?: {};
+  Status: {
+    Description?: string;
+    ResponseCode?: number;
+    ID?: string;
+    Draft: boolean;
+    Rejected: boolean;
+  };
 }

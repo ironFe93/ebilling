@@ -33,9 +33,10 @@ routes.get('/find', (req, res, next) => {
 
     if (req.query.term) {
         const term = req.query.term;
-        console.log(term);
 
-        Product.find({ $text: { $search: term } }, { '_id': true, 'cod': true, 'descripcion': true }, function (err, products) {
+        projection = { '_id': true, 'cod': true, 'descripcion': true, 'cod_medida': true };
+
+        Product.find({ $text: { $search: term } }, projection , function (err, products) {
             if (err) return next(err);
             res.send(products);
         });

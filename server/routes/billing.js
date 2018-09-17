@@ -30,34 +30,34 @@ routes.post('/test', async (req, res, next) => {
 
 // Get by search term
 routes.get('/find', async (req, res, next) => {
+    try {
+        if (req.query.term) {
 
-    projection = {
-        '_id': true,
-        'ID': true,
-        'AccountingCustomerParty.PartyLegalEntity.RegistrationName': true
-    }
+            projection = {
+                '_id': true,
+                'ID': true,
+                'AccountingCustomerParty.PartyLegalEntity.RegistrationName': true
+            }
 
-    if (req.query.term) {
-        const term = req.query.term;
-
-        try {
+            const term = req.query.term;
             const query = Bill.find({ $text: { $search: term } }, projection)
             const bills = await query.exec()
             res.send(bills);
-        } catch (error) {
-            next(error);
+
+        } else {
+            res.send([]);
         }
 
-    } else {
-        res.send([]);
+    } catch (error) {
+        next(error);
     }
 });
 
 // get a bill fully detailed
-routes.get('/getDetail/:_id', async (req, res, next) => {
+routes.get('/getDetail/:id', async (req, res, next) => {
 
     try {
-        const bill = await Bill.findById(req.params._id).exec();
+        const bill = await Bill.findById(req.params.id).exec();
         res.send(bill);
     } catch (error) {
         next(error);
@@ -88,17 +88,25 @@ routes.get('/download', async (req, res, next) => {
 
 routes.post('/sendSunat', async (req, res, next) => {
     try {
-        const _id = req.body._id;
-        const bill = await Bill.findById(_id).exec();
+        const bill = await Bill.findById(req.body.id).exec();
         const ruc = bill.AccountingSupplierParty.PartyIdentification.ID;
         const billID = bill.ID;
-        const fileName = ruc + '-01-' + billID + '.zip';
+        const fileName = ruc + '-01-' + billID;
         const base64String = await processBill.getBase64Zip(bill.toObject(), ruc);
-        result = await soapClient.sendBill(fileName, base64String);
-        res.send(result);
+        const result = await soapClient.sendBill(fileName + '.zip', base64String);
+        if (result.name == "Error") {
+            throw new Error(result.message);
+        }
+        const decodedResult = await processBill.decodeBase64(result.applicationResponse, fileName + '.xml');
+        const updatedBill = await Bill.findOneAndUpdate({ID : billID}, 
+            { $set: { Status: decodedResult }}, 
+            {new: true, upsert: true}).exec();
+        
+        res.send(updatedBill);
 
     } catch (error) {
-        next(error)
+        console.log(error);
+        next(error);
     }
 });
 

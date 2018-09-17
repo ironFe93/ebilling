@@ -27,6 +27,7 @@ const invoiceLineSchema = new Schema({
             TaxableAmount: {type: Number, set: v => v.toFixed(2)},
             TaxAmount: {type: Number, set: v => v.toFixed(2)},
             TaxCategory: {
+                Percent: Number,
                 TaxExemptionReasonCode: Number,
                 TaxSchemeID: Number
             }

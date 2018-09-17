@@ -25,8 +25,14 @@
         </mat-horizontal-stepper>
     </mat-tab>
     <mat-tab label="Consultas">
-        <app-billing-search fxFlex="auto"></app-billing-search>
-        <app-billing-detail fxFlex="auto"></app-billing-detail>
+        <div fxLayout="column" fxFlexOffset="20px">
+            <div fxLayout="row" fxLayoutGap="20px" fxFlexOffset="20px">
+                <app-billing-search fxFlex="auto"></app-billing-search>
+                <app-billing-send fxFlex="auto"></app-billing-send>
+            </div>
+            <app-billing-detail fxFlex="auto"></app-billing-detail>
+
+        </div>
 
     </mat-tab>
 </mat-tab-group>

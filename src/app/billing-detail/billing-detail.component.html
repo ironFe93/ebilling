@@ -10,11 +10,21 @@
         </mat-card-subtitle>
       </div>
       <div>
+        <mat-card-subtitle>
+          {{(bill$ | async).Status?.Description}}
+        </mat-card-subtitle>
+        <div *ngIf="showSend">
+            <button (click)="retrySunat()">Reenviar</button>
+        </div>
+        <div *ngIf="isDraft">
+            <button (click)="sendSunat()">Enviar a Sunat</button>
+        </div>
+      </div>
+      <div>
         <mat-card-title>{{(bill$ | async).ID}}</mat-card-title>
         <mat-card-subtitle>RUC: 20537793016</mat-card-subtitle>
         <mat-card-subtitle>Factura Electrónica</mat-card-subtitle>
       </div>
-
     </div>
 
     <mat-card-content>
@@ -49,7 +59,8 @@
         <!-- Unit Price Column -->
         <ng-container matColumnDef="precio_unit">
           <mat-header-cell *matHeaderCellDef> Precio Unit. </mat-header-cell>
-          <mat-cell *matCellDef="let line">{{line.PricingReference.AlternativeConditionPrice.PriceAmount | number:'1.2-2'}}</mat-cell>
+          <mat-cell *matCellDef="let line">{{line.PricingReference.AlternativeConditionPrice.PriceAmount |
+            number:'1.2-2'}}</mat-cell>
         </ng-container>
 
         <!-- IGV Column -->

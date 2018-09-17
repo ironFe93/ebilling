@@ -1,4 +1,4 @@
-<div class="containerColumn">
+<div *ngIf="billDetailLoaded">
   <mat-card>
     <mat-card-header>
       <mat-card-title>
@@ -6,7 +6,15 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-        <button mat-button (click)="sunat()">A SUNAT</button>
+        <mat-card-subtitle>
+            {{(bill$ | async).Status?.Description}}
+          </mat-card-subtitle>
+        <div *ngIf="showSend">
+            <button (click)="retrySunat()">Reenviar</button>
+        </div>
+        <div *ngIf="isDraft">
+            <button (click)="sendSunat()">Enviar a Sunat</button>
+        </div>
         <button mat-button (click)="email()">A Cliente</button>
         <button mat-button (click)="download()">Descargar</button>
     </mat-card-content>

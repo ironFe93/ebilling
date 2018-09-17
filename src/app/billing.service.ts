@@ -133,7 +133,11 @@ export class BillsService {
         ChargeIndicator: false,
         MultiplierFactorNumeric: formdata.descuento_global
       },
-      InvoiceLine: invoiceLine
+      InvoiceLine: invoiceLine,
+      Status: {
+        Draft: true,
+        Rejected: false
+      }
     };
 
     this.bill$.next(bill);
@@ -158,7 +162,11 @@ export class BillsService {
   }
 
   public sendSunat() {
-    return this.http.post<any>(this.BillsUrl + '/sendSunat', this.bill$.getValue().ID);
+    return this.http.post<any>(this.BillsUrl + '/sendSunat', {id: this.billDetail$.getValue()._id})
+    .pipe(tap(bill => {
+      this.messageService.add(bill.Status.Description);
+      this.billDetail$.next(bill);
+    }));
   }
 
   public getPDF(_id: string) {

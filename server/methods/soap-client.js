@@ -47,6 +47,7 @@ exports.sendBill = async (fileName, contentFile) => {
         client.setSecurity(wsSecurity);
 
         result = await client.sendBillAsync(args);
+
         return result[0];
         // result is a javascript array containing result, raw, error and soapheader
         // result is a javascript object

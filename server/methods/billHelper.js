@@ -11,6 +11,9 @@ exports.buildBill = async (bill) => {
         // set the id number and series
         bill.ID = await getNextSequence('bill_id');
 
+        //set DueDate
+        bill.DueDate = calculate_due_date(new Date(bill.IssueDate), bill.cond_pago);
+
         // set AccountingSupplierParty
         bill = setAccountingSupplierParty(bill, company);
 
@@ -40,6 +43,12 @@ exports.buildBill = async (bill) => {
 
         // set legalMonetaryTotal
         bill = setLegalMonetaryTotal(bill);
+
+        bill.Status = {
+            Draft: true,
+            Rejected: false,
+            Description: 'Este documento aún no ha sido enviado a SUNAT'
+        }
 
         return bill;
 
@@ -279,6 +288,16 @@ const getNextSequence = async (name) => {
         }
         return counter.letter + counter.ser + '-' + counter.seq;
 
+    } catch (error) {
+        return error;
+    }
+}
+
+calculate_due_date = (IssueDate, days) => {
+    try {
+        var result = new Date(IssueDate);
+        result.setDate(result.getDate() + days);
+        return result;
     } catch (error) {
         return error;
     }

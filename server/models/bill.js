@@ -26,8 +26,8 @@ const billSchema = new Schema({
       ID: String,
       schemeID: String,
     },
-    PartyName:  String // nombre comercial
-    , PartyLegalEntity: {
+    PartyName:  String, // nombre comercial
+     PartyLegalEntity: {
       RegistrationName: String
     }
   },
@@ -75,7 +75,8 @@ const billSchema = new Schema({
     PayableAmount: {type: Number, set: v => v.toFixed(2)}
   },
   InvoiceLine: [invoiceLineSchema],
-  sumValues: {}
+  sumValues: {},
+  Status: {}
 });
 
 const Bill = mongoose.model("Bill", billSchema);
