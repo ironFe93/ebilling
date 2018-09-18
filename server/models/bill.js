@@ -76,7 +76,13 @@ const billSchema = new Schema({
   },
   InvoiceLine: [invoiceLineSchema],
   sumValues: {},
-  Status: {}
+  Status: {
+    Draft: Boolean,
+    Rejected: Boolean,
+    ResponseCode: String,
+    Description: String,
+    ID: String
+  }
 });
 
 const Bill = mongoose.model("Bill", billSchema);

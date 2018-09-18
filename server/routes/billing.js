@@ -1,6 +1,5 @@
 const express = require('express');
 const routes = express.Router();
-const { celebrate, Joi, errors } = require('celebrate');
 const processBill = require('../methods/processBill');
 const soapClient = require('../methods/soap-client');
 
@@ -89,18 +88,18 @@ routes.get('/download', async (req, res, next) => {
 routes.post('/sendSunat', async (req, res, next) => {
     try {
         const bill = await Bill.findById(req.body.id).exec();
+        if (!bill) throw new Error('Bill not found');
         const ruc = bill.AccountingSupplierParty.PartyIdentification.ID;
         const billID = bill.ID;
         const fileName = ruc + '-01-' + billID;
         const base64String = await processBill.getBase64Zip(bill.toObject(), ruc);
         const result = await soapClient.sendBill(fileName + '.zip', base64String);
-        if (result.name == "Error") {
-            throw new Error(result.message);
-        }
         const decodedResult = await processBill.decodeBase64(result.applicationResponse, fileName + '.xml');
-        const updatedBill = await Bill.findOneAndUpdate({ID : billID}, 
-            { $set: { Status: decodedResult }}, 
-            {new: true, upsert: true}).exec();
+        const updatedBill = await Bill.findOneAndUpdate(
+            {ID : billID}, 
+            { 'Status': decodedResult },
+            {new: true, upsert: true})
+            .exec();
         
         res.send(updatedBill);
 

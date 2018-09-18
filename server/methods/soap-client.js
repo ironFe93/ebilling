@@ -27,7 +27,7 @@ exports.getStatus = async (ticket) => {
         result = await client.getStatusAsync(args);
         return result[0];
     } catch (error) {
-        return error;
+        throw error;
     }
 };
 
@@ -54,7 +54,7 @@ exports.sendBill = async (fileName, contentFile) => {
         // raw is the raw response
         // soapHeader is the response soap header as a javascript object
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 

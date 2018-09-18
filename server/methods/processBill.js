@@ -19,7 +19,7 @@ exports.getBase64Zip = async (jsonObject, ruc) => {
         const base64Zip = await prepareZipAsBase64(signedXML, ruc, billID);
         return base64Zip;
     } catch (error) {
-        return error;
+        throw error;
     }
 
 }
@@ -30,7 +30,7 @@ const formatDateTimeFields = (field) => {
         if (field < 10) { field = '0' + field };
         return field;
     } catch (error) {
-        return error;
+        throw error;
     }
 
 }
@@ -43,7 +43,7 @@ const getYearMonthDay = (date) => {
 
         return year + "-" + month + "-" + day;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -55,7 +55,7 @@ const getHourMinuteSecond = (date) => {
 
         return hour + ":" + minute + ":" + second;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -70,14 +70,13 @@ const prepareZipAsBase64 = (xml, ruc, billID) => {
 
         return zip.generateAsync({ type: "base64" });
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
 const signXML = async (xml) => {
     try {
         const util = require('util');
-        const fs = require("fs");
         const keyInfoProvider = require('./keyInfoProvider');
 
         //xml-crypto
@@ -99,8 +98,8 @@ const signXML = async (xml) => {
         const readPkcs12 = util.promisify(pem.readPkcs12);
 
         // commence
-
-        const encodedB64Cert = await Certificate.findById("5ba0425652b10d27784370ad").exec();
+        const encodedB64Cert = await Certificate.findById("5ba043b73190f224c0ea9074").exec();
+        if (!encodedB64Cert) throw new Error('could not find certificate');
         const pfx = Buffer.from(encodedB64Cert.certPFX, 'base64');
         const pemCert = await readPkcs12(pfx, { p12Password: "abc123" });
         const sig = new SignedXml();
@@ -124,7 +123,7 @@ const signXML = async (xml) => {
         sig.computeSignature(xml, signatureOpts);
         return sig.getSignedXml();
     } catch (error) {
-        return error;
+        throw error;
     }
 
 }
@@ -144,19 +143,26 @@ exports.decodeBase64 = async (base64, fileName) => {
         const lastIndexRespCode = xml.search('</cbc:ResponseCode>');
         const responseRespCode = xml.substring(initIndexRespCode + 18, lastIndexRespCode);
 
-        const initIndexID = xml.search('ID><cbc:ID>');
-        const lastIndexID = xml.search('</cbc:ID>');
-        const responseID = xml.substring(initIndexID + 11, lastIndexID);
+        const initIndexID = xml.search('</ext:UBLExtensions><cbc:ID>');
+        const lastIndexID = xml.search('</cbc:ID><cbc:IssueDate>');
+        const responseID = xml.substring(initIndexID + 28, lastIndexID);
 
         const response = {
+            Draft: false,
+            Rejected: false,
             ResponseCode: responseRespCode,
             Description: responseDesc,
             ID: responseID
         }
+
+        if(response.ResponseCode != 0) {
+            response.Rejected = true
+        }
+
         return response;
 
     } catch (error) {
-        return error;
+        throw error;
     }
 
 }

@@ -1,102 +1,89 @@
 const express = require('express');
 const routes = express.Router();
-const { celebrate, Joi, errors } = require('celebrate');
 
 const Product = require('../models/product');
 const Counters = require('../models/counters');
 
-routes.get('/', (req, res, next) => {
-    res.status(200).json({ message: 'Products!' });
-});
 
 // Get all products
-routes.get('/findall', (req, res, next) => {
-
-    Product.find({}, function (err, products) {
-        if (err) throw err;
+routes.get('/findall', async (req, res, next) => {
+    try {
+        products = await Product.find({}).exec()
         res.send(products);
-    });
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get all categories
-routes.get('/categories', (req, res, next) => {
-
-    query = Counters.find({ 'desc': { $exists: true } });
-    query.select('desc');
-    query.exec()
-        .then(x => res.send(x))
-        .catch(error => next(error));
+routes.get('/categories', async (req, res, next) => {
+    try {
+        query = Counters.find({ 'desc': { $exists: true } });
+        query.select('desc');
+        categories = await query.exec();
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get by SKU
-routes.get('/find', (req, res, next) => {
+routes.get('/find', async (req, res, next) => {
+    try {
+        if (req.query.term) {
+            const term = req.query.term;
 
-    if (req.query.term) {
-        const term = req.query.term;
+            projection = { '_id': true, 'cod': true, 'descripcion': true, 'cod_medida': true };
 
-        projection = { '_id': true, 'cod': true, 'descripcion': true, 'cod_medida': true };
-
-        Product.find({ $text: { $search: term } }, projection , function (err, products) {
-            if (err) return next(err);
+            products = await Product.find({ $text: { $search: term } }, projection).exec()
             res.send(products);
-        });
-
-    } else {
-        res.send([]);
+        } else {
+            res.send([]);
+        }
+    } catch (error) {
+        next(error);
     }
 });
 
 // Get All details by ID
-routes.get('/getDetails/:id', celebrate(
-    {
-        params: Joi.object().keys({
-            id: Joi.string().required()
-        })
-    }
-), (req, res, next) => {
-
-    const id = req.params.id;
-
-    Product.findById(id, function (err, product) {
-        if (err) throw err;
+routes.get('/getDetails/:id', async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        product = await Product.findById(id).exec();
         res.send(product);
-    });
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Create a Product
 routes.post('/create', async (req, res, next) => {
-    const newProd = new Product(req.body);
-
     try {
+        const newProd = new Product(req.body);
         newProd.cod = await getNextSequence(newProd.categoria);
+        const savedProd = await newProd.save();
+        res.send(savedProd);
     } catch (error) {
-        return next(err);
+        next(error);
     }
-
-    newProd.save((err, prod) => {
-        if (err) return next(err);
-        res.send(prod);
-    });
 });
 
-const getNextSequence = (categoria) => {
+const getNextSequence = async (categoria) => {
+    try {
+        query = Counters.findOneAndUpdate(
+            { 'desc': categoria },
+            {
+                $inc: { seq: 1 },
+                new: true
+            }
+        );
 
-    query = Counters.findOneAndUpdate(
-        {
-            'desc': categoria
-        },
-        {
-            $inc: { seq: 1 },
-            new: true
-        }
-    );
+        const x = await query.exec()
+        const cod = x.prefix + x.seq
+        return cod;
 
-    return query.exec()
-        .then(x => {
-            cod = x.prefix + x.seq
-            return cod;
-        })
-        .catch(err => { return err });
+    } catch (error) {
+        throw (error);
+    }
 }
 
 module.exports = routes;

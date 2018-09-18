@@ -53,17 +53,20 @@ exports.buildBill = async (bill) => {
         return bill;
 
     } catch (error) {
-        return (error);
+        throw error;
     }
 }
 
 setAccountingSupplierParty = (bill, company) => {
-
-    bill.AccountingSupplierParty.PartyLegalEntity.RegistrationName = company.registration_name;
-    bill.AccountingSupplierParty.PartyIdentification.ID = company.ruc;
-    bill.AccountingSupplierParty.PartyIdentification.schemeID = '6';
-
-    return bill;
+    try {
+        bill.AccountingSupplierParty.PartyLegalEntity.RegistrationName = company.registration_name;
+        bill.AccountingSupplierParty.PartyIdentification.ID = company.ruc;
+        bill.AccountingSupplierParty.PartyIdentification.schemeID = '6';
+    
+        return bill;
+    } catch (error) {
+        throw error;
+    }
 }
 
 calculate_invoice_lines = async (reqBody) => {
@@ -129,8 +132,8 @@ calculate_invoice_lines = async (reqBody) => {
         });
         return Promise.all(invoiceLines).then(lines => { return lines });
 
-    } catch (err) {
-        return err;
+    } catch (error) {
+        throw error;
     }
 }
 
@@ -198,20 +201,24 @@ calculate_totals = async (bill, sumValues) => {
         return sumValues;
 
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
 setAllowanceCharge = (bill) => {
-    bill.AllowanceCharge.Amount = bill.sumValues.descuentoGlobal;
-    bill.AllowanceCharge.BaseAmount = bill.sumValues.sumValorVentaPorItem;
-
-    return bill
+    try {
+        bill.AllowanceCharge.Amount = bill.sumValues.descuentoGlobal;
+        bill.AllowanceCharge.BaseAmount = bill.sumValues.sumValorVentaPorItem;
+    
+        return bill;
+    } catch (error) {
+        throw error;
+    }
 }
 
 setTaxTotal = (bill) => {
-
-    bill.TaxTotal.TaxAmount = bill.sumValues.sumIGV;
+    try {
+        bill.TaxTotal.TaxAmount = bill.sumValues.sumIGV;
     currency = bill.DocumentCurrencyCode;
     taxSubtotalArray = [];
     if (bill.sumValues.totalOperacionesGravadas > 0) {
@@ -251,33 +258,38 @@ setTaxTotal = (bill) => {
 
     bill.TaxTotal.TaxSubtotal = taxSubtotalArray;
 
-    return bill;
+    return bill;    
+    } catch (error) {
+        throw error;
+    }
 }
 
 
 setLegalMonetaryTotal = (bill) => {
-
-    bill.LegalMonetaryTotal = {
-        LineExtensionAmount: bill.sumValues.sumValorVentaBruto,
-        TaxInclusiveAmount: bill.sumValues.total,
-        AllowanceTotalAmount: bill.sumValues.totalDescuentos,
-        PayableAmount: bill.sumValues.total
+    try {
+        bill.LegalMonetaryTotal = {
+            LineExtensionAmount: bill.sumValues.sumValorVentaBruto,
+            TaxInclusiveAmount: bill.sumValues.total,
+            AllowanceTotalAmount: bill.sumValues.totalDescuentos,
+            PayableAmount: bill.sumValues.total
+        }
+    
+        return bill;
+    } catch (error) {
+        throw error;
     }
-
-    return bill;
 }
 
 const getNextSequence = async (name) => {
-
-    query = Counters.findOneAndUpdate(
-        { prefix: name },
-        {
-            $inc: { seq: 1 },
-            new: true
-        }
-    );
-
     try {
+        query = Counters.findOneAndUpdate(
+            { prefix: name },
+            {
+                $inc: { seq: 1 },
+                new: true
+            }
+        );
+
         counter = await query.exec();
         //control overflow of values
         if (counter.seq === 99999999) {
@@ -289,7 +301,7 @@ const getNextSequence = async (name) => {
         return counter.letter + counter.ser + '-' + counter.seq;
 
     } catch (error) {
-        return error;
+        throw error;
     }
 }
 
@@ -299,6 +311,6 @@ calculate_due_date = (IssueDate, days) => {
         result.setDate(result.getDate() + days);
         return result;
     } catch (error) {
-        return error;
+        throw error;
     }
 }

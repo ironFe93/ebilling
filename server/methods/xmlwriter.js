@@ -5,8 +5,6 @@ let catalog05;
 
 exports.buildXML = async (jsonBill) => {
     try {
-
-
         atts = attributes(jsonBill); //Initialize attributes
         catalog05 = await cat05(); //load up catalog05
         //begin complex types
@@ -117,7 +115,7 @@ exports.buildXML = async (jsonBill) => {
         return string;
 
     } catch (error) {
-        return error;
+        throw error;
     }
 
 }
@@ -262,6 +260,6 @@ cat05 = async () => {
         const catalog05 = await Catalog.findById("5b9808a83369e7514123a068").exec();
         return catalog05._doc;
     } catch (error) {
-        return error;
+        throw error;
     }
 }
