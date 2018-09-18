@@ -81,16 +81,6 @@ app.set('port', port);
 const server = http.createServer(app);
 
 /**
- * Prepare socket.io
- */
-let io = require('socket.io')(server);
-io.on('connection', socket => {
-
-  socket.emit('message', 'hello from server.js');
-
-});
-app.set('socketio', io);
-/**
  * Listen on provided port, on all network interfaces.
  */
 server.listen(port, () => {

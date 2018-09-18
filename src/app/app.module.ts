@@ -48,14 +48,11 @@ import { ProductDetailsComponent } from './product-details/product-details.compo
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth-guard.service';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { DashboardService } from './dashboard.service';
 
 // Auth
 import { JwtModule } from '@auth0/angular-jwt';
 import { AuthService } from './auth.service';
 
-import { SocketioService } from './socketio.service';
 import { DashProdDialogComponent } from './dashboard/dash-prod-dialog/dash-prod-dialog.component';
 import { ErrorHandlerService } from './error-handler.service';
 import { HttpInterceptorService } from './http-interceptor.service';
@@ -67,7 +64,6 @@ const appRoutes = [
   {
     path: 'billing', component: BillingComponent, canActivate: [AuthGuard] },
   { path: 'products', component: ProductsComponent, canActivate: [AuthGuard] },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'home', component: NavComponent },
   { path: 'unauthorized', component: UnauthorizedComponent, canActivate: [AuthGuard] }
 ];
@@ -94,7 +90,6 @@ const appRoutes = [
     ProductDetailsComponent,
     LoginComponent,
     UnauthorizedComponent,
-    DashboardComponent,
     DashProdDialogComponent,
     BillingSendComponent,
     BillingOptionsComponent,
@@ -157,8 +152,6 @@ const appRoutes = [
     MessageService,
     AuthService,
     AuthGuard,
-    DashboardService,
-    SocketioService,
     ErrorHandlerService,
     {
       provide: HTTP_INTERCEPTORS,
