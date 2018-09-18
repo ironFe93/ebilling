@@ -11,7 +11,7 @@ routes.get('/',  (req, res, next) => {
   });
 
 routes.use('/product', passport.authenticate('jwt', { session: false }), product);
-routes.use('/bill', passport.authenticate('jwt', { session: false }), billing);
+routes.use('/bill', /* passport.authenticate('jwt', { session: false }), */ billing);
 routes.use('/auth', auth);
 
 module.exports = routes;
