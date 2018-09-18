@@ -3,31 +3,28 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
+require('dotenv').config();
 const mongoose = require('mongoose');
 const app = express();
 const cors = require('cors');
 
-DB_URI = 'mongodb://admin@universalcluster0-shard-00-00-dlslo.mongodb.net:27017,' +
-  'universalcluster0-shard-00-01-dlslo.mongodb.net:27018,' +
-  'universalcluster0-shard-00-02-dlslo.mongodb.net:27019,' +
-  '/db_universal?authSource=admin&replicaSet=universalCluster0-shard-0&ssl=true';
-
-DB_URI2 = 'mongodb://localhost:27017/slick'
 mongoose_options = {
   useNewUrlParser: true,
   reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
   reconnectInterval: 500, // Reconnect every 500ms
 }
 // Conect MongoDB
-mongoose.connect(DB_URI2, mongoose_options)
+mongoose.connect(process.env.DB_URI, mongoose_options)
   .then(() => console.log('connection successful'))
   .catch((err) => console.error(err));
 
 // cors
-const corsOptions = {
-  origin: 'http://localhost:4200'
+if(app.get('env')=== 'development'){
+  const corsOptions = {
+    origin: 'http://localhost:4200'
+  }
+  app.use(cors(corsOptions))
 }
-app.use(cors(corsOptions))
 
 // passport
 passport = require('./server/config/passport-config');
@@ -50,9 +47,6 @@ app.get('*', (req, res) => {
 });
 
 
-// TO DO: https://stackoverflow.com/questions/41133705/how-to-correctly-set-http-request-header-in-angular-2
-
-
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -61,18 +55,19 @@ if (app.get('env') === 'development') {
     res.status(err.status || 500).send(err.toString());
   });
 
+} else {
+  // production error handler
+  // no stacktraces leaked to user
+  app.use(function (err, req, res, next) {
+    err.message = 'Error en el servidor';
+    res.status(err.status || 500).send(err.toString);
+  });
 }
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function (err, req, res, next) {
-  res.status(err.status || 500);
-});
 
 /**
  * Get port from environment and store in Express.
  */
-const port = process.env.PORT || '3000';
+const port = process.env.PORT || process.env.DEV_PORT;
 app.set('port', port);
 
 /**
@@ -85,7 +80,5 @@ const server = http.createServer(app);
  */
 server.listen(port, () => {
   console.log(`API running on localhost:${port}`);
-
-
 });
 
