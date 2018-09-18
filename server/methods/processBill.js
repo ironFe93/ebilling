@@ -1,5 +1,6 @@
 const xmlwriter = require('./xmlwriter');
 const JSZip = require("jszip");
+const Certificate = require('../models/certificate');
 
 exports.getBase64Zip = async (jsonObject, ruc) => {
     try {
@@ -99,7 +100,8 @@ const signXML = async (xml) => {
 
         // commence
 
-        const pfx = fs.readFileSync("./server/files/cert.pfx");
+        const encodedB64Cert = await Certificate.findById("5ba0425652b10d27784370ad").exec();
+        const pfx = Buffer.from(encodedB64Cert.certPFX, 'base64');
         const pemCert = await readPkcs12(pfx, { p12Password: "abc123" });
         const sig = new SignedXml();
 

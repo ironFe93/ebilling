@@ -6,14 +6,13 @@ var jwt = require('jsonwebtoken');
 var User = require('../models/user');
 var bcrypt = require('bcrypt');
 
-const saltRounds = 10;
-
 routes.post('/register', async (req, res, next) => {
     try {
+        const saltRounds = 10;
         const usr = req.body.username;
         const psw = req.body.password;
-        salt = await bcrypt.genSalt(saltRounds);
-        hash = await bcrypt.hash(psw, salt);
+        const salt = await bcrypt.genSalt(saltRounds);
+        const hash = await bcrypt.hash(psw, salt);
 
         const newUser = new User({ username: usr, password: hash });
         user = await newUser.save().exec();
