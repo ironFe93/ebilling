@@ -4,8 +4,6 @@ import { CreateBillComponent } from '../billing-create-bill/billing-create-bill.
 import { HttpErrorResponse } from '../../../node_modules/@angular/common/http';
 import { MatStepper } from '@angular/material';
 
-import * as jsPDF from 'jspdf';
-import * as html2canvas from 'html2canvas';
 import { DownloadService } from '../download.service';
 import { BillsService } from '../billing.service';
 
