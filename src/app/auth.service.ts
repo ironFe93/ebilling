@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
 import { MessageService } from './message.service';
 import { environment } from '../environments/environment';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -13,8 +14,6 @@ export class AuthService {
   constructor(private http: HttpClient,
     private jwtHelper: JwtHelperService,
     public messageService: MessageService) {
-    console.log(this.jwtHelper.isTokenExpired());
-    console.log(this.jwtHelper.getTokenExpirationDate());
   }
 
   public loggedIn() {

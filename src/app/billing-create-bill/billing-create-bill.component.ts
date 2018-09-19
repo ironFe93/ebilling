@@ -28,7 +28,7 @@ export class CreateBillComponent implements OnInit {
     'IGV', /*'sum IGV',*/ 'valor_v_total'];
   dataSource = new MatTableDataSource<InvoiceLine>();
 
-  private billForm: FormGroup;
+  billForm: FormGroup;
   bill$ = this.billsService.getObservableBill();
 
   constructor(private billsService: BillsService, private productsService: ProductsService,

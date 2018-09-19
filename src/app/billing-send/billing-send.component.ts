@@ -13,7 +13,7 @@ import { Bill } from '../models/bill';
 export class BillingSendComponent implements OnInit {
 
   @Input() canvas;
-  private bill$;
+  bill$;
   isDraft = false;
   isRejected = false;
   bill_id;
