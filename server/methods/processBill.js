@@ -1,6 +1,5 @@
 const xmlwriter = require('./xmlwriter');
 const JSZip = require("jszip");
-const Certificate = require('../models/certificate');
 
 exports.getBase64Zip = async (jsonObject, ruc) => {
     try {
@@ -76,7 +75,6 @@ const prepareZipAsBase64 = (xml, ruc, billID) => {
 
 const signXML = async (xml) => {
     try {
-        const util = require('util');
         const keyInfoProvider = require('./keyInfoProvider');
 
         //xml-crypto
@@ -89,19 +87,7 @@ const signXML = async (xml) => {
             }
         };
 
-        // pem
-
-        const pem = require("pem");
-        pem.config({
-            pathOpenSSL: 'C:/OpenSSL-Win64/bin/openssl'
-        });
-        const readPkcs12 = util.promisify(pem.readPkcs12);
-
         // commence
-        const encodedB64Cert = await Certificate.findById("5ba043b73190f224c0ea9074").exec();
-        if (!encodedB64Cert) throw new Error('could not find certificate');
-        const pfx = Buffer.from(encodedB64Cert.certPFX, 'base64');
-        const pemCert = await readPkcs12(pfx, { p12Password: "abc123" });
         const sig = new SignedXml();
 
         sig.addReference(// reference to the root node
@@ -118,8 +104,8 @@ const signXML = async (xml) => {
             // this is the signal that the signature is affecting the whole xml document
             true
         );
-        sig.signingKey = pemCert.key;
-        sig.keyInfoProvider = new keyInfoProvider(pemCert.cert);
+        sig.signingKey = process.env.PRIVATE_KEY;
+        sig.keyInfoProvider = new keyInfoProvider(process.env.PUBLIC_CERT);
         sig.computeSignature(xml, signatureOpts);
         return sig.getSignedXml();
     } catch (error) {

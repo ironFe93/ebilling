@@ -14,7 +14,7 @@ mongoose_options = {
   reconnectInterval: 500, // Reconnect every 500ms
 }
 // Conect MongoDB
-mongoose.connect(process.env.DB_URI, mongoose_options)
+mongoose.connect(process.env.MONGODB_URI, mongoose_options)
   .then(() => console.log('connection successful'))
   .catch((err) => console.error(err));
 

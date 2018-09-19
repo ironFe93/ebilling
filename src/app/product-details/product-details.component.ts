@@ -4,7 +4,6 @@ import { Product } from '../models/product';
 import { ProductsService } from '../products.service';
 
 import { Observable } from 'rxjs';
-import { DashboardComponent } from '../dashboard/dashboard.component';
 
 @Component({
   selector: 'app-product-details',

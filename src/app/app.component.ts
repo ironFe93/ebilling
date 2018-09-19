@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 
 import { AuthService } from './auth.service';
-import { DashboardService } from './dashboard.service';
 
 @Component({
   selector: 'app-root',
@@ -11,6 +10,6 @@ import { DashboardService } from './dashboard.service';
 export class AppComponent {
   title = 'app';
 
-  constructor(private auth: AuthService, private dashService: DashboardService) {}
+  constructor(private auth: AuthService) {}
 
 }

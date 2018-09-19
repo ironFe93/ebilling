@@ -53,7 +53,6 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { JwtModule } from '@auth0/angular-jwt';
 import { AuthService } from './auth.service';
 
-import { DashProdDialogComponent } from './dashboard/dash-prod-dialog/dash-prod-dialog.component';
 import { ErrorHandlerService } from './error-handler.service';
 import { HttpInterceptorService } from './http-interceptor.service';
 import { MessageService } from './message.service';
@@ -90,7 +89,6 @@ const appRoutes = [
     ProductDetailsComponent,
     LoginComponent,
     UnauthorizedComponent,
-    DashProdDialogComponent,
     BillingSendComponent,
     BillingOptionsComponent,
   ],
@@ -136,14 +134,13 @@ const appRoutes = [
           return localStorage.getItem('token');
           // missing scenario token is null in C:\...\angular-jwt\bundles\core.umd.js
         },
-        whitelistedDomains: [/^null$/, 'localhost:3000'],
+        whitelistedDomains: ['localhost:3000'],
         authScheme: 'jwt '
       }
     })
   ],
   entryComponents: [
     ProductDetailsComponent,
-    DashProdDialogComponent,
     ProductsSearchComponent
   ],
   providers: [
