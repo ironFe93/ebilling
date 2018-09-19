@@ -134,7 +134,6 @@ const appRoutes = [
           return localStorage.getItem('token');
           // missing scenario token is null in C:\...\angular-jwt\bundles\core.umd.js
         },
-        whitelistedDomains: ['localhost:3000'],
         authScheme: 'jwt '
       }
     })
