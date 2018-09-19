@@ -1,1 +1,1 @@
-web: ng build --prod && node server.js
+web: node server.js
