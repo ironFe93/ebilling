@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng build && node server.js",
+    "start": "node server.js",
+    "postinstall": "ng build --prod",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
@@ -12,10 +13,12 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/cli": "6.0.7",
     "@angular/animations": "6.0.3",
     "@angular/cdk": "^6.4.1",
     "@angular/common": "6.0.3",
     "@angular/compiler": "6.0.3",
+    "@angular/compiler-cli": "6.0.3",
     "@angular/core": "6.0.3",
     "@angular/flex-layout": "^6.0.0-beta.16",
     "@angular/forms": "6.0.3",
