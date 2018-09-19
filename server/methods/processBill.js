@@ -104,6 +104,7 @@ const signXML = async (xml) => {
             // this is the signal that the signature is affecting the whole xml document
             true
         );
+        console.log(process.env.PRIVATE_KEY);
         sig.signingKey = process.env.PRIVATE_KEY;
         sig.keyInfoProvider = new keyInfoProvider(process.env.PUBLIC_CERT);
         sig.computeSignature(xml, signatureOpts);
