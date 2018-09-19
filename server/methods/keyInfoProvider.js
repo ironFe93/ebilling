@@ -1,7 +1,5 @@
-'use strict';
-
-var forge = require('forge'),
-    pki = forge.pki;
+const forge = require('node-forge');
+const pki = forge.pki;
 
 function KeyInfoProvider(certificatePEM) {
   if (!this instanceof KeyInfoProvider) {
