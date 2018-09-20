@@ -170,7 +170,10 @@ export class BillsService {
     .pipe(tap(bill => {
       this.messageService.add(bill.Status.Description);
       this.billDetail$.next(bill);
-      this.bill$.next(bill);
+    }),
+    catchError((err: HttpErrorResponse, caught) => {
+      this.messageService.add(err.message);
+      return of(err);
     }));
   }
 
