@@ -87,17 +87,17 @@ export class CreateBillComponent implements OnInit {
 
   buildBillForm() {
     this.billForm = this.fb.group({
-      ruc: ['', Validators.required],
+      ruc: ['', Validators.required, Validators.minLength(11), Validators.maxLength(11)],
       razonSocial: ['', Validators.required],
       cond_pago: [30, Validators.required],
       fecha_e: [new Date(), Validators.required],
       moneda: ['PEN', Validators.required],
-      descuento_global: [0, Validators.required]
+      descuento_global: [0, Validators.required, Validators.min(0), Validators.max(100)]
     });
   }
 
   onSubmit(): Observable<any> {
-    if (this.billForm.valid) {
+    if (this.billForm.valid && this.billsService.validateLines()) {
       this.billsService.composeBillDraft(this.billForm.value, this.dataSource.data);
       return this.billsService.saveBillDraft();
     } else {

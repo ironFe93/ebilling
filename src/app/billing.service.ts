@@ -187,4 +187,27 @@ export class BillsService {
   clear() {
     this.bill$.next(new Bill());
   }
+
+  validateLines(): boolean {
+    const lines = this.bill$.getValue().InvoiceLine;
+    if (lines.length === 0) {
+      this.messageService.add('Debe ingresar al menos un Producto');
+      return false;
+    }
+    lines.forEach(line => {
+      if (!line.Item.Description) {
+        this.messageService.add('Item no puede estar vacío');
+        return false;
+      }
+      if (line.InvoicedQuantity <= 0) {
+        this.messageService.add('Ingrese una cantidad válida');
+        return false;
+      }
+      if (line.Price.PriceAmount <= 0) {
+        this.messageService.add('Ingrese un precio válido');
+        return false;
+      }
+    });
+    return true;
+  }
 }
