@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { BillsService } from '../billing.service';
 
 import { Product } from '../models/product';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { debounceTime, tap, switchMap, finalize, catchError } from 'rxjs/operators';
 import { ProductsService } from '../products.service';
 
@@ -21,6 +21,7 @@ export class CreateBillComponent implements OnInit {
   filteredProducts: Product[] = [];
   prodForm: FormGroup;
   isLoading = false;
+  minDate = new Date();
 
   displayedColumns = ['codigo',
     'descripcion', 'medida',  'cantidad',
@@ -36,6 +37,8 @@ export class CreateBillComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    this.minDate.setDate(this.minDate.getDate() - 2);
     this.buildProdForm();
     this.initProdForm();
 
@@ -44,7 +47,6 @@ export class CreateBillComponent implements OnInit {
     this.bill$.subscribe(bill => {
       this.dataSource.data = bill.InvoiceLine;
       this.changeDet.detectChanges();
-      console.log(this.dataSource.data);
     });
   }
 
@@ -87,23 +89,24 @@ export class CreateBillComponent implements OnInit {
 
   buildBillForm() {
     this.billForm = this.fb.group({
-      ruc: ['', Validators.required, Validators.minLength(11), Validators.maxLength(11)],
+      ruc: new FormControl('', [Validators.required, Validators.min(10000000000), Validators.max(99999999999)]),
       razonSocial: ['', Validators.required],
-      cond_pago: [30, Validators.required],
+      cond_pago: new FormControl(15, [Validators.required, Validators.min(0)]),
       fecha_e: [new Date(), Validators.required],
       moneda: ['PEN', Validators.required],
-      descuento_global: [0, Validators.required, Validators.min(0), Validators.max(100)]
+      descuento_global: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(100)])
     });
   }
 
   onSubmit(): Observable<any> {
-    if (this.billForm.valid && this.billsService.validateLines()) {
-      this.billsService.composeBillDraft(this.billForm.value, this.dataSource.data);
-      return this.billsService.saveBillDraft();
-    } else {
-      this.messageService.add('invalid data');
+    if (!this.billForm.valid) {
+      this.messageService.add('invalid form data');
       return of(new Error('invalid data'));
     }
+    if (!this.billsService.validateLines()) return of(new Error('lines not valid'));
+    console.log('here');
+    this.billsService.composeBillDraft(this.billForm.value, this.dataSource.data);
+    return this.billsService.saveBillDraft();
   }
 
   getBillForm() {

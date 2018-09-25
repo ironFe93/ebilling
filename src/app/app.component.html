@@ -1,2 +1,2 @@
-<app-login *ngIf="!authorized"></app-login>
-<app-nav *ngIf="authorized"></app-nav>
+<app-login *ngIf="!(authorized$ | async)"></app-login>
+<app-nav *ngIf="(authorized$ | async)"></app-nav>

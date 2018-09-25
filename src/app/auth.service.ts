@@ -10,10 +10,15 @@ import { BehaviorSubject } from 'rxjs';
 export class AuthService {
 
   private authUrl = environment.apiUrl + '/api/auth';
+  private auth$ = new BehaviorSubject(this.loggedIn());
 
   constructor(private http: HttpClient,
     private jwtHelper: JwtHelperService,
     public messageService: MessageService) {
+  }
+
+  public getAuthObservable() {
+    return this.auth$.asObservable();
   }
 
   public loggedIn() {
@@ -33,6 +38,7 @@ export class AuthService {
     ).pipe(tap(res => {
       if (res.message === 'ok') {
         localStorage.setItem('token', res.token);
+        this.auth$.next(true);
       }
     }));
   }

@@ -63,15 +63,9 @@ const appRoutes = [
   {
     path: 'billing', component: BillingComponent, canActivate: [AuthGuard] },
   { path: 'products', component: ProductsComponent, canActivate: [AuthGuard] },
-  { path: 'home', component: NavComponent },
+  { path: 'home', component: NavComponent},
   { path: 'unauthorized', component: UnauthorizedComponent, canActivate: [AuthGuard] }
 ];
-
-/*const appRoutes: Routes = [
-  { path: 'billing', component: billingComponent },
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: '**', component: HomeComponent }
-];*/
 
 @NgModule({
   declarations: [
@@ -125,7 +119,8 @@ const appRoutes = [
     JwtModule.forRoot({
       config: {
         tokenGetter: jwtTokenGetter,
-        authScheme: 'jwt '
+        authScheme: 'jwt ',
+        whitelistedDomains: ['localhost:3000']
       }
     })
   ],

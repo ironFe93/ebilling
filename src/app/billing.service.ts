@@ -67,7 +67,8 @@ export class BillsService {
         }
       },
       InvoicedQuantity : {
-        unitCode: product.cod_medida
+        unitCode: product.cod_medida,
+        val: 0
       },
       PricingReference: {
         AlternativeConditionPrice: {
@@ -189,25 +190,26 @@ export class BillsService {
   }
 
   validateLines(): boolean {
+    let valid = true;
     const lines = this.bill$.getValue().InvoiceLine;
     if (lines.length === 0) {
       this.messageService.add('Debe ingresar al menos un Producto');
-      return false;
+      valid = false;
     }
     lines.forEach(line => {
       if (!line.Item.Description) {
         this.messageService.add('Item no puede estar vacío');
-        return false;
+        valid = false;
       }
-      if (line.InvoicedQuantity <= 0) {
+      if (line.InvoicedQuantity.val <= 0) {
         this.messageService.add('Ingrese una cantidad válida');
-        return false;
+        valid = false;
       }
-      if (line.Price.PriceAmount <= 0) {
+      if (line.PricingReference.AlternativeConditionPrice.PriceAmount <= 0) {
         this.messageService.add('Ingrese un precio válido');
-        return false;
+        valid = false;
       }
     });
-    return true;
+    return valid;
   }
 }

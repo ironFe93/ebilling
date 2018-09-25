@@ -8,11 +8,11 @@ import { AuthService } from './auth.service';
 })
 export class AppComponent implements OnInit {
   title = 'app';
-  authorized = false;
+  authorized$;
   constructor(private auth: AuthService) {}
 
   ngOnInit() {
-    this.authorized = this.auth.loggedIn();
+    this.authorized$ = this.auth.getAuthObservable();
   }
 
 }
