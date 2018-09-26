@@ -11,6 +11,8 @@
       <button *ngIf="isDraft" mat-button (click)="sendSunat()">Enviar a Sunat</button>
       <button mat-button (click)="email()">A Cliente</button>
       <button mat-button (click)="download()">Descargar</button>
+      <button *ngIf="isEditable" mat-button (click)="edit()">Editar</button>
+
     </mat-card-content>
   </mat-card>
 </div>

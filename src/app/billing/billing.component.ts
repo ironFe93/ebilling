@@ -1,11 +1,12 @@
-import { Component, ViewChild, AfterViewInit, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, ChangeDetectorRef, OnInit, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { CreateBillComponent } from '../billing-create-bill/billing-create-bill.component';
 import { HttpErrorResponse } from '../../../node_modules/@angular/common/http';
-import { MatStepper } from '@angular/material';
+import { MatStepper, MatTabGroup} from '@angular/material';
 
 import { DownloadService } from '../download.service';
 import { BillsService } from '../billing.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-billing',
@@ -16,7 +17,9 @@ export class BillingComponent implements OnInit, AfterViewInit {
   @ViewChild(CreateBillComponent)
   private createBillComponent: CreateBillComponent;
   @ViewChild('stepper') stepper: MatStepper;
+  @Input() selectedIndex;
 
+  selectedIndex$;
   isLinear = true;
   step1Completed = false;
   step2Completed = false;
@@ -30,7 +33,12 @@ export class BillingComponent implements OnInit, AfterViewInit {
   secondFormGroup: FormGroup;
 
   ngOnInit() {
-    this.stepper.selectedIndex = this.billService.billStepper.getValue();
+    this.selectedIndex$ = this.billService.tabGroupIndex.subscribe(x => {
+      this.selectedIndex = x;
+      console.log(this.selectedIndex);
+    });
+
+    this.stepper.selectedIndex = this.billService.billStepperIndex.getValue();
     if (this.stepper.selectedIndex === 1) this.step1Completed = true;
     if (this.stepper.selectedIndex === 2) this.step2Completed = true;
     this.changeDet.detectChanges();
@@ -40,7 +48,7 @@ export class BillingComponent implements OnInit, AfterViewInit {
     this.firstFormGroup = this.createBillComponent.getBillForm();
     this.stepper.selectionChange.subscribe(
       x => {
-        this.billService.billStepper.next(x.selectedIndex);
+        this.billService.billStepperIndex.next(x.selectedIndex);
         if (x.previouslySelectedIndex === 1 && x.previouslySelectedIndex > x.selectedIndex) {
           this.step1Completed = false; // this deactivates the header.
         }

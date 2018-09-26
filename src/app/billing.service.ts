@@ -19,7 +19,8 @@ export class BillsService {
   private BillsUrl = environment.apiUrl + '/api/bill';
   private bill$ = new BehaviorSubject(new Bill());
   private billDetail$ = new BehaviorSubject(new Bill());
-  public billStepper = new BehaviorSubject(0);
+  public billStepperIndex = new BehaviorSubject(0);
+  public tabGroupIndex = new BehaviorSubject(0);
 
   constructor(private http: HttpClient,
     private messageService: MessageService, public snackbar: MatSnackBar) {
@@ -27,6 +28,7 @@ export class BillsService {
 
   public getObservableBill() {
     return this.bill$.asObservable();
+
   }
 
   public getObservableDetailBill() {
@@ -181,6 +183,11 @@ export class BillsService {
       this.messageService.add(err.message);
       return of(err);
     }));
+  }
+
+  public prepareForUpdate() {
+    this.bill$.next(this.billDetail$.getValue());
+    this.tabGroupIndex.next(0);
   }
 
   public getPDF(_id: string) {

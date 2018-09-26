@@ -6,6 +6,7 @@ const Catalogs = require('../models/catalogs');
 
 exports.buildBill = async (bill) => {
     try {
+        if (bill.Status.ResponseCode === 0) throw new Error('Esta Factura ya fue enviada a SUNAT');
         const query = Company.findOne({ type: 'owner' });
         const company = await query.exec()
         // set the id number and series

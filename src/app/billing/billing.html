@@ -1,4 +1,4 @@
-<mat-tab-group>
+<mat-tab-group [(selectedIndex)] = "selectedIndex" #tabGroup>
     <mat-tab label="Factura">
         <mat-horizontal-stepper [linear]='isLinear' #stepper>
             <mat-step [completed]="step1Completed">

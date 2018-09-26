@@ -13,6 +13,7 @@ export class BillingOptionsComponent implements OnInit {
   isDraft = false;
   isRejected = false;
   billDetailLoaded = false;
+  isEditable = false;
   bill_id;
 
   constructor(private billService: BillsService, private downloadService: DownloadService) { }
@@ -24,6 +25,7 @@ export class BillingOptionsComponent implements OnInit {
         this.isRejected = bill.Status.Rejected;
         this.isDraft = bill.Status.Draft;
         this.bill_id = bill._id;
+        if (bill.Status.ResponseCode > 0 || !bill.Status.ResponseCode) this.isEditable = true; else this.isEditable = false;
       }
     });
   }
@@ -42,6 +44,10 @@ export class BillingOptionsComponent implements OnInit {
 
   sendSunat() {
     this.billService.sendSunat(this.bill_id).subscribe();
+  }
+
+  edit() {
+    this.billService.prepareForUpdate();
   }
 
 
