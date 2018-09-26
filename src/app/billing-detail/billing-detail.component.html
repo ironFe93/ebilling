@@ -143,7 +143,7 @@
                 <input matInput readonly type="text" placeholder="Moneda" value="{{(bill$ | async).DocumentCurrencyCode}}">
               </mat-form-field>
               <mat-form-field>
-                <input matInput type="number" placeholder="Descuento %" value="{{(bill$ | async).AllowanceCharge?.MultiplierFactorNumeric}}">
+                <input matInput readonly type="number" placeholder="Descuento %" value="{{(bill$ | async).AllowanceCharge?.MultiplierFactorNumeric}}">
               </mat-form-field>
             </div>
           </div>

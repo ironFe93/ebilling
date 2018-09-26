@@ -9,7 +9,7 @@ exports.buildBill = async (bill) => {
         const query = Company.findOne({ type: 'owner' });
         const company = await query.exec()
         // set the id number and series
-        bill.ID = await getNextSequence('bill_id');
+        if(!bill.ID) bill.ID = await getNextSequence('bill_id');
 
         //set DueDate
         bill.DueDate = calculate_due_date(new Date(bill.IssueDate), bill.cond_pago);

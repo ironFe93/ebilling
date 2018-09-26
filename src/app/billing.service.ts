@@ -19,6 +19,7 @@ export class BillsService {
   private BillsUrl = environment.apiUrl + '/api/bill';
   private bill$ = new BehaviorSubject(new Bill());
   private billDetail$ = new BehaviorSubject(new Bill());
+  public billStepper = new BehaviorSubject(0);
 
   constructor(private http: HttpClient,
     private messageService: MessageService, public snackbar: MatSnackBar) {
@@ -121,6 +122,8 @@ export class BillsService {
   composeBillDraft(formdata: any, invoiceLine: InvoiceLine[]) {
 
     const bill: Bill = {
+      _id: this.bill$.getValue()._id,
+      ID: this.bill$.getValue().ID,
       InvoiceTypeCode: '01',
       IssueDate: formdata.fecha_e,
       AccountingCustomerParty: {
@@ -150,6 +153,7 @@ export class BillsService {
   }
 
   public saveBillDraft() {
+    console.log(this.bill$.getValue().ID);
     return this.http.post<any>(this.BillsUrl + '/saveDraft',
       this.bill$.getValue()
     ).pipe(
@@ -170,6 +174,7 @@ export class BillsService {
     return this.http.post<any>(this.BillsUrl + '/sendSunat', {id: id})
     .pipe(tap(bill => {
       this.messageService.add(bill.Status.Description);
+      this.bill$.next(bill);
       this.billDetail$.next(bill);
     }),
     catchError((err: HttpErrorResponse, caught) => {

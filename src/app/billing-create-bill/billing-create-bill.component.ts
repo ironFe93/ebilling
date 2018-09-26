@@ -37,7 +37,6 @@ export class CreateBillComponent implements OnInit {
   }
 
   ngOnInit() {
-
     this.minDate.setDate(this.minDate.getDate() - 2);
     this.buildProdForm();
     this.initProdForm();

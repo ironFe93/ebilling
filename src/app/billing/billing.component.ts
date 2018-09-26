@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { CreateBillComponent } from '../billing-create-bill/billing-create-bill.component';
 import { HttpErrorResponse } from '../../../node_modules/@angular/common/http';
@@ -11,7 +11,7 @@ import { BillsService } from '../billing.service';
   selector: 'app-billing',
   templateUrl: 'billing.html'
 })
-export class BillingComponent implements AfterViewInit {
+export class BillingComponent implements OnInit, AfterViewInit {
 
   @ViewChild(CreateBillComponent)
   private createBillComponent: CreateBillComponent;
@@ -29,10 +29,18 @@ export class BillingComponent implements AfterViewInit {
   firstFormGroup: FormGroup;
   secondFormGroup: FormGroup;
 
+  ngOnInit() {
+    this.stepper.selectedIndex = this.billService.billStepper.getValue();
+    if (this.stepper.selectedIndex === 1) this.step1Completed = true;
+    if (this.stepper.selectedIndex === 2) this.step2Completed = true;
+    this.changeDet.detectChanges();
+  }
+
   ngAfterViewInit() {
     this.firstFormGroup = this.createBillComponent.getBillForm();
     this.stepper.selectionChange.subscribe(
       x => {
+        this.billService.billStepper.next(x.selectedIndex);
         if (x.previouslySelectedIndex === 1 && x.previouslySelectedIndex > x.selectedIndex) {
           this.step1Completed = false; // this deactivates the header.
         }
@@ -71,6 +79,7 @@ export class BillingComponent implements AfterViewInit {
     this.stepper.reset();
     this.billService.clear();
     this.createBillComponent.getBillForm().reset();
+    this.createBillComponent.buildBillForm();
   }
 
 }

@@ -67,8 +67,9 @@ routes.get('/getDetail/:id', async (req, res, next) => {
 routes.post('/saveDraft', async (req, res, next) => {
     try {
         const bill = new Bill(req.body);
-        const completeBill = await billHelper.buildBill(bill)
-        const savedBill = await completeBill.save();
+        const completeBill = await billHelper.buildBill(bill);
+        const savedBill = await Bill.findOneAndUpdate(
+            {'_id': bill.id}, completeBill , { upsert: true, new: true }).exec();
         res.send(savedBill);
     } catch (error) {
         next(error);

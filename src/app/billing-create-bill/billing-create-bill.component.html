@@ -34,14 +34,9 @@
         <ng-container matColumnDef="cantidad">
           <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
           <mat-cell *matCellDef="let line">
-            <div *ngIf="line.tipo=='Producto'; else Servicio">
               <mat-form-field floatLabel="never">
                 <input matInput type="number" placeholder="cantidad" [value]="line.InvoicedQuantity.val" [(ngModel)]="line.InvoicedQuantity.val">
               </mat-form-field>
-            </div>
-            <ng-template #Servicio>
-              1
-            </ng-template>
           </mat-cell>
         </ng-container>
 
