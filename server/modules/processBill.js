@@ -1,58 +1,13 @@
 const xmlwriter = require('./xmlwriter');
 const JSZip = require("jszip");
 
-exports.getBase64Zip = async (jsonObject, ruc) => {
+exports.getBase64Zip = async (jsonObject) => {
     try {
-        const dateIssued = new Date(jsonObject.IssueDate);
-        const dateExpired = new Date(jsonObject.DueDate);
-        jsonObject.IssueDate = getYearMonthDay(dateIssued);
-        jsonObject.IssueTime = getHourMinuteSecond(dateIssued);
-        jsonObject.DueDate = getYearMonthDay(dateExpired);
-
-        const billID = jsonObject.ID;
-
-        //order matters
-
+        //construct xml, sign it, then zip it and return it as base64
         const xml = await xmlwriter.buildXML(jsonObject);
         const signedXML = await signXML(xml);
-        const base64Zip = await prepareZipAsBase64(signedXML, ruc, billID);
+        const base64Zip = await prepareZipAsBase64(signedXML, process.env.RUC, jsonObject.ID);
         return base64Zip;
-    } catch (error) {
-        throw error;
-    }
-
-}
-
-
-const formatDateTimeFields = (field) => {
-    try {
-        if (field < 10) { field = '0' + field };
-        return field;
-    } catch (error) {
-        throw error;
-    }
-
-}
-
-const getYearMonthDay = (date) => {
-    try {
-        year = date.getFullYear();
-        month = formatDateTimeFields(date.getMonth());
-        day = formatDateTimeFields(date.getDate());
-
-        return year + "-" + month + "-" + day;
-    } catch (error) {
-        throw error;
-    }
-}
-
-const getHourMinuteSecond = (date) => {
-    try {
-        hour = formatDateTimeFields(date.getHours());
-        minute = formatDateTimeFields(date.getMinutes());
-        second = formatDateTimeFields(date.getSeconds());
-
-        return hour + ":" + minute + ":" + second;
     } catch (error) {
         throw error;
     }

@@ -78,10 +78,12 @@ exports.buildXML = async (jsonBill) => {
 
 
         //Invoice.ele('cbc:ProfileID', profileIDAtts , "0101");
+        const dateIssued = new Date(jsonBill.IssueDate);
+        const dateExpired = new Date(jsonBill.DueDate);
         Invoice.ele('cbc:ID', jsonBill.ID);
-        Invoice.ele('cbc:IssueDate', jsonBill.IssueDate);
-        Invoice.ele('cbc:IssueTime', jsonBill.IssueTime);
-        Invoice.ele('cbc:DueDate', jsonBill.DueDate);
+        Invoice.ele('cbc:IssueDate', getYearMonthDay(dateIssued));
+        Invoice.ele('cbc:IssueTime', getHourMinuteSecond(dateIssued));
+        Invoice.ele('cbc:DueDate', getYearMonthDay(dateExpired));
 
 
         Invoice.ele('cbc:InvoiceTypeCode', atts.InvoiceTypeCodeAtts, "01");
@@ -259,6 +261,42 @@ cat05 = async () => {
         // load up catalog05
         const catalog05 = await Catalog.findById("5b9808a83369e7514123a068").exec();
         return catalog05._doc;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+
+const formatDateTimeFields = (field) => {
+    try {
+        if (field < 10) { field = '0' + field };
+        return field;
+    } catch (error) {
+        throw error;
+    }
+
+}
+
+const getYearMonthDay = (date) => {
+    try {
+        year = date.getFullYear();
+        month = formatDateTimeFields(date.getMonth());
+        day = formatDateTimeFields(date.getDate());
+
+        return year + "-" + month + "-" + day;
+    } catch (error) {
+        throw error;
+    }
+}
+
+const getHourMinuteSecond = (date) => {
+    try {
+        hour = formatDateTimeFields(date.getHours());
+        minute = formatDateTimeFields(date.getMinutes());
+        second = formatDateTimeFields(date.getSeconds());
+
+        return hour + ":" + minute + ":" + second;
     } catch (error) {
         throw error;
     }

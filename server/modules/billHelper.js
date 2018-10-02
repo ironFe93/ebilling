@@ -7,10 +7,10 @@ const Catalogs = require('../models/catalogs');
 exports.buildBill = async (bill) => {
     try {
         if (bill.Status.ResponseCode === 0) throw new Error('Esta Factura ya fue enviada a SUNAT');
-        const query = Company.findOne({ type: 'owner' });
-        const company = await query.exec()
+        const company = await Company.findOne({ ruc: process.env.RUC }).exec();
+
         // set the id number and series
-        if(!bill.ID) bill.ID = await getNextSequence('bill_id');
+        if (!bill.ID) bill.ID = await getNextSequence('bill_id');
 
         //set DueDate
         bill.DueDate = calculate_due_date(new Date(bill.IssueDate), bill.cond_pago);
@@ -18,23 +18,8 @@ exports.buildBill = async (bill) => {
         // set AccountingSupplierParty
         bill = setAccountingSupplierParty(bill, company);
 
-        let sumValues = {
-            sumValorVentaBruto: 0,
-            sumDescuentosPorItem: 0,
-            sumValorVentaPorItem: 0,
-            descuentoGlobal: 0,
-            totalDescuentos: 0,
-            totalOperacionesGravadas: 0,
-            totalOperacionesExoneradas: 0,
-            totalOperacionesInafectas: 0,
-            sumIGV: 0,
-            total: 0
-        };
-
         bill.InvoiceLine = await calculate_invoice_lines(bill);
-        sumValues = await calculate_totals(bill, sumValues);
-
-        bill.sumValues = sumValues;
+        bill.sumValues = await calculate_totals(bill);
 
         // set AllowanceCharge
         bill = setAllowanceCharge(bill);
@@ -63,7 +48,6 @@ setAccountingSupplierParty = (bill, company) => {
         bill.AccountingSupplierParty.PartyLegalEntity.RegistrationName = company.registration_name;
         bill.AccountingSupplierParty.PartyIdentification.ID = company.ruc;
         bill.AccountingSupplierParty.PartyIdentification.schemeID = '6';
-    
         return bill;
     } catch (error) {
         throw error;
@@ -72,32 +56,31 @@ setAccountingSupplierParty = (bill, company) => {
 
 calculate_invoice_lines = async (reqBody) => {
     try {
+        //BUILD FUNCTIONS
+        getUnitVal = (unitPrice) => unitPrice / (1 + process.env.TAX_PERCENT / 100);
+        getValorVBruto = (unitVal, qty) => unitVal * qty;
+        getDiscount = ( valorVBruto, factor) => valorVBruto * (factor / 100)
+        getValorV = (valorVBruto, descuento) => valorVBruto - descuento
+        getIGV = (valor_venta) => valor_venta * (process.env.TAX_PERCENT / 100);
+
+        setCalculatedValues = (line, unitPrice) => {
+            line.Price.PriceAmount = getUnitVal(unitPrice);
+            line.AllowanceCharge.BaseAmount = getValorVBruto(line.Price.PriceAmount, line.InvoicedQuantity.val);
+            line.AllowanceCharge.Amount = getDiscount(line.AllowanceCharge.BaseAmount, line.AllowanceCharge.MultiplierFactorNumeric);
+            line.LineExtensionAmount = getValorV(line.AllowanceCharge.BaseAmount, line.AllowanceCharge.Amount);
+            line.TaxTotal.TaxSubtotal.TaxableAmount = line.LineExtensionAmount;
+            line.TaxTotal.TaxAmount = getIGV(line.TaxTotal.TaxSubtotal.TaxableAmount);
+            line.TaxTotal.TaxSubtotal.TaxAmount = line.TaxTotal.TaxAmount;
+            
+            return line;
+        }
+        //START
         let ID = 1;
         const invoiceLines = await reqBody.InvoiceLine.map(async line => {
 
-            let unitValue; 
-            let valor_venta_bruto;
-            let descuento;
-            let valor_venta;
-            let IGV;
+            line = setCalculatedValues(line, line.PricingReference.AlternativeConditionPrice.PriceAmount);
 
-            if (line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode == 20){
-                unitValue = line.PricingReference.AlternativeConditionPrice.PriceAmount;
-                valor_venta_bruto = calculate_valor_v_bruto(unitValue, line.InvoicedQuantity.val);
-                descuento = 0;
-                valor_venta = calculate_valor_venta(valor_venta_bruto, descuento);
-                IGV = 0;
-            }else{
-                unitValue = calculate_unit_value(line.PricingReference.AlternativeConditionPrice.PriceAmount);
-                valor_venta_bruto = calculate_valor_v_bruto(unitValue, line.InvoicedQuantity.val);
-                descuento = calculate_discount(valor_venta_bruto, line.AllowanceCharge.MultiplierFactorNumeric);
-                valor_venta = calculate_valor_venta(valor_venta_bruto, descuento);
-                IGV = calculate_taxes_IGV(valor_venta);
-            }
-
-            const query = Product.findOne({ cod: line.Item.SellersItemIdentification.ID });
-
-            product = await query.exec()
+            const product = await Product.findOne({ cod: line.Item.SellersItemIdentification.ID }).exec();
 
             // set ID for line
             line.ID = ID;
@@ -106,28 +89,12 @@ calculate_invoice_lines = async (reqBody) => {
             // set InvoicedQuantity unitcode
             line.InvoicedQuantity.unitCode = product.cod_medida;
 
-            // set LineExtensionAmount
-            line.LineExtensionAmount = valor_venta;
-
             // set PricingReference
             line.PricingReference.AlternativeConditionPrice.PriceTypeCode = '01'  ///this should come from frontend;
-
-            // Set AllowanceCharge
-            line.AllowanceCharge.Amount = descuento;
-            line.AllowanceCharge.BaseAmount = valor_venta_bruto
-
-            // set TaxTotal
-            line.TaxTotal.TaxAmount = IGV;
-            line.TaxTotal.TaxSubtotal.TaxableAmount = valor_venta;
-
-            line.TaxTotal.TaxSubtotal.TaxAmount = IGV;
 
             // set Item
             line.Item.Description = product.descripcion;
             line.Item.SellersItemIdentification.ID = product.cod;
-
-            // set Price
-            line.Price.PriceAmount = unitValue;
 
             return line;
         });
@@ -138,28 +105,9 @@ calculate_invoice_lines = async (reqBody) => {
     }
 }
 
-calculate_unit_value = (precio_unit) => {
-    return precio_unit / 1.18
-}
-
-calculate_valor_v_bruto = (valor_unitario, cantidad) => {
-    return valor_unitario * cantidad;
-}
-
-calculate_discount = (valor_venta_bruto, factor) => {
-    return valor_venta_bruto * (factor / 100)
-}
-
-calculate_valor_venta = (valor_venta_bruto, descuento) => {
-    return valor_venta_bruto - descuento
-}
-
-calculate_taxes_IGV = (valor_venta) => {
-    return valor_venta * 0.18;
-}
-
-calculate_totals = async (bill, sumValues) => {
+calculate_totals = async (bill) => {
     try {
+        let sumValues = bill.sumValues;
         const factor = bill.AllowanceCharge.MultiplierFactorNumeric;
 
         let totalItemsGravados = 0;
@@ -179,12 +127,13 @@ calculate_totals = async (bill, sumValues) => {
             sumValues.sumIGV += Line.TaxTotal.TaxAmount;
             Line.TaxTotal.TaxSubtotal.TaxCategory.TaxSchemeID = taxSchemeID;
             if (taxSchemeID == 1000) {
-                Line.TaxTotal.TaxSubtotal.TaxCategory.Percent = 18;
+                Line.TaxTotal.TaxSubtotal.TaxCategory.Percent = process.env.TAX_PERCENT;
                 totalItemsGravados += taxableAmount;
             } else if (taxSchemeID == 9997) {
                 Line.TaxTotal.TaxSubtotal.TaxCategory.Percent = 0;
                 totalItemsExonerados += taxableAmount;
             } else if (taxSchemeID == 9998) {
+                Line.TaxTotal.TaxSubtotal.TaxCategory.Percent = 0;
                 totalItemsInafectos += Line.InvoicedQuantity.val * Line.PricingRefernce.AlternativeConditionPrice.PriceAmount;
                 // la sunat codifica el 9998 como INAFECTO, sin embargo este valor
                 // aparece en la factura como el VALOR DE VENTA OPERACIONES GRATUITAS
@@ -196,9 +145,8 @@ calculate_totals = async (bill, sumValues) => {
         sumValues.totalOperacionesGravadas = totalItemsGravados * (1 - (factor / 100));
         sumValues.totalOperacionesExoneradas = totalItemsExonerados * (1 - (factor / 100));
         sumValues.totalOperacionesInafectas = totalItemsInafectos;
-        sumValues.sumIGV = sumValues.totalOperacionesGravadas * 0.18;
+        sumValues.sumIGV = sumValues.totalOperacionesGravadas * (process.env.TAX_PERCENT / 100);
         sumValues.total = sumValues.totalOperacionesGravadas + sumValues.totalOperacionesExoneradas + sumValues.sumIGV;
-
         return sumValues;
 
     } catch (error) {
@@ -210,7 +158,6 @@ setAllowanceCharge = (bill) => {
     try {
         bill.AllowanceCharge.Amount = bill.sumValues.descuentoGlobal;
         bill.AllowanceCharge.BaseAmount = bill.sumValues.sumValorVentaPorItem;
-    
         return bill;
     } catch (error) {
         throw error;
@@ -219,47 +166,28 @@ setAllowanceCharge = (bill) => {
 
 setTaxTotal = (bill) => {
     try {
+        getTaxSubTotal = (taxSubtotalArray, sumValue, taxAmount, SchemeID) => {
+            if (bill.sumValues[sumValue] > 0) {
+                taxSubtotal = new TaxSubTotal();
+                taxSubtotal.TaxableAmount = bill.sumValues[sumValue];
+                taxSubtotal.TaxAmount = taxAmount;
+                taxSubtotal.TaxCategory = {
+                    TaxSchemeID: SchemeID
+                }
+                taxSubtotalArray.push(taxSubtotal);
+            }
+            return taxSubtotalArray;
+        }
+
         bill.TaxTotal.TaxAmount = bill.sumValues.sumIGV;
-    currency = bill.DocumentCurrencyCode;
-    taxSubtotalArray = [];
-    if (bill.sumValues.totalOperacionesGravadas > 0) {
-        taxSubtotal = new TaxSubTotal();
+        taxSubtotalArray = [];
+        taxSubtotalArray = getTaxSubTotal(taxSubtotalArray, 'totalOperacionesGravadas', bill.sumValues.sumIGV, 1000);
+        taxSubtotalArray = getTaxSubTotal(taxSubtotalArray, 'totalOperacionesExoneradas', 0, 9997);
+        taxSubtotalArray = getTaxSubTotal(taxSubtotalArray, 'totalOperacionesInafectas', 0, 9996);
 
-        taxSubtotal.TaxableAmount = bill.sumValues.totalOperacionesGravadas;
-        taxSubtotal.TaxAmount = bill.sumValues.sumIGV;
-        taxSubtotal.TaxCategory = {
-            TaxSchemeID: 1000 
-        } //MAKE BETTER
-        taxSubtotalArray.push(taxSubtotal);
-    };
+        bill.TaxTotal.TaxSubtotal = taxSubtotalArray;
 
-    if (bill.sumValues.totalOperacionesExoneradas > 0) {
-        taxSubtotal = new TaxSubTotal();
-
-        taxSubtotal.TaxableAmount = bill.sumValues.totalOperacionesExoneradas;
-        taxSubtotal.TaxAmount = 0;
-        taxSubtotal.TaxCategory = {
-            TaxSchemeID: 9997
-        }
-
-        taxSubtotalArray.push(taxSubtotal);
-    };
-
-    if (bill.sumValues.totalOperacionesInafectas > 0) {
-        taxSubtotal = new TaxSubTotal();
-
-        taxSubtotal.TaxableAmount = bill.sumValues.totalOperacionesInafectas;
-        taxSubtotal.TaxAmount = 0;
-        taxSubtotal.TaxCategory = {
-            TaxSchemeID: 9996 ////??????????????????
-        }
-
-        taxSubtotalArray.push(taxSubtotal);
-    };
-
-    bill.TaxTotal.TaxSubtotal = taxSubtotalArray;
-
-    return bill;    
+        return bill;
     } catch (error) {
         throw error;
     }
@@ -274,7 +202,6 @@ setLegalMonetaryTotal = (bill) => {
             AllowanceTotalAmount: bill.sumValues.totalDescuentos,
             PayableAmount: bill.sumValues.total
         }
-    
         return bill;
     } catch (error) {
         throw error;
@@ -283,24 +210,13 @@ setLegalMonetaryTotal = (bill) => {
 
 const getNextSequence = async (name) => {
     try {
-        query = Counters.findOneAndUpdate(
-            { prefix: name },
-            {
-                $inc: { seq: 1 },
-                new: true
-            }
-        );
+        counter = await Counters.findOneAndUpdate({ prefix: name }, { $inc: { seq: 1 }, new: true }).exec();
 
-        counter = await query.exec();
         //control overflow of values
         if (counter.seq === 99999999) {
-            Counters.findOneAndUpdate(
-                { _id: name },
-                { $inc: { ser: 1 }, seq: 0 },
-            );
+            Counters.findOneAndUpdate({ _id: name }, { $inc: { ser: 1 }, seq: 0 });
         }
         return counter.letter + counter.ser + '-' + counter.seq;
-
     } catch (error) {
         throw error;
     }
@@ -308,9 +224,9 @@ const getNextSequence = async (name) => {
 
 calculate_due_date = (IssueDate, days) => {
     try {
-        var result = new Date(IssueDate);
-        result.setDate(result.getDate() + days);
-        return result;
+        var dueDate = new Date(IssueDate);
+        dueDate.setDate(dueDate.getDate() + days);
+        return dueDate;
     } catch (error) {
         throw error;
     }

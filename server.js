@@ -4,19 +4,17 @@ const path = require('path');
 const http = require('http');
 const bodyParser = require('body-parser');
 require('dotenv').config();
-const mongoose = require('mongoose');
 const app = express();
 const cors = require('cors');
+const debug = require('debug')('Slick');
+const name = 'E-Billing';
 
-mongoose_options = {
-  useNewUrlParser: true,
-  reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
-  reconnectInterval: 500, // Reconnect every 500ms
-}
-// Conect MongoDB
-mongoose.connect(process.env.MONGODB_URI, mongoose_options)
-  .then(() => console.log('connection successful'))
-  .catch((err) => console.error(err));
+debug('booting %s', name);
+
+mongoClient = require('./server/modules/persistance'); //initialize mongoconnection with mongoose
+mongoClient.then(() => {
+  require('./server/modules/logger'); //initialize logger after db connection resolves
+}).catch((err) => console.error(err))
 
 // cors
 if(app.get('env')=== 'development'){
@@ -34,6 +32,10 @@ app.use(passport.initialize());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//expressLogger before API routes
+const expressLogger = require('./server/modules/expressLogger');
+app.use(expressLogger);
+
 // Get our API routes and set them
 const api = require('./server/routes/api');
 app.use('/api', api);
@@ -46,6 +48,9 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 
+//expressLogger after API routes
+const errorLogger = require('./server/modules/expressLogger');
+app.use(errorLogger);
 
 // development error handler
 // will print stacktrace

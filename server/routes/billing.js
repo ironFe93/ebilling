@@ -1,31 +1,13 @@
 const express = require('express');
 const routes = express.Router();
-const processBill = require('../methods/processBill');
-const soapClient = require('../methods/soap-client');
+const processBill = require('../modules/processBill');
+const soapClient = require('../modules/soap-client');
 
 const Bill = require('../models/bill');
 
 const Company = require('../models/company');
 
-const billHelper = require('../methods/billHelper');
-
-routes.get('/', (req, res, next) => {
-    res.status(200).json({ message: 'bills!' });
-});
-
-routes.post('/test', async (req, res, next) => {
-
-    try {
-        //triggers failure
-        // const company = await Company.find({ $text: { $search: 'universal' } }).exec();
-        //does not fail
-        const company = await Company.findOne({ type: 'owner' }).exec();
-        res.send(company);
-
-    } catch (error) {
-        next(error)
-    }
-});
+const billHelper = require('../modules/billHelper');
 
 // Get by search term
 routes.get('/find', async (req, res, next) => {
@@ -54,7 +36,6 @@ routes.get('/find', async (req, res, next) => {
 
 // get a bill fully detailed
 routes.get('/getDetail/:id', async (req, res, next) => {
-
     try {
         const bill = await Bill.findById(req.params.id).exec();
         res.send(bill);
@@ -90,10 +71,9 @@ routes.post('/sendSunat', async (req, res, next) => {
     try {
         const bill = await Bill.findById(req.body.id).exec();
         if (!bill) throw new Error('Bill not found');
-        const ruc = bill.AccountingSupplierParty.PartyIdentification.ID;
         const billID = bill.ID;
-        const fileName = ruc + '-01-' + billID;
-        const base64String = await processBill.getBase64Zip(bill.toObject(), ruc);
+        const fileName = process.env.RUC + '-01-' + billID;
+        const base64String = await processBill.getBase64Zip(bill.toObject());
         const result = await soapClient.sendBill(fileName + '.zip', base64String);
         const decodedResult = await processBill.decodeBase64(result.applicationResponse, fileName + '.xml');
         const updatedBill = await Bill.findOneAndUpdate(

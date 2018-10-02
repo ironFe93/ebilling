@@ -21,6 +21,7 @@ routes.get('/categories', async (req, res, next) => {
         query = Counters.find({ 'desc': { $exists: true } });
         query.select('desc');
         categories = await query.exec();
+        res.send(categories);
     } catch (error) {
         next(error);
     }
@@ -31,7 +32,6 @@ routes.get('/find', async (req, res, next) => {
     try {
         if (req.query.term) {
             const term = req.query.term;
-
             projection = { '_id': true, 'cod': true, 'descripcion': true, 'cod_medida': true };
 
             products = await Product.find({ $text: { $search: term } }, projection).exec()
