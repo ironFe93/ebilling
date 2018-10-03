@@ -59,7 +59,7 @@ describe('APIs', () => {
             it('it should GET a list of bills', (done) => {
                 chai.request('localhost:' + process.env.DEV_PORT)
                     .get('/api/bill/find')
-                    .query({term : 'F100'})
+                    .query({term : 'F100'}) //
                     .end((err, res) => {
                         expect(err).to.be.null;
                         expect(res.body).to.be.a('array')
