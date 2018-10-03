@@ -1,5 +1,6 @@
 const builder = require('xmlbuilder');
 const Catalog = require('../models/catalogs');
+const numberToLetter = require('./numberToLetter');
 let atts;
 let catalog05;
 
@@ -87,7 +88,7 @@ exports.buildXML = async (jsonBill) => {
 
 
         Invoice.ele('cbc:InvoiceTypeCode', atts.InvoiceTypeCodeAtts, "01");
-        Invoice.ele('cbc:Note', { languageLocaleID: '1000' }, 'PLACEHOLDER'); // make better!!
+        Invoice.ele('cbc:Note', { languageLocaleID: '1000' }, numberToLetter(jsonBill.LegalMonetaryTotal.PayableAmount));
 
         Invoice.ele('cbc:DocumentCurrencyCode', atts.DocCurrencyCodeAtts, jsonBill.DocumentCurrencyCode);
 

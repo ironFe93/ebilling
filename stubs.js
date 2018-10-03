@@ -1,20 +1,13 @@
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
-
-const fs = require('fs')
-
-//read the file
-const file_buffer = fs.readFileSync('./server/files/cert.pfx');
-//encode contents into base64
-const contents_in_base64 = file_buffer.toString('base64');
-
 // Connection URL
 const url = 'mongodb://localhost:27017';
 
 // Database Name
 const dbName = 'slick';
 
-(async function () {
+const string = require('./server/modules/numberToLetter')(96871628.54);
+console.log(string);
+
+/* (async function () {
   try {
 
     const client = await MongoClient.connect(url);
@@ -33,7 +26,7 @@ const dbName = 'slick';
     console.log(err.stack);
   }
 })();
-
+ */
 /* (async function() {
   try {
     const client = await MongoClient.connect(url);
