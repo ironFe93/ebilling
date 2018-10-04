@@ -50,7 +50,7 @@ export class BillingSearchComponent implements OnInit {
 
   displayFn(bill: any) {
     if (bill) {
-      return bill.AccountingCustomerParty.PartyLegalEntity.RegistrationName;
+      return bill.AccountingCustomerParty.RegistrationName;
     }
   }
 

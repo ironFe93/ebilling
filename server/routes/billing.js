@@ -17,7 +17,8 @@ routes.get('/find', async (req, res, next) => {
             projection = {
                 '_id': true,
                 'ID': true,
-                'AccountingCustomerParty.PartyLegalEntity.RegistrationName': true
+                'AccountingCustomerParty.RegistrationName': true,
+                'AccountingCustomerParty.ID': true
             }
 
             const term = req.query.term;

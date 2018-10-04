@@ -116,11 +116,11 @@
 
           <div fxLayout="row" fxLayoutGap="10px">
             <mat-form-field fxFlex="40%">
-              <input type="text" matInput readonly placeholder="RUC" value="{{(bill$ | async)?.AccountingCustomerParty?.PartyIdentification.ID}}">
+              <input type="text" matInput readonly placeholder="RUC" value="{{(bill$ | async)?.AccountingCustomerParty?.ID}}">
             </mat-form-field>
 
             <mat-form-field fxFlex="60%">
-              <input type="text" matInput readonly placeholder="Razón Social" value="{{(bill$ | async)?.AccountingCustomerParty?.PartyLegalEntity.RegistrationName}}">
+              <input type="text" matInput readonly placeholder="Razón Social" value="{{(bill$ | async)?.AccountingCustomerParty?.RegistrationName}}">
             </mat-form-field>
           </div>
           <mat-card-title>Datos del Comprobante</mat-card-title>

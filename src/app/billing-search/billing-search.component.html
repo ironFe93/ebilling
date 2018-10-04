@@ -1,5 +1,5 @@
 <div>
-<mat-card>
+  <mat-card>
     <mat-card-content>
       <form class="example-form" [formGroup]='billForm'>
         <mat-form-field class="example-full-width">
@@ -11,12 +11,13 @@
           </mat-option>
           <ng-container *ngIf="!isLoading">
             <mat-option *ngFor="let bill of filteredBills" [value]="bill">
-              <span>{{ bill?.AccountingCustomerParty?.PartyLegalEntity.RegistrationName }}</span>
+              <span>{{ bill?.AccountingCustomerParty?.RegistrationName }}</span>
               <small> | ID: {{bill.ID}}</small>
+              <small> | RUC: {{bill.AccountingCustomerParty?.ID}}</small>
             </mat-option>
           </ng-container>
         </mat-autocomplete>
       </form>
     </mat-card-content>
   </mat-card>
-  </div>
+</div>

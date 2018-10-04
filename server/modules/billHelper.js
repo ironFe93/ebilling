@@ -46,7 +46,7 @@ exports.buildBill = async (bill) => {
 setAccountingSupplierParty = (bill, company) => {
     try {
         bill.AccountingSupplierParty.RegistrationName = company.registration_name;
-        bill.AccountingSupplierParty.ID = company.ruc;
+        bill.AccountingSupplierParty.ID = process.env.RUC;
         bill.AccountingSupplierParty.schemeID = '6';
         return bill;
     } catch (error) {

@@ -91,22 +91,18 @@ exports.buildXML = async (jsonBill) => {
 
         Invoice.ele('cbc:DocumentCurrencyCode', atts.DocCurrencyCodeAtts, jsonBill.DocumentCurrencyCode);
 
-        Invoice.importDocument(AccountingSupplierParty);
-        Invoice.importDocument(AccountingCustomerParty);
-        Invoice.importDocument(AllowanceCharge);
-
         if(jsonBill.DespatchDocumentReference.ID){
             const DespatchDocument = builder.create('cac:DespatchDocumentReference', { headless: true })
             .ele('cbc:ID', jsonBill.DespatchDocumentReference.ID).up()
-            .ele('cbc:DocumentTypeCode', atts.InvoiceTypeCodeAtts, '06').up() 
-
+            .ele('cbc:DocumentTypeCode', atts.InvoiceTypeCodeAtts, '06').up()
             Invoice.importDocument(DespatchDocument);
         }
 
+        Invoice.importDocument(AccountingSupplierParty);
+        Invoice.importDocument(AccountingCustomerParty);
+        Invoice.importDocument(AllowanceCharge);
         Invoice.importDocument(TaxTotal);
         Invoice.importDocument(LegalMonetaryTotal);
-
-
 
         jsonBill.InvoiceLine.forEach(line => {
             var InvoiceLine = builder.create('cac:InvoiceLine', { headless: true })
@@ -241,8 +237,8 @@ const attributes = (jsonBill) => {
         InvoiceTypeCodeAtts: {
             listAgencyName: "PE:SUNAT",
             listName: "Tipo de Documento",
-            listURI: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01"
-            //listID: "0101"
+            listURI: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01",
+            listID: "0101"
         },
 
         DocCurrencyCodeAtts: {
