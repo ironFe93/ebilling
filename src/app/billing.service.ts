@@ -51,11 +51,11 @@ export class BillsService {
     if (id === this.bill$.getValue()._id) {
       this.messageService.add('El documento ' + this.bill$.getValue().ID + ' está siendo creado o modificado');
       return this.billDetail$;
-    }else {
+    } else {
       return this.http.get<Bill>(this.BillsUrl + '/getDetail/' + id)
-      .pipe(tap(resp => {
-        this.billDetail$.next(resp);
-      }));
+        .pipe(tap(resp => {
+          this.billDetail$.next(resp);
+        }));
     }
 
   }
@@ -69,7 +69,7 @@ export class BillsService {
           ID: product.cod
         }
       },
-      InvoicedQuantity : {
+      InvoicedQuantity: {
         unitCode: product.cod_medida,
         val: 0
       },
@@ -79,12 +79,12 @@ export class BillsService {
           PriceTypeCode: '00'
         }
       },
-      TaxTotal : {
+      TaxTotal: {
         TaxAmount: 0,
-        TaxSubtotal : {
-          TaxableAmount: 0 ,
+        TaxSubtotal: {
+          TaxableAmount: 0,
           TaxAmount: 0,
-          TaxCategory : {
+          TaxCategory: {
             TaxExemptionReasonCode: 10,
             Percent: 18
           }
@@ -128,16 +128,12 @@ export class BillsService {
       InvoiceTypeCode: '01',
       IssueDate: formdata.fecha_e,
       AccountingCustomerParty: {
-        PartyIdentification: {
-          ID: formdata.ruc,
-          schemeID: '6'
-        },
-        PartyLegalEntity: {
-          RegistrationName: formdata.razonSocial
-        }
+        ID: formdata.ruc,
+        schemeID: '6',
+        RegistrationName: formdata.razonSocial
       },
-      cond_pago : formdata.cond_pago,
-      DocumentCurrencyCode : formdata.moneda,
+      cond_pago: formdata.cond_pago,
+      DocumentCurrencyCode: formdata.moneda,
       DespatchDocumentReference: {
         ID: formdata.despatchDocument
       },
@@ -175,16 +171,16 @@ export class BillsService {
   }
 
   public sendSunat(id: String) {
-    return this.http.post<any>(this.BillsUrl + '/sendSunat', {id: id})
-    .pipe(tap(bill => {
-      this.messageService.add(bill.Status.Description);
-      this.bill$.next(bill);
-      this.billDetail$.next(bill);
-    }),
-    catchError((err: HttpErrorResponse, caught) => {
-      this.messageService.add(err.message);
-      return of(err);
-    }));
+    return this.http.post<any>(this.BillsUrl + '/sendSunat', { id: id })
+      .pipe(tap(bill => {
+        this.messageService.add(bill.Status.Description);
+        this.bill$.next(bill);
+        this.billDetail$.next(bill);
+      }),
+        catchError((err: HttpErrorResponse, caught) => {
+          this.messageService.add(err.message);
+          return of(err);
+        }));
   }
 
   public prepareForUpdate() {

@@ -18,23 +18,15 @@ export class Bill {
     DocumentTypeCode: number
   };
   AccountingSupplierParty?: {
-    PartyIdentification: {
-      ID: string;
-      schemeID: string;
-    };
+    ID: string;
+    schemeID: string;
     PartyName: string;
-    PartyLegalEntity: {
-      RegistrationName: string
-    }
+    RegistrationName: string
   };
   AccountingCustomerParty?: {
-    PartyIdentification: {
-      ID: string; // documento de identidad
-      schemeID: string; // tipo de documento
-    };
-    PartyLegalEntity: {
-      RegistrationName: string // nombre legal
-    }
+    ID: string; // documento de identidad
+    schemeID: string; // tipo de documento
+    RegistrationName: string // nombre legal
   };
   DeliveryTerms?: {
     DeliveryLocation: {

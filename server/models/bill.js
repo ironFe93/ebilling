@@ -19,23 +19,14 @@ const billSchema = new Schema({
     ID: String
   },
   AccountingSupplierParty: {
-    PartyIdentification: {
       ID: String,
       schemeID: String,
-    },
-    PartyName: String, // nombre comercial
-    PartyLegalEntity: {
       RegistrationName: String
-    }
   },
   AccountingCustomerParty: {
-    PartyIdentification: {
       ID: String,
       schemeID: String,
-    },
-    PartyLegalEntity: {
       RegistrationName: String // nombre legal
-    }
   },
   DeliveryTerms: {
     DeliveryLocation: {

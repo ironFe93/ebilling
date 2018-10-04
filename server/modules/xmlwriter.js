@@ -17,24 +17,24 @@ exports.buildXML = async (jsonBill) => {
         const AccountingSupplierParty = builder.create('cac:AccountingSupplierParty', { headless: true })
             .ele('cac:Party')
             .ele('cac:PartyIdentification')
-            .ele('cbc:ID', atts.rucIDSupplierAtts, jsonBill.AccountingSupplierParty.PartyIdentification.ID)
+            .ele('cbc:ID', atts.rucIDSupplierAtts, jsonBill.AccountingSupplierParty.ID)
             .up()
             .up()
             .ele('cac:PartyName')
-            .ele('cbc:Name', jsonBill.AccountingSupplierParty.PartyName)
+            .ele('cbc:Name', jsonBill.AccountingSupplierParty.RegistrationName)
             .up()
             .up()
             .ele('cac:PartyLegalEntity')
-            .ele('cbc:RegistrationName', jsonBill.AccountingSupplierParty.PartyLegalEntity.RegistrationName)
+            .ele('cbc:RegistrationName', jsonBill.AccountingSupplierParty.RegistrationName)
 
         const AccountingCustomerParty = builder.create('cac:AccountingCustomerParty', { headless: true })
             .ele('cac:Party')
             .ele('cac:PartyIdentification')
-            .ele('cbc:ID', atts.rucIDCustomerAtts, jsonBill.AccountingCustomerParty.PartyIdentification.ID)
+            .ele('cbc:ID', atts.rucIDCustomerAtts, jsonBill.AccountingCustomerParty.ID)
             .up()
             .up()
             .ele('cac:PartyLegalEntity')
-            .ele('cbc:RegistrationName', jsonBill.AccountingCustomerParty.PartyLegalEntity.RegistrationName)
+            .ele('cbc:RegistrationName', jsonBill.AccountingCustomerParty.RegistrationName)
 
         const TaxTotal = builder.create('cac:TaxTotal', { headless: true })
             .ele('cbc:TaxAmount', atts.currencyID, jsonBill.TaxTotal.TaxAmount).up()
@@ -193,14 +193,14 @@ addLineAllowance = (InvoiceLine, line) => {
 const attributes = (jsonBill) => {
     return atts = {
         rucIDSupplierAtts: {
-            schemeID: jsonBill.AccountingSupplierParty.PartyIdentification.schemeID,
+            schemeID: jsonBill.AccountingSupplierParty.schemeID,
             schemeName: "SUNAT:Identificador de Documento de Identidad",
             schemeAgencyName: "PE:SUNAT",
             schemeURI: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"
         },
 
         rucIDCustomerAtts: {
-            schemeID: jsonBill.AccountingCustomerParty.PartyIdentification.schemeID,
+            schemeID: jsonBill.AccountingCustomerParty.schemeID,
             schemeName: "SUNAT:Identificador de Documento de Identidad",
             schemeAgencyName: "PE:SUNAT",
             schemeURI: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"
