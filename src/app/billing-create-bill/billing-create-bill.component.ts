@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { BillsService } from '../billing.service';
 
 import { Product } from '../models/product';
@@ -22,6 +22,7 @@ export class CreateBillComponent implements OnInit {
   prodForm: FormGroup;
   isLoading = false;
   minDate = new Date();
+  sliderChecked = false;
 
   displayedColumns = ['codigo',
     'descripcion', 'medida',  'cantidad',
@@ -93,7 +94,8 @@ export class CreateBillComponent implements OnInit {
       cond_pago: new FormControl(15, [Validators.required, Validators.min(0)]),
       fecha_e: [new Date(), Validators.required],
       moneda: ['PEN', Validators.required],
-      descuento_global: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(100)])
+      descuento_global: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(100)]),
+      despatchDocument: '',
     });
   }
 

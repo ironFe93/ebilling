@@ -34,9 +34,9 @@
         <ng-container matColumnDef="cantidad">
           <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
           <mat-cell *matCellDef="let line">
-              <mat-form-field floatLabel="never">
-                <input matInput type="number" placeholder="cantidad" [value]="line.InvoicedQuantity.val" [(ngModel)]="line.InvoicedQuantity.val">
-              </mat-form-field>
+            <mat-form-field floatLabel="never">
+              <input matInput type="number" placeholder="cantidad" [value]="line.InvoicedQuantity.val" [(ngModel)]="line.InvoicedQuantity.val">
+            </mat-form-field>
           </mat-cell>
         </ng-container>
 
@@ -100,13 +100,13 @@
         <ng-container matColumnDef="sum IGV">
           <mat-header-cell *matHeaderCellDef>Σ IGV</mat-header-cell>
           <mat-cell *matCellDef="let line">
-              <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_sumIGV">
-            {{(line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18)*0.18*line.InvoicedQuantity.val |
-            number:'1.2-2'}}
-          </div>
-          <ng-template #noTax_sumIGV>
-            0
-          </ng-template>
+            <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_sumIGV">
+              {{(line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18)*0.18*line.InvoicedQuantity.val |
+              number:'1.2-2'}}
+            </div>
+            <ng-template #noTax_sumIGV>
+              0
+            </ng-template>
           </mat-cell>
         </ng-container>
 
@@ -114,12 +114,12 @@
         <ng-container matColumnDef="valor_v">
           <mat-header-cell *matHeaderCellDef> Valor Unit. </mat-header-cell>
           <mat-cell *matCellDef="let line">
-              <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_unit_v">
-            {{line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18 | number:'1.2-2'}}
-          </div>
-          <ng-template #noTax_unit_v>
-            {{line.PricingReference?.AlternativeConditionPrice.PriceAmount}}
-          </ng-template>
+            <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_unit_v">
+              {{line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18 | number:'1.2-2'}}
+            </div>
+            <ng-template #noTax_unit_v>
+              {{line.PricingReference?.AlternativeConditionPrice.PriceAmount}}
+            </ng-template>
           </mat-cell>
         </ng-container>
 
@@ -137,14 +137,15 @@
         <ng-container matColumnDef="valor_v_total">
           <mat-header-cell *matHeaderCellDef>Σ Valor Venta </mat-header-cell>
           <mat-cell *matCellDef="let line">
-              <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_v_total">
-            {{(((line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18) * line.InvoicedQuantity.val) -
-            (((line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18) * line.InvoicedQuantity.val)
-            * line.AllowanceCharge.MultiplierFactorNumeric/100)) | number:'1.2-2'}}
-          </div>
-          <ng-template #noTax_v_total>
-            {{line.PricingReference?.AlternativeConditionPrice.PriceAmount * line.InvoicedQuantity.val | number:'1.2-2'}}
-          </ng-template>
+            <div *ngIf="line.TaxTotal.TaxSubtotal.TaxCategory.TaxExemptionReasonCode=='10'; else noTax_v_total">
+              {{(((line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18) * line.InvoicedQuantity.val) -
+              (((line.PricingReference?.AlternativeConditionPrice.PriceAmount/1.18) * line.InvoicedQuantity.val)
+              * line.AllowanceCharge.MultiplierFactorNumeric/100)) | number:'1.2-2'}}
+            </div>
+            <ng-template #noTax_v_total>
+              {{line.PricingReference?.AlternativeConditionPrice.PriceAmount * line.InvoicedQuantity.val |
+              number:'1.2-2'}}
+            </ng-template>
           </mat-cell>
         </ng-container>
 
@@ -185,6 +186,14 @@
           <mat-form-field>
             <input matInput type="number" placeholder="Descuento %" formControlName='descuento_global'>
           </mat-form-field>
+        </div>
+        <div fxLayout="row" fxLayoutGap="10px">
+            <mat-slide-toggle [(ngModel)]="sliderChecked" [ngModelOptions]="{standalone: true}">Guía de remisión remitente</mat-slide-toggle>
+          <div *ngIf="sliderChecked" fxLayout="row">
+            <mat-form-field>
+              <input matInput type="string" placeholder="001-001828" formControlName='despatchDocument' pattern="[0-9]{3}-[0-9]{6}">
+            </mat-form-field>
+          </div>
         </div>
       </mat-card-content>
     </form>

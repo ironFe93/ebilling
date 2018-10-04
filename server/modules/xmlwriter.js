@@ -68,6 +68,7 @@ exports.buildXML = async (jsonBill) => {
 
 
         //end complex types
+        // Begin building the actual xml, changing the order of tags may result in errors on Sunat's server
 
         var Invoice = builder.create('Invoice', { encoding: 'UTF-8' })
             .att(atts.namespaces)
@@ -77,7 +78,6 @@ exports.buildXML = async (jsonBill) => {
         Invoice.ele('cbc:UBLVersionID', '2.1');
         Invoice.ele('cbc:CustomizationID', { schemeAgencyName: 'PE:SUNAT' }, '2.0');
 
-
         //Invoice.ele('cbc:ProfileID', profileIDAtts , "0101");
         const dateIssued = new Date(jsonBill.IssueDate);
         const dateExpired = new Date(jsonBill.DueDate);
@@ -85,7 +85,6 @@ exports.buildXML = async (jsonBill) => {
         Invoice.ele('cbc:IssueDate', getYearMonthDay(dateIssued));
         Invoice.ele('cbc:IssueTime', getHourMinuteSecond(dateIssued));
         Invoice.ele('cbc:DueDate', getYearMonthDay(dateExpired));
-
 
         Invoice.ele('cbc:InvoiceTypeCode', atts.InvoiceTypeCodeAtts, "01");
         Invoice.ele('cbc:Note', { languageLocaleID: '1000' }, numberToLetter(jsonBill.LegalMonetaryTotal.PayableAmount));
@@ -95,6 +94,15 @@ exports.buildXML = async (jsonBill) => {
         Invoice.importDocument(AccountingSupplierParty);
         Invoice.importDocument(AccountingCustomerParty);
         Invoice.importDocument(AllowanceCharge);
+
+        if(jsonBill.DespatchDocumentReference.ID){
+            const DespatchDocument = builder.create('cac:DespatchDocumentReference', { headless: true })
+            .ele('cbc:ID', jsonBill.DespatchDocumentReference.ID).up()
+            .ele('cbc:DocumentTypeCode', atts.InvoiceTypeCodeAtts, '06').up() 
+
+            Invoice.importDocument(DespatchDocument);
+        }
+
         Invoice.importDocument(TaxTotal);
         Invoice.importDocument(LegalMonetaryTotal);
 
@@ -233,8 +241,8 @@ const attributes = (jsonBill) => {
         InvoiceTypeCodeAtts: {
             listAgencyName: "PE:SUNAT",
             listName: "Tipo de Documento",
-            listURI: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01",
-            listID: "0101"
+            listURI: "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01"
+            //listID: "0101"
         },
 
         DocCurrencyCodeAtts: {
@@ -242,6 +250,7 @@ const attributes = (jsonBill) => {
             listName: "Currency",
             listAgencyName: "United Nations Economic Commission for Europe"
         },
+
 
         namespaces: {
             "xmlns": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",

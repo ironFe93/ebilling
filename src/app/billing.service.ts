@@ -122,7 +122,6 @@ export class BillsService {
   }
 
   composeBillDraft(formdata: any, invoiceLine: InvoiceLine[]) {
-
     const bill: Bill = {
       _id: this.bill$.getValue()._id,
       ID: this.bill$.getValue().ID,
@@ -139,6 +138,9 @@ export class BillsService {
       },
       cond_pago : formdata.cond_pago,
       DocumentCurrencyCode : formdata.moneda,
+      DespatchDocumentReference: {
+        ID: formdata.despatchDocument
+      },
       AllowanceCharge: {
         AllowanceChargeReasonCode: '02',
         ChargeIndicator: false,

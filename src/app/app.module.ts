@@ -28,6 +28,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatStepperModule } from '@angular/material/stepper';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 
 // Components & Services
@@ -112,6 +113,7 @@ const appRoutes = [
     CdkTableModule,
     MatTableModule,
     MatSelectModule,
+    MatSlideToggleModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule,
     MatStepperModule,

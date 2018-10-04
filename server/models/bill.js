@@ -12,14 +12,11 @@ const billSchema = new Schema({
   InvoiceTypeCode: String,
   Note: String,
   DocumentCurrencyCode: { type: String, enum: ["PEN", "USD"] },
-  ////////
   DespatchDocumentReference: {
-    ID: String,
-    DocumentTypeCode: { type: Number, enum: [9] }
+    ID: String
   },
   AdditionalDocumentReference: {
-    ID: String,
-    DocumentTypeCode: Number
+    ID: String
   },
   AccountingSupplierParty: {
     PartyIdentification: {

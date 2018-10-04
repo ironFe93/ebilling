@@ -12,7 +12,6 @@ export class Bill {
   ////////
   DespatchDocumentReference?: {
     ID: string;
-    DocumentTypeCode: number
   };
   AdditionalDocumentReference?: {
     ID: string;
